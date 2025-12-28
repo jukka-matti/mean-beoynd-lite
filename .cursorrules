@@ -1,0 +1,46 @@
+# .cursorrules
+
+You are an expert AI software engineer working on **VariScout Lite**.
+
+## Project Context
+**VariScout Lite** is a lightweight, offline-first variation analysis tool for quality professionals. 
+- **Core Value:** "Cut through your watermelons — without the cloud."
+- **Stack:** Electron, React, Visx (charts), Vite.
+- **Data:** Local CSV/Excel processing. No backend. No API keys.
+- **License/Model:** Free/Open for community, ITC distribution.
+
+## "Agent-First" Workflow
+1. **Always Check Context**: Before starting any task, read `Specs.md` and `AI_CONTEXT.md`.
+2. **Task Board**: Maintain the `task.md` file in the artifacts directory.
+3. **Artifacts**: Use `implementation_plan.md` for planning and `walkthrough.md` for verification.
+4. **Be Proactive**: If you see a missing test case or a potential edge case in the `Specs.md`, point it out.
+
+## Coding Standards
+
+### General
+- **Functional Functional**: Use functional programming patterns where possible.
+- **Immutability**: Treat data as immutable.
+- **Clean Code**: meaningful variable names, early returns, small functions.
+
+### React / Frontend
+- **Components**: Functional components with Hooks.
+- **Styling**: Vanilla CSS or CSS Modules (keep it simple, no Tailwind unless specified).
+- **Charts**: Use `Visx` for heavy lifting.
+- **State**: Local state for UI, React Context for global app state (e.g. `AnalysisContext`).
+
+### Electron
+- **Security**: Enable `contextIsolation`, disable `nodeIntegration`.
+- **IPC**: Use `ipcRenderer` / `ipcMain` with secure preload scripts.
+
+## File Structure
+- `src/components`: UI components
+- `src/charts`: Visx chart implementations
+- `src/logic`: Core business logic (stats engine, parsers) - *Keep this pure JS/TS*
+- `electron`: Electron main process files
+
+## Testing
+- **Unit**: Vitest
+- **E2E**: Playwright (if applicable)
+
+## commit messages
+- Use conventional commits (e.g., `feat:`, `fix:`, `docs:`, `chore:`).
