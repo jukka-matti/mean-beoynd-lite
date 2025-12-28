@@ -15,6 +15,7 @@ VariScout Lite is a Progressive Web App (PWA) designed for environments where si
 - **Offline First**: Works without internet after first visit. All processing happens in your browser.
 - **Mobile Friendly**: Responsive design optimized for factory floor tablets and phones.
 - **Data Import**: Drag-and-drop CSV and Excel (.xlsx) support.
+- **Manual Entry**: Enter data directly from paper with running statistics, spec compliance feedback, and 56px touch targets for tablets.
 - **Interactive Dashboard**:
     - **I-Chart**: Time series tracking with auto-calculated control limits.
     - **Boxplot**: Factor comparison (e.g., Shift A vs Shift B).
@@ -22,7 +23,10 @@ VariScout Lite is a Progressive Web App (PWA) designed for environments where si
     - **Linked Filtering**: Click a bar in the Pareto to filter the I-Chart instantly.
 - **Statistics**: Conformance (Pass/Fail) and Capability (Cp, Cpk) analysis.
 - **Save & Load**: Save analyses to browser storage or download as .vrs files.
-- **Export**: Save charts as PNG images.
+- **Export**:
+    - **PNG**: Save charts as images for reports.
+    - **CSV**: Export filtered data as Excel-compatible CSV with spec status.
+- **Large Mode**: Toggle 30% larger fonts for presentations and training sessions.
 
 ## Tech Stack
 
@@ -87,5 +91,7 @@ After visiting the deployed URL:
 
 ## Contributing
 
+See `PRODUCT_OVERVIEW.md` for product philosophy and what we built.
 See `Specs.md` for detailed functional requirements.
 See `ARCHITECTURE.md` for technical details.
+See `UX_RESEARCH.md` for user personas and use cases.

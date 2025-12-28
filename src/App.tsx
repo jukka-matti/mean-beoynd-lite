@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from 'react';
-import { Activity, Upload, Settings, Download, Save, FolderOpen, RefreshCw, ArrowRight, BarChart2, HardDrive, FileUp } from 'lucide-react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { Activity, Upload, Settings, Download, Save, FolderOpen, RefreshCw, ArrowRight, BarChart2, HardDrive, FileUp, FileSpreadsheet, Maximize2, Minimize2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { useData } from './context/DataContext';
+import { downloadCSV } from './lib/export';
 import SettingsModal from './components/SettingsModal';
 import SavedProjectsModal from './components/SavedProjectsModal';
 import Dashboard from './components/Dashboard';
@@ -12,6 +13,8 @@ function App() {
     const {
         rawData,
         filteredData,
+        outcome,
+        specs,
         currentProjectName,
         hasUnsavedChanges,
         saveProject,
@@ -24,6 +27,22 @@ function App() {
     const [isSaving, setIsSaving] = useState(false);
     const [showSaveInput, setShowSaveInput] = useState(false);
     const [saveInputName, setSaveInputName] = useState('');
+    const [isLargeMode, setIsLargeMode] = useState(() => {
+        return localStorage.getItem('variscout-large-mode') === 'true';
+    });
+
+    // Toggle large mode class on root element
+    useEffect(() => {
+        const root = document.getElementById('root');
+        if (root) {
+            if (isLargeMode) {
+                root.classList.add('large-mode');
+            } else {
+                root.classList.remove('large-mode');
+            }
+        }
+        localStorage.setItem('variscout-large-mode', String(isLargeMode));
+    }, [isLargeMode]);
 
     const handleExport = useCallback(async () => {
         const node = document.getElementById('dashboard-export-container');
@@ -42,6 +61,14 @@ function App() {
             console.error('Export failed', err);
         }
     }, []);
+
+    const handleExportCSV = useCallback(() => {
+        const filename = currentProjectName
+            ? `${currentProjectName.replace(/[^a-z0-9]/gi, '_')}.csv`
+            : `variscout-data-${new Date().toISOString().split('T')[0]}.csv`;
+
+        downloadCSV(filteredData, outcome, specs, { filename });
+    }, [filteredData, outcome, specs, currentProjectName]);
 
     const handleSaveToBrowser = useCallback(async () => {
         if (currentProjectName) {
@@ -138,6 +165,14 @@ function App() {
                             >
                                 <Save size={18} />
                             </button>
+                            {/* Export as CSV */}
+                            <button
+                                onClick={handleExportCSV}
+                                className="hidden sm:flex p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                title="Export as CSV"
+                            >
+                                <FileSpreadsheet size={18} />
+                            </button>
                             {/* Export image */}
                             <button
                                 onClick={handleExport}
@@ -147,6 +182,18 @@ function App() {
                                 <Download size={18} />
                             </button>
                             <div className="hidden sm:block h-4 w-px bg-slate-800 mx-1"></div>
+                            {/* Large Mode toggle */}
+                            <button
+                                onClick={() => setIsLargeMode(!isLargeMode)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    isLargeMode
+                                        ? 'text-blue-400 bg-blue-400/10 hover:bg-blue-400/20'
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                }`}
+                                title={isLargeMode ? "Exit Large Mode" : "Large Mode (for presentations)"}
+                            >
+                                {isLargeMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                            </button>
                             {/* Settings */}
                             <button
                                 onClick={() => setIsSettingsOpen(true)}

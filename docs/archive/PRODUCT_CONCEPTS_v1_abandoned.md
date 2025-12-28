@@ -1,3 +1,13 @@
+> **ARCHIVED DOCUMENT**
+>
+> This document represents an exploratory design phase that was **not implemented**.
+> We evaluated this 4-mode architecture but decided to "stay lite" with a simpler approach.
+> The actual implementation is documented in `PRODUCT_OVERVIEW.md` in the project root.
+>
+> Preserved here for reference as it contains valuable UX research insights.
+
+---
+
 # VariScout Lite: Product Concept & Architecture
 
 ## Executive Summary
