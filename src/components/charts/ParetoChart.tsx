@@ -126,7 +126,7 @@ const ParetoChart = ({ factor, parentWidth, parentHeight }: ParetoChartProps) =>
                 y={yScale(d.value)}
                 width={xScale.bandwidth()}
                 height={height - yScale(d.value)}
-                fill={isSelected ? '#007FBD' : '#475569'}
+                fill={isSelected ? '#0ea5e9' : '#475569'}
                 rx={4}
                 onClick={() => handleBarClick(d.key)}
                 onMouseOver={event => {
@@ -148,12 +148,12 @@ const ParetoChart = ({ factor, parentWidth, parentHeight }: ParetoChartProps) =>
             x2={width}
             y1={yPercScale(80)}
             y2={yPercScale(80)}
-            stroke="#FF8213"
+            stroke="#f97316"
             strokeWidth={1}
             strokeDasharray="4,4"
             opacity={0.8}
           />
-          <text x={width - 5} y={yPercScale(80) - 5} fill="#FF8213" fontSize={10} textAnchor="end">
+          <text x={width - 5} y={yPercScale(80) - 5} fill="#f97316" fontSize={10} textAnchor="end">
             80%
           </text>
 
@@ -162,7 +162,7 @@ const ParetoChart = ({ factor, parentWidth, parentHeight }: ParetoChartProps) =>
             data={data}
             x={d => (xScale(d.key) || 0) + xScale.bandwidth() / 2}
             y={d => yPercScale(d.cumulativePercentage)}
-            stroke="#FF8213"
+            stroke="#f97316"
             strokeWidth={2}
           />
           {data.map((d, i) => (
@@ -171,7 +171,7 @@ const ParetoChart = ({ factor, parentWidth, parentHeight }: ParetoChartProps) =>
               cx={(xScale(d.key) || 0) + xScale.bandwidth() / 2}
               cy={yPercScale(d.cumulativePercentage)}
               r={3}
-              fill="#FF8213"
+              fill="#f97316"
               stroke="#0f172a"
               strokeWidth={1}
             />

@@ -204,8 +204,8 @@ const Boxplot = ({ factor, parentWidth, parentHeight }: BoxplotProps) => {
                   y={yScale(d.q3)}
                   width={barWidth}
                   height={Math.abs(yScale(d.q1) - yScale(d.q3))}
-                  fill="#007FBD"
-                  stroke="#005a8c"
+                  fill="#0ea5e9"
+                  stroke="#0284c7"
                   rx={2}
                 />
 
@@ -215,7 +215,7 @@ const Boxplot = ({ factor, parentWidth, parentHeight }: BoxplotProps) => {
                   x2={x + barWidth}
                   y1={yScale(d.median)}
                   y2={yScale(d.median)}
-                  stroke="#FF8213"
+                  stroke="#f97316"
                   strokeWidth={2}
                 />
 

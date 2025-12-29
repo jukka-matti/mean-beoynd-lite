@@ -6,13 +6,15 @@ import StatsPanel from './StatsPanel';
 import MobileDashboard from './MobileDashboard';
 import ErrorBoundary from './ErrorBoundary';
 import { useData } from '../context/DataContext';
-import { Activity } from 'lucide-react';
+import { Activity, Copy, Check } from 'lucide-react';
+import { toBlob } from 'html-to-image';
 
 const MOBILE_BREAKPOINT = 640; // sm breakpoint
 
 const Dashboard = () => {
   const { outcome, factors, setOutcome, rawData, stats, specs, filteredData } = useData();
   const [isMobile, setIsMobile] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   // Detect mobile/desktop on mount and resize
   useEffect(() => {
@@ -46,6 +48,26 @@ const Dashboard = () => {
     }
   }, [factors, boxplotFactor, paretoFactor]);
 
+  const handleCopyChart = async (containerId: string, chartName: string) => {
+    const node = document.getElementById(containerId);
+    if (!node) return;
+
+    try {
+      const blob = await toBlob(node, {
+        cacheBust: true,
+        backgroundColor: '#0f172a',
+      });
+      if (blob) {
+        // eslint-disable-next-line no-undef
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        setCopyFeedback(chartName);
+        setTimeout(() => setCopyFeedback(null), 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy chart', err);
+    }
+  };
+
   if (!outcome) return null;
 
   // Mobile Layout
@@ -74,7 +96,10 @@ const Dashboard = () => {
       className="flex flex-col h-full overflow-y-auto bg-slate-900 relative"
     >
       {/* Top Section: I-Chart */}
-      <div className="flex-none lg:flex-1 min-h-[400px] bg-slate-800/50 rounded-xl border border-slate-700 m-4 p-4">
+      <div
+        id="ichart-card"
+        className="flex-none lg:flex-1 min-h-[400px] bg-slate-800 border border-slate-700 m-4 p-6 rounded-2xl shadow-xl shadow-black/20"
+      >
         <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-bold flex items-center gap-2 text-white">
@@ -92,6 +117,17 @@ const Dashboard = () => {
                 </option>
               ))}
             </select>
+            <button
+              onClick={() => handleCopyChart('ichart-card', 'ichart')}
+              className={`p-1.5 rounded transition-all ${
+                copyFeedback === 'ichart'
+                  ? 'bg-green-500/20 text-green-400'
+                  : 'text-slate-500 hover:text-white hover:bg-slate-700'
+              }`}
+              title="Copy I-Chart to clipboard"
+            >
+              {copyFeedback === 'ichart' ? <Check size={16} /> : <Copy size={16} />}
+            </button>
           </div>
           {stats && (
             <div className="flex gap-4 text-sm bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
@@ -107,7 +143,7 @@ const Dashboard = () => {
             </div>
           )}
         </div>
-        <div className="h-[300px] lg:h-[calc(100%-3rem)] w-full">
+        <div id="ichart-container" className="h-[300px] lg:h-[calc(100%-3rem)] w-full">
           <ErrorBoundary componentName="I-Chart">
             <IChart />
           </ErrorBoundary>
@@ -118,10 +154,13 @@ const Dashboard = () => {
       <div className="flex flex-col lg:flex-row h-auto lg:h-[350px] gap-4 px-4 pb-4">
         {/* Secondary Charts Container */}
         <div className="flex flex-1 flex-col md:flex-row gap-4">
-          <div className="flex-1 bg-slate-800/50 rounded-xl border border-slate-700 p-4 min-w-[300px] flex flex-col">
-            <div className="flex justify-between items-center mb-2">
+          <div
+            id="boxplot-card"
+            className="flex-1 bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 min-w-[300px] flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
-                Distribution
+                Boxplot Analysis
               </h3>
               <select
                 value={boxplotFactor}
@@ -134,16 +173,30 @@ const Dashboard = () => {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={() => handleCopyChart('boxplot-card', 'boxplot')}
+                className={`p-1.5 rounded transition-all ${
+                  copyFeedback === 'boxplot'
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'text-slate-500 hover:text-white hover:bg-slate-700'
+                }`}
+                title="Copy Boxplot to clipboard"
+              >
+                {copyFeedback === 'boxplot' ? <Check size={14} /> : <Copy size={14} />}
+              </button>
             </div>
-            <div className="flex-1 min-h-0">
+            <div id="boxplot-container" className="flex-1 min-h-0">
               <ErrorBoundary componentName="Boxplot">
                 {boxplotFactor && <Boxplot factor={boxplotFactor} />}
               </ErrorBoundary>
             </div>
           </div>
 
-          <div className="flex-1 bg-slate-800/50 rounded-xl border border-slate-700 p-4 min-w-[300px] flex flex-col">
-            <div className="flex justify-between items-center mb-2">
+          <div
+            id="pareto-card"
+            className="flex-1 bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 min-w-[300px] flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
                 Pareto
               </h3>
@@ -158,8 +211,19 @@ const Dashboard = () => {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={() => handleCopyChart('pareto-card', 'pareto')}
+                className={`p-1.5 rounded transition-all ${
+                  copyFeedback === 'pareto'
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'text-slate-500 hover:text-white hover:bg-slate-700'
+                }`}
+                title="Copy Pareto Chart to clipboard"
+              >
+                {copyFeedback === 'pareto' ? <Check size={14} /> : <Copy size={14} />}
+              </button>
             </div>
-            <div className="flex-1 min-h-0">
+            <div id="pareto-container" className="flex-1 min-h-0">
               <ErrorBoundary componentName="Pareto Chart">
                 {paretoFactor && <ParetoChart factor={paretoFactor} />}
               </ErrorBoundary>
