@@ -10,10 +10,10 @@ VariScout Lite uses a **pnpm workspaces monorepo** to share code between multipl
 variscout-lite/
 ├── packages/
 │   ├── core/          # @variscout/core - Pure logic (stats, parser, license)
-│   └── charts/        # @variscout/charts - React+Visx components (future)
+│   └── charts/        # @variscout/charts - React+Visx components
 ├── apps/
 │   ├── pwa/           # PWA website (React + Vite + PWA)
-│   └── excel-addin/   # Excel Add-in (Office.js + React) (future)
+│   └── excel-addin/   # Excel Add-in (Office.js + React) - scaffold
 └── dist/
     ├── pwa/           # PWA build output
     └── excel-addin/   # Add-in build output
@@ -52,11 +52,11 @@ import { parseCSV, parseExcel } from '@variscout/core';
 import { isValidLicenseFormat, hasValidLicense } from '@variscout/core';
 ```
 
-### @variscout/charts (`packages/charts/`) - Future
+### @variscout/charts (`packages/charts/`)
 
-React components using Visx for data visualization. Will be refactored to accept props instead of using context.
+React components using Visx for data visualization. Props-based for reuse across PWA and Excel Add-in.
 
-**Planned Contents:**
+**Contents:**
 
 - `IChart.tsx` - Individual control chart (time series)
 - `Boxplot.tsx` - Factor comparison chart
@@ -85,14 +85,27 @@ The Progressive Web App - mobile-first website with offline capability.
 - `components/MobileMenu.tsx` - Mobile overflow menu
 - `lib/persistence.ts` - IndexedDB + localStorage operations
 
-### @variscout/excel-addin (`apps/excel-addin/`) - Future
+### @variscout/excel-addin (`apps/excel-addin/`)
 
-Excel Add-in with Copilot integration for Microsoft 365.
+Excel Add-in using the **Hybrid Approach**: Native Excel slicers + Visx charts in Content Add-in.
 
-**Planned Features:**
+> See [Excel Add-in Strategy](concepts/EXCEL_ADDIN_STRATEGY.md) for the full strategic analysis.
 
-- Task pane UI with Fluent UI
-- Read data from Excel ranges via Office.js
+**Current Status:** Scaffold with basic structure
+
+**What Exists:**
+
+- Vite build configuration with Office.js
+- Basic task pane with Fluent UI
+- Office.js initialization and data utilities
+- Manifest.xml for sideloading
+
+**Planned (Hybrid Approach):**
+
+- Task pane setup flow (Table detection, column mapping)
+- Content Add-in with Visx charts
+- Excel Table binding for live data
+- Slicer integration (automatic via shared Table)
 - Copilot actions for natural language queries
 - License validation (same system as PWA)
 
@@ -252,5 +265,6 @@ See `packages/core/src/edition.ts` for implementation.
 ## Related Documentation
 
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - High-level technical architecture
-- [docs/concepts/EXCEL_COPILOT_CONCEPT.md](concepts/EXCEL_COPILOT_CONCEPT.md) - Excel Add-in + Copilot strategy
-- [docs/concepts/MONETIZATION_CONCEPT.md](concepts/MONETIZATION_CONCEPT.md) - Business and pricing strategy
+- [Excel Add-in Strategy](concepts/EXCEL_ADDIN_STRATEGY.md) - PWA vs Excel Add-in comparison, Hybrid approach decision
+- [Excel Copilot Concept](concepts/EXCEL_COPILOT_CONCEPT.md) - Copilot integration vision
+- [Monetization Concept](concepts/MONETIZATION_CONCEPT.md) - Business and pricing strategy

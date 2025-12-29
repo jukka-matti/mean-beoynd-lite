@@ -4,6 +4,8 @@
 **Date:** December 2024
 **Author:** Product Team
 
+> **Related:** [Excel Add-in Strategy](./EXCEL_ADDIN_STRATEGY.md) - Strategic analysis comparing PWA vs Excel Add-in approaches. Decision: **Hybrid Approach** (Native slicers + Visx Content Add-in).
+
 ---
 
 ## The Opportunity
@@ -306,15 +308,17 @@ Office.actions.associate('analyzeControlChart', async args => {
 
 The Excel add-in can reuse most of the existing VariScout codebase:
 
-| Component                     | Reuse      | Notes                                  |
-| ----------------------------- | ---------- | -------------------------------------- |
-| `src/logic/stats.ts`          | ✅ 100%    | Core statistics engine                 |
-| `src/components/charts/*`     | ✅ 90%     | Visx charts work in task pane          |
-| `src/context/DataContext.tsx` | ⚠️ Adapt   | Replace with Excel range binding       |
-| `src/lib/persistence.ts`      | ❌ Replace | Use Excel workbook storage             |
-| `src/lib/export.ts`           | ⚠️ Adapt   | Export to Excel cells instead of files |
+| Component                | Reuse      | Notes                                  |
+| ------------------------ | ---------- | -------------------------------------- |
+| `packages/core/stats.ts` | ✅ 100%    | Core statistics engine                 |
+| `packages/charts/*`      | ✅ 95%     | Visx charts work in Content Add-in     |
+| `DataContext.tsx`        | ⚠️ Adapt   | Replace with Excel Table binding       |
+| `lib/persistence.ts`     | ❌ Replace | Use Excel workbook storage             |
+| `lib/export.ts`          | ⚠️ Adapt   | Export to Excel cells instead of files |
 
-**Estimated new code:** ~30% (Excel bindings, Copilot actions, manifest)
+**Estimated new code:** ~15% (Excel bindings, Copilot actions, manifest)
+
+> **Note:** Research confirmed that Box-whisker charts ARE natively supported in Excel via `Excel.ChartType.Boxwhisker` (ExcelApi 1.9). However, the Hybrid Approach uses Visx charts in a Content Add-in for consistent styling and better interactivity. See [Excel Add-in Strategy](./EXCEL_ADDIN_STRATEGY.md) for details.
 
 ---
 

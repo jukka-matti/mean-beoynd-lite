@@ -24,9 +24,11 @@ This is a **pnpm workspaces monorepo**:
 ```
 variscout-lite/
 ├── packages/
-│   └── core/              # @variscout/core - Shared logic
+│   ├── core/              # @variscout/core - Shared logic (stats, license)
+│   └── charts/            # @variscout/charts - Visx chart components
 ├── apps/
-│   └── pwa/               # @variscout/pwa - PWA website
+│   ├── pwa/               # @variscout/pwa - PWA website
+│   └── excel-addin/       # @variscout/excel-addin - Excel Add-in (scaffold)
 ├── docs/                  # Documentation
 └── package.json           # Root scripts
 ```
@@ -58,6 +60,18 @@ variscout-lite/
 | @apps/pwa/src/lib/persistence.ts                   | IndexedDB + localStorage operations                |
 | @apps/pwa/src/lib/edition.ts                       | Edition wrapper (configures from Vite env)         |
 | @apps/pwa/src/components/charts/ChartSourceBar.tsx | Chart footer branding component                    |
+
+### Excel Add-in (@variscout/excel-addin) - Scaffold
+
+| File                            | Purpose                               |
+| ------------------------------- | ------------------------------------- |
+| @apps/excel-addin/src/main.tsx  | Entry point, Office.js initialization |
+| @apps/excel-addin/src/taskpane/ | Task pane React components            |
+| @apps/excel-addin/src/lib/      | Office.js data utilities              |
+| @apps/excel-addin/manifest.xml  | Office Add-in manifest                |
+| @apps/excel-addin/README.md     | Development setup and architecture    |
+
+> **Strategy:** Hybrid Approach (Native slicers + Visx Content Add-in). See [Excel Add-in Strategy](docs/concepts/EXCEL_ADDIN_STRATEGY.md).
 
 ## Architecture
 
@@ -181,3 +195,10 @@ Tests use Vitest + React Testing Library. Test files in `__tests__/` directories
 - @docs/MONOREPO_ARCHITECTURE.md - Detailed monorepo documentation
 - @Specs.md - Detailed functional specifications
 - @UX_RESEARCH.md - User personas and use cases
+
+### Excel Add-in Documentation
+
+- @docs/concepts/EXCEL_ADDIN_STRATEGY.md - PWA vs Excel Add-in comparison, Hybrid approach decision
+- @docs/concepts/EXCEL_COPILOT_CONCEPT.md - Copilot integration vision and examples
+- @docs/concepts/MONETIZATION_CONCEPT.md - Licensing and pricing strategy
+- @apps/excel-addin/README.md - Excel Add-in development setup
