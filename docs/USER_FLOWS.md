@@ -372,6 +372,7 @@ App.tsx
 │   └── StatsPanel
 │       ├── Summary tab (Cp/Cpk or Grades)
 │       ├── Histogram tab
+│       ├── Prob Plot tab (normality assessment)
 │       └── SpecEditor (popover)
 ├── SettingsModal
 ├── SavedProjectsModal

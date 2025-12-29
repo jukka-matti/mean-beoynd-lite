@@ -161,3 +161,98 @@ export function getEtaSquared(data: any[], factor: string, outcome: string): num
 
   return ssTotal === 0 ? 0 : ssBetween / ssTotal;
 }
+
+/**
+ * Data point for probability plot with confidence interval
+ */
+export interface ProbabilityPlotPoint {
+  /** Original data value */
+  value: number;
+  /** Expected percentile using Blom's formula */
+  expectedPercentile: number;
+  /** Lower bound of 95% CI */
+  lowerCI: number;
+  /** Upper bound of 95% CI */
+  upperCI: number;
+}
+
+/**
+ * Calculate probability plot data with 95% confidence interval bands
+ *
+ * Uses Blom's formula for expected percentiles: p = (i - 0.375) / (n + 0.25)
+ * CI bands are calculated using the standard error of the percentile
+ *
+ * @param data - Array of numeric values
+ * @returns Array of points with value, expected percentile, and CI bounds
+ */
+export function calculateProbabilityPlotData(data: number[]): ProbabilityPlotPoint[] {
+  if (data.length === 0) return [];
+
+  const n = data.length;
+  const sorted = [...data].sort((a, b) => a - b);
+  const mean = d3.mean(sorted) || 0;
+  const stdDev = d3.deviation(sorted) || 1;
+
+  return sorted.map((value, i) => {
+    // Blom's formula for expected percentile
+    const p = (i + 1 - 0.375) / (n + 0.25);
+    const expectedPercentile = p * 100;
+
+    // Z-score for this percentile
+    const z = normalQuantile(p);
+
+    // Standard error of percentile (approximation)
+    const pdf = normalPDF(z);
+    const se = pdf > 0 ? (stdDev * Math.sqrt((p * (1 - p)) / n)) / pdf : 0;
+
+    // 95% CI
+    const zCrit = 1.96;
+    return {
+      value,
+      expectedPercentile,
+      lowerCI: value - zCrit * se,
+      upperCI: value + zCrit * se,
+    };
+  });
+}
+
+/**
+ * Normal quantile function (inverse CDF)
+ * Used to calculate the theoretical normal distribution line
+ *
+ * @param p - Probability (0 to 1)
+ * @returns Z-score corresponding to the probability
+ */
+export function normalQuantile(p: number): number {
+  if (p <= 0) return -Infinity;
+  if (p >= 1) return Infinity;
+  if (p === 0.5) return 0;
+
+  // Rational approximation for normal quantile
+  const a = [
+    -3.969683028665376e1, 2.209460984245205e2, -2.759285104469687e2, 1.38357751867269e2,
+    -3.066479806614716e1, 2.506628277459239,
+  ];
+  const b = [
+    -5.447609879822406e1, 1.615858368580409e2, -1.556989798598866e2, 6.680131188771972e1,
+    -1.328068155288572e1,
+  ];
+
+  const q = p < 0.5 ? p : 1 - p;
+  const r = Math.sqrt(-2 * Math.log(q));
+
+  let x =
+    (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) /
+    (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+
+  return p < 0.5 ? -x : x;
+}
+
+/**
+ * Normal probability density function
+ * @param x - Z-score value
+ * @returns PDF value at x
+ */
+function normalPDF(x: number): number {
+  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+}

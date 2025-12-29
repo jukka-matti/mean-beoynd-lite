@@ -10,6 +10,7 @@ This document explains the statistical calculations used in VariScout Lite. Unde
 - [Conformance Metrics](#conformance-metrics)
 - [Multi-Tier Grading](#multi-tier-grading)
 - [Effect Size (Eta-Squared)](#effect-size-eta-squared)
+- [Probability Plot](#probability-plot)
 
 ---
 
@@ -202,6 +203,80 @@ Where:
 
 ---
 
+## Probability Plot
+
+The probability plot (found in Stats Panel → Prob Plot tab) visually assesses whether your data follows a normal distribution.
+
+### How It Works
+
+Data points are plotted against their **expected percentile** positions. If the data is normally distributed, points will fall close to a straight line.
+
+```
+Percent
+  99 ─┬─────────────────────────●───────
+  95 ─┤                    ●  / ╱
+  90 ─┤                  ●  / ╱   ← 95% CI bands
+  75 ─┤               ●   /╱
+  50 ─┤            ●    /╱ ← Fitted line
+  25 ─┤          ●    ╱/
+  10 ─┤        ●    ╱ /
+   5 ─┤      ●    ╱  /
+   1 ─┴──┬────┬────┬────┬────┬────
+        10   20   30   40   50   60
+                 Value
+```
+
+### Expected Percentile (Blom's Formula)
+
+For sorted data, the expected percentile for the i-th value is:
+
+```
+p = (i - 0.375) / (n + 0.25)
+```
+
+Where:
+- `i` = rank position (1, 2, 3, ...)
+- `n` = total number of data points
+
+This formula provides the most accurate unbiased estimate of percentile positions.
+
+### 95% Confidence Interval Bands
+
+The dashed lines show the 95% confidence interval for each percentile:
+
+```
+CI = Value ± 1.96 × SE
+```
+
+Where the standard error (SE) at each percentile depends on:
+- Sample size (n)
+- Standard deviation
+- Position on the distribution (tails have wider CIs)
+
+### Interpretation
+
+| Pattern | Meaning |
+|---------|---------|
+| Points follow the line closely | Data is approximately normal |
+| S-curve pattern | Data has heavier or lighter tails than normal |
+| Points curve away at ends | Skewed distribution |
+| Points far outside CI bands | Significant departure from normality |
+
+### When to Use
+
+- **Before capability analysis**: Cp/Cpk assume normal distribution
+- **Investigating outliers**: See if extreme values fit the pattern
+- **Comparing processes**: Different distributions may need different analysis approaches
+
+### Visual Elements
+
+- **Green dots**: Your data points
+- **Blue solid line**: Theoretical normal distribution (fitted to your data's mean and standard deviation)
+- **Gray dashed lines**: 95% confidence interval bands
+- **Light blue shading**: CI envelope
+
+---
+
 ## Code Reference
 
 All statistics are calculated in `src/logic/stats.ts`:
@@ -212,6 +287,10 @@ calculateStats(data: number[], usl?: number, lsl?: number, grades?: Grade[]): St
 
 // Effect size function
 getEtaSquared(data: any[], factor: string, outcome: string): number
+
+// Probability plot functions
+calculateProbabilityPlotData(data: number[]): ProbabilityPlotPoint[]
+normalQuantile(p: number): number  // Inverse normal CDF
 ```
 
 ---
