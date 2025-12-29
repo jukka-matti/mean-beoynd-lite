@@ -94,6 +94,23 @@ const useStyles = makeStyles({
   specInput: {
     flex: 1,
   },
+  cpkTargetRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: tokens.spacingHorizontalM,
+    marginTop: tokens.spacingVerticalM,
+    paddingTop: tokens.spacingVerticalM,
+    borderTop: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  cpkTargetInput: {
+    width: '120px',
+    flexShrink: 0,
+  },
+  cpkTargetHelp: {
+    color: tokens.colorNeutralForeground2,
+    fontSize: tokens.fontSizeBase200,
+    paddingTop: tokens.spacingVerticalS,
+  },
 });
 
 type WizardStep = 'data' | 'columns' | 'slicers' | 'specs' | 'complete';
@@ -128,6 +145,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
   const [usl, setUsl] = useState<string>('');
   const [lsl, setLsl] = useState<string>('');
   const [target, setTarget] = useState<string>('');
+  const [cpkTarget, setCpkTarget] = useState<string>('1.33');
 
   // Check slicer support on mount
   useEffect(() => {
@@ -185,7 +203,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
       }
 
       setCurrentStep('columns');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error creating table:', err);
       setError(
         'Could not create table. Ensure your selection includes headers in the first row and contains at least two rows of data.'
@@ -216,7 +234,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
         setSlicerNames(names);
       }
       setCurrentStep('specs');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error creating slicers:', err);
       setError('Failed to create slicers. You can skip this step and continue.');
     } finally {
@@ -231,7 +249,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
 
     try {
       // Validate spec inputs
-      const specs: { usl?: number; lsl?: number; target?: number } = {};
+      const specs: { usl?: number; lsl?: number; target?: number; cpkTarget?: number } = {};
 
       if (usl) {
         const uslNum = parseFloat(usl);
@@ -263,6 +281,16 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
         specs.target = targetNum;
       }
 
+      if (cpkTarget) {
+        const cpkTargetNum = parseFloat(cpkTarget);
+        if (isNaN(cpkTargetNum) || cpkTargetNum <= 0) {
+          setError('Cpk Target must be a positive number.');
+          setIsLoading(false);
+          return;
+        }
+        specs.cpkTarget = cpkTargetNum;
+      }
+
       // Validate LSL < USL
       if (specs.lsl !== undefined && specs.usl !== undefined && specs.lsl >= specs.usl) {
         setError('LSL must be less than USL.');
@@ -278,7 +306,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
 
       setCurrentStep('complete');
       onComplete(state);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error saving state:', err);
       setError(
         'Could not save configuration. Try closing and reopening the add-in, then run setup again.'
@@ -290,6 +318,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
     usl,
     lsl,
     target,
+    cpkTarget,
     rangeAddress,
     tableName,
     outcomeColumn,
@@ -348,6 +377,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
 
           {error && (
             <Body2
+              role="alert"
+              aria-live="polite"
               style={{
                 color: tokens.colorPaletteRedForeground1,
                 marginTop: tokens.spacingVerticalS,
@@ -404,7 +435,15 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
             </Field>
           </div>
 
-          {error && <Body2 style={{ color: tokens.colorPaletteRedForeground1 }}>{error}</Body2>}
+          {error && (
+            <Body2
+              role="alert"
+              aria-live="polite"
+              style={{ color: tokens.colorPaletteRedForeground1 }}
+            >
+              {error}
+            </Body2>
+          )}
         </Card>
       )}
 
@@ -442,14 +481,16 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
             </>
           ) : (
             <Body2 className={styles.warning}>
-              Slicers require Excel 2021 or Microsoft 365. Your version uses Table AutoFilter
-              instead — you can filter data directly by clicking the dropdown arrows in the table
-              header row.
+              Slicers require Excel 2021 or Microsoft 365. Your version does not support slicers,
+              but you can still filter your data manually using the dropdown arrows in the Excel
+              Table header row after setup is complete.
             </Body2>
           )}
 
           {error && (
             <Body2
+              role="alert"
+              aria-live="polite"
               style={{
                 color: tokens.colorPaletteRedForeground1,
                 marginTop: tokens.spacingVerticalS,
@@ -499,8 +540,24 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
             </Field>
           </div>
 
+          <div className={styles.cpkTargetRow}>
+            <Field label="Cpk Target" className={styles.cpkTargetInput}>
+              <Input
+                type="number"
+                value={cpkTarget}
+                onChange={(_, data) => setCpkTarget(data.value)}
+                placeholder="1.33"
+              />
+            </Field>
+            <Body2 className={styles.cpkTargetHelp}>
+              Minimum acceptable Cpk value. Industry standard is 1.33.
+            </Body2>
+          </div>
+
           {error && (
             <Body2
+              role="alert"
+              aria-live="polite"
               style={{
                 color: tokens.colorPaletteRedForeground1,
                 marginTop: tokens.spacingVerticalS,

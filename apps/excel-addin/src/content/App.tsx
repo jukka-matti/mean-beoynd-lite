@@ -13,19 +13,24 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
+  const isLoadingRef = useRef(false);
 
   // Load state from Excel Custom Properties
   useEffect(() => {
     isMountedRef.current = true;
 
     const loadState = async () => {
+      // Prevent overlapping requests
+      if (isLoadingRef.current) return;
+      isLoadingRef.current = true;
+
       try {
         const savedState = await loadAddInState();
         // Only update state if still mounted
         if (isMountedRef.current) {
           setState(savedState);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load state:', err);
         if (isMountedRef.current) {
           setError(
@@ -33,6 +38,7 @@ const App: React.FC = () => {
           );
         }
       } finally {
+        isLoadingRef.current = false;
         if (isMountedRef.current) {
           setIsLoading(false);
         }

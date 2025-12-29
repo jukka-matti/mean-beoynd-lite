@@ -90,7 +90,7 @@ export const DataSelector: React.FC<DataSelectorProps> = ({ onDataSelected, curr
       }
 
       onDataSelected(data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error getting data:', err);
       setError('Failed to read Excel data. Please try again.');
     } finally {

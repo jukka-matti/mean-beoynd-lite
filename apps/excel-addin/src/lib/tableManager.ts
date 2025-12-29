@@ -91,6 +91,11 @@ export async function detectColumnTypes(
     // Sample first 10 rows to detect types
     const sampleSize = Math.min(10, rows.length);
 
+    // Guard against empty data - return empty arrays
+    if (sampleSize === 0) {
+      return { numeric: [], categorical: [] };
+    }
+
     headers.forEach((header, colIndex) => {
       let numericCount = 0;
 
@@ -140,7 +145,10 @@ export async function ensureTable(
       // Simple check - if range is subset of table range, use that table
       // (More sophisticated intersection check could be added)
       const tableAddress = tableRange.address;
-      if (tableAddress.includes(rangeAddress.split('!')[1])) {
+      // Safely extract range part without sheet name
+      const parts = rangeAddress.split('!');
+      const rangeWithoutSheet = parts.length > 1 ? parts[1] : parts[0];
+      if (tableAddress.includes(rangeWithoutSheet)) {
         table.load('name');
         await context.sync();
         return table.name;

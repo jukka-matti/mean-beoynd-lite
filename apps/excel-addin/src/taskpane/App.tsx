@@ -122,7 +122,7 @@ const App: React.FC = () => {
           setSavedState(state);
           setMode('configured');
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load existing state:', err);
       }
     };
@@ -148,7 +148,7 @@ const App: React.FC = () => {
       await clearAddInState();
       setSavedState(null);
       setMode('select');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to clear state:', err);
     }
   }, []);
@@ -270,6 +270,12 @@ const App: React.FC = () => {
                       ' | '}
                     {savedState.specs.usl !== undefined && `USL: ${savedState.specs.usl}`}
                   </Body2>
+                </div>
+              )}
+              {savedState.specs.cpkTarget && (
+                <div className={styles.configRow}>
+                  <Body2>Cpk Target:</Body2>
+                  <Body2 style={{ fontFamily: 'monospace' }}>{savedState.specs.cpkTarget}</Body2>
                 </div>
               )}
             </div>

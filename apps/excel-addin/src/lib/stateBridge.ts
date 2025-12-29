@@ -21,6 +21,7 @@ export interface AddInState {
     usl?: number;
     lsl?: number;
     target?: number;
+    cpkTarget?: number;
   };
   /** Names of created slicers */
   slicerNames: string[];

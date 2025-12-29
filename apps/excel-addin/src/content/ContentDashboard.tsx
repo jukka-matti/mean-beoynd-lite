@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { IChartBase, BoxplotBase, calculateBoxplotStats } from '@variscout/charts';
 import { calculateStats } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
@@ -6,6 +6,52 @@ import { getFilteredTableData } from '../lib/dataFilter';
 
 interface ContentDashboardProps {
   state: AddInState;
+}
+
+/**
+ * Simple error boundary for chart components
+ */
+class ChartErrorBoundary extends React.Component<
+  { children: React.ReactNode; chartName: string },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; chartName: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    console.error(`Chart error in ${this.props.chartName}:`, error, errorInfo);
+  }
+
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return (
+        <div style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>
+          <p>Chart failed to render</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            style={{
+              marginTop: 8,
+              padding: '4px 12px',
+              backgroundColor: '#475569',
+              border: 'none',
+              borderRadius: 4,
+              color: '#f1f5f9',
+              cursor: 'pointer',
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 /**
@@ -18,10 +64,39 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
   const [filteredData, setFilteredData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [containerSize, setContainerSize] = useState({ width: 800, height: 300 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const errorCountRef = useRef(0);
+
+  // Observe container size for responsive charts
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(entries => {
+      const entry = entries[0];
+      if (entry) {
+        setContainerSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  // Reset loading state when dependencies change
+  useEffect(() => {
+    setIsLoading(true);
+    setError(null);
+    errorCountRef.current = 0;
+  }, [state.tableName, state.outcomeColumn, state.factorColumns]);
 
   // Load data from Excel Table
   useEffect(() => {
-    let errorCount = 0;
+    let isMounted = true;
 
     const loadData = async () => {
       try {
@@ -30,28 +105,36 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
           state.outcomeColumn,
           state.factorColumns
         );
-        setFilteredData(data);
-        setError(null);
-        errorCount = 0;
-      } catch (err) {
-        console.error('Failed to load data:', err);
-        errorCount++;
-        // Only show error after 3 consecutive failures (to avoid flashing errors during polling)
-        if (errorCount >= 3) {
-          setError(
-            `Unable to read data from table "${state.tableName}". Check that the table still exists.`
-          );
+        if (isMounted) {
+          setFilteredData(data);
+          setError(null);
+          errorCountRef.current = 0;
+          setIsLoading(false);
         }
-      } finally {
-        setIsLoading(false);
+      } catch (err: unknown) {
+        console.error('Failed to load data:', err);
+        if (isMounted) {
+          errorCountRef.current++;
+          // Only show error after 3 consecutive failures (to avoid flashing errors during polling)
+          if (errorCountRef.current >= 3) {
+            setError(
+              `Unable to read data from table "${state.tableName}". Check that the table still exists.`
+            );
+          }
+          setIsLoading(false);
+        }
       }
     };
 
     loadData();
 
     // Poll for slicer changes (no native events available)
-    const interval = setInterval(loadData, 500);
-    return () => clearInterval(interval);
+    // Using 1000ms to reduce Excel API calls while staying responsive
+    const interval = setInterval(loadData, 1000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [state.tableName, state.outcomeColumn, state.factorColumns]);
 
   // Calculate statistics
@@ -142,50 +225,64 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
               <span style={styles.statLabel}>StdDev</span>
               <span style={styles.statValue}>{stats.stdDev.toFixed(2)}</span>
             </div>
-            {stats.cpk !== undefined && (
-              <div
-                style={styles.stat}
-                title="Process capability index: ≥1.33 is good (green), ≥1.0 is acceptable (yellow), <1.0 needs improvement (red)"
-              >
-                <span style={styles.statLabel}>Cpk</span>
-                <span
-                  style={{
-                    ...styles.statValue,
-                    color: stats.cpk >= 1.33 ? '#22c55e' : stats.cpk >= 1.0 ? '#eab308' : '#ef4444',
-                  }}
-                >
-                  {stats.cpk.toFixed(2)}
-                </span>
-              </div>
-            )}
+            {stats.cpk !== undefined &&
+              (() => {
+                const cpkTarget = state.specs?.cpkTarget ?? 1.33;
+                return (
+                  <div
+                    style={styles.stat}
+                    title={`Process capability index: ≥${cpkTarget} is good (green), <${cpkTarget} needs improvement (red)`}
+                  >
+                    <span style={styles.statLabel}>Cpk</span>
+                    <span
+                      style={{
+                        ...styles.statValue,
+                        color: stats.cpk >= cpkTarget ? '#22c55e' : '#ef4444',
+                      }}
+                    >
+                      {stats.cpk.toFixed(2)}
+                      <span style={styles.cpkLabel}>
+                        {stats.cpk >= cpkTarget ? ' (Good)' : ' (Poor)'}
+                      </span>
+                    </span>
+                  </div>
+                );
+              })()}
           </>
         )}
       </div>
 
       {/* Charts row */}
-      <div style={styles.chartsRow}>
+      <div style={styles.chartsRow} ref={containerRef}>
         {/* I-Chart */}
         <div style={styles.chartContainer}>
-          <IChartBase
-            data={chartData}
-            stats={stats ?? null}
-            specs={state.specs || {}}
-            parentWidth={450}
-            parentHeight={200}
-            showBranding={false}
-          />
+          <ChartErrorBoundary chartName="I-Chart">
+            <IChartBase
+              data={chartData}
+              stats={stats ?? null}
+              specs={state.specs || {}}
+              parentWidth={Math.max(
+                200,
+                (containerSize.width - 36) * (boxplotData.length > 0 ? 0.6 : 1)
+              )}
+              parentHeight={Math.max(150, containerSize.height - 80)}
+              showBranding={false}
+            />
+          </ChartErrorBoundary>
         </div>
 
         {/* Boxplot */}
         {boxplotData.length > 0 && (
           <div style={styles.chartContainer}>
-            <BoxplotBase
-              data={boxplotData}
-              specs={state.specs || {}}
-              parentWidth={300}
-              parentHeight={200}
-              showBranding={false}
-            />
+            <ChartErrorBoundary chartName="Boxplot">
+              <BoxplotBase
+                data={boxplotData}
+                specs={state.specs || {}}
+                parentWidth={Math.max(150, (containerSize.width - 36) * 0.4)}
+                parentHeight={Math.max(150, containerSize.height - 80)}
+                showBranding={false}
+              />
+            </ChartErrorBoundary>
           </div>
         )}
       </div>
@@ -228,6 +325,12 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 16,
     fontWeight: 600,
     fontFamily: 'monospace',
+  },
+  cpkLabel: {
+    fontSize: 10,
+    fontWeight: 400,
+    fontFamily: 'system-ui, sans-serif',
+    opacity: 0.8,
   },
   chartsRow: {
     flex: 1,

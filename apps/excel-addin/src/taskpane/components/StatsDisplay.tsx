@@ -160,7 +160,7 @@ export const StatsDisplay: React.FC<StatsDisplayProps> = ({ data, specs, onSpecs
   const handleHighlight = async () => {
     try {
       await highlightOutOfSpec(data.address, specs.usl, specs.lsl);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to highlight cells:', err);
     }
   };
