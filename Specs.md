@@ -373,7 +373,13 @@ When configured:
 ```
 
 ### 7. Export
+
+**Implemented:**
 - PNG (individual charts or dashboard)
+- CSV (with spec status column)
+- .vrs project files (JSON format)
+
+**Planned (Future Release):**
 - PDF (one-page summary)
 - Simple PowerPoint (3 slides: charts + stats)
 
@@ -508,14 +514,15 @@ VaRiScout Pro (paid)
 |-----------|--------|-------|
 | Chart components | Done | Already built |
 | Linked filtering | Done | Already built |
-| Statistics engine | 2 days | Port/simplify existing |
-| Data import | 2 days | CSV + Excel parsing |
-| Save/Load (.vrs) | 2 days | JSON serialization + file handling |
-| Export (PNG/PDF) | 2 days | DOM-based capture |
-| Electron wrapper | 2 days | Package existing React |
-| Edition config | 1 day | Watermark + branding |
-| Testing + polish | 3 days | |
-| **Total** | **~2.5 weeks** | |
+| Statistics engine | Done | Cp/Cpk, grade counts |
+| Data import | Done | CSV + Excel parsing |
+| Save/Load (.vrs) | Done | JSON serialization + file handling |
+| Export (PNG/CSV) | Done | DOM-based capture, CSV generation |
+| Edition config | Done | Watermark + branding |
+| Manual Entry | Done | Touch-optimized data entry |
+| Data Table | Done | Inline editing |
+| **Completed** | ✓ | Core features implemented |
+| PDF/PPT Export | Planned | Future release |
 
 ---
 
