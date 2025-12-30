@@ -5,9 +5,11 @@ Lightweight, offline-first variation analysis tool for quality professionals.
 ## Quick Reference
 
 ```bash
-pnpm dev             # Start development server (http://localhost:5173)
+pnpm dev             # Start PWA development server (http://localhost:5173)
+pnpm dev:excel       # Start Excel Add-in dev server (https://localhost:3000)
 pnpm build           # Build all packages and apps
 pnpm build:pwa       # Build PWA only
+pnpm build:excel     # Build Excel Add-in only
 pnpm preview         # Preview production build
 pnpm test            # Run Vitest tests
 
@@ -24,11 +26,11 @@ This is a **pnpm workspaces monorepo**:
 ```
 variscout-lite/
 ├── packages/
-│   ├── core/              # @variscout/core - Shared logic (stats, license)
-│   └── charts/            # @variscout/charts - Visx chart components
+│   ├── core/              # @variscout/core - Shared logic (stats, parser, license)
+│   └── charts/            # @variscout/charts - Props-based Visx chart components
 ├── apps/
 │   ├── pwa/               # @variscout/pwa - PWA website
-│   └── excel-addin/       # @variscout/excel-addin - Excel Add-in (scaffold)
+│   └── excel-addin/       # @variscout/excel-addin - Excel Add-in (task pane + content)
 ├── docs/                  # Documentation
 └── package.json           # Root scripts
 ```
@@ -37,14 +39,27 @@ variscout-lite/
 
 ### Shared Package (@variscout/core)
 
-| File                          | Purpose                                      |
-| ----------------------------- | -------------------------------------------- |
-| @packages/core/src/stats.ts   | Statistics calculations (mean, std, Cp, Cpk) |
-| @packages/core/src/parser.ts  | CSV/Excel file parsing                       |
-| @packages/core/src/license.ts | License key validation and storage           |
-| @packages/core/src/edition.ts | Edition detection (community/itc/licensed)   |
-| @packages/core/src/export.ts  | CSV generation and spec status               |
-| @packages/core/src/types.ts   | Shared TypeScript interfaces                 |
+| File                          | Purpose                                                             |
+| ----------------------------- | ------------------------------------------------------------------- |
+| @packages/core/src/stats.ts   | Statistics (mean, Cp, Cpk, calculateConformance, groupDataByFactor) |
+| @packages/core/src/parser.ts  | CSV/Excel file parsing                                              |
+| @packages/core/src/license.ts | License key validation and storage                                  |
+| @packages/core/src/edition.ts | Edition detection (community/itc/licensed)                          |
+| @packages/core/src/export.ts  | CSV generation and spec status                                      |
+| @packages/core/src/types.ts   | Shared TypeScript interfaces (StatsResult, ConformanceResult)       |
+
+### Charts Package (@variscout/charts)
+
+| File                                         | Purpose                                       |
+| -------------------------------------------- | --------------------------------------------- |
+| @packages/charts/src/IChart.tsx              | I-Chart (individual control chart) component  |
+| @packages/charts/src/Boxplot.tsx             | Boxplot component for factor comparison       |
+| @packages/charts/src/ParetoChart.tsx         | Pareto chart component                        |
+| @packages/charts/src/CapabilityHistogram.tsx | Distribution histogram with spec limits       |
+| @packages/charts/src/ProbabilityPlot.tsx     | Normal probability plot                       |
+| @packages/charts/src/ChartSourceBar.tsx      | Branding footer bar component                 |
+| @packages/charts/src/responsive.ts           | Responsive margin/font utilities              |
+| @packages/charts/src/types.ts                | Chart prop interfaces and BoxplotStats helper |
 
 ### PWA Application (@variscout/pwa)
 
@@ -61,17 +76,40 @@ variscout-lite/
 | @apps/pwa/src/lib/edition.ts                       | Edition wrapper (configures from Vite env)         |
 | @apps/pwa/src/components/charts/ChartSourceBar.tsx | Chart footer branding component                    |
 
-### Excel Add-in (@variscout/excel-addin) - Scaffold
+### Excel Add-in (@variscout/excel-addin)
 
-| File                            | Purpose                               |
-| ------------------------------- | ------------------------------------- |
-| @apps/excel-addin/src/main.tsx  | Entry point, Office.js initialization |
-| @apps/excel-addin/src/taskpane/ | Task pane React components            |
-| @apps/excel-addin/src/lib/      | Office.js data utilities              |
-| @apps/excel-addin/manifest.xml  | Office Add-in manifest                |
-| @apps/excel-addin/README.md     | Development setup and architecture    |
+**Task Pane (sidebar UI):**
 
-> **Strategy:** Hybrid Approach (Native slicers + Visx Content Add-in). See [Excel Add-in Strategy](docs/concepts/EXCEL_ADDIN_STRATEGY.md).
+| File                                                       | Purpose                                         |
+| ---------------------------------------------------------- | ----------------------------------------------- |
+| @apps/excel-addin/src/main.tsx                             | Task pane entry point, Office.js initialization |
+| @apps/excel-addin/src/taskpane/App.tsx                     | Task pane root component                        |
+| @apps/excel-addin/src/taskpane/components/SetupWizard.tsx  | 4-step configuration wizard                     |
+| @apps/excel-addin/src/taskpane/components/ChartPanel.tsx   | I-Chart and Boxplot display                     |
+| @apps/excel-addin/src/taskpane/components/StatsDisplay.tsx | Stats and conformance display                   |
+| @apps/excel-addin/src/taskpane/components/DataSelector.tsx | Excel range picker                              |
+
+**Content Add-in (embedded in worksheet):**
+
+| File                                               | Purpose                                        |
+| -------------------------------------------------- | ---------------------------------------------- |
+| @apps/excel-addin/src/content/main.tsx             | Content add-in entry point                     |
+| @apps/excel-addin/src/content/App.tsx              | Content add-in root component                  |
+| @apps/excel-addin/src/content/ContentDashboard.tsx | Embedded I-Chart + Boxplot with live filtering |
+
+**Excel Integration Utilities:**
+
+| File                                       | Purpose                                    |
+| ------------------------------------------ | ------------------------------------------ |
+| @apps/excel-addin/src/lib/stateBridge.ts   | State sync via Custom Document Properties  |
+| @apps/excel-addin/src/lib/tableManager.ts  | Excel Table creation and management        |
+| @apps/excel-addin/src/lib/slicerManager.ts | Native Excel slicer creation and filtering |
+| @apps/excel-addin/src/lib/dataFilter.ts    | Data filtering logic for slicer changes    |
+| @apps/excel-addin/src/lib/excelData.ts     | Excel range reading and data extraction    |
+| @apps/excel-addin/manifest.xml             | Office Add-in manifest (task pane)         |
+| @apps/excel-addin/manifest-content.xml     | Content Add-in manifest                    |
+
+> **Architecture:** Hybrid Approach - Native Excel slicers for filtering + Visx Content Add-in for charts. See [Excel Add-in Strategy](docs/concepts/EXCEL_ADDIN_STRATEGY.md).
 
 ## Architecture
 

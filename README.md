@@ -92,16 +92,18 @@ pnpm install
 ### Development
 
 ```bash
-pnpm dev
+pnpm dev             # Start PWA dev server (http://localhost:5173)
+pnpm dev:excel       # Start Excel Add-in dev server (https://localhost:3000)
 ```
 
-Open http://localhost:5173 in your browser.
+Open http://localhost:5173 in your browser for PWA development.
 
 ### Build
 
 ```bash
-pnpm build           # Build all packages
+pnpm build           # Build all packages and apps
 pnpm build:pwa       # Build PWA only
+pnpm build:excel     # Build Excel Add-in only
 pnpm preview         # Preview production build
 ```
 
@@ -186,9 +188,13 @@ This is a **pnpm workspaces monorepo** supporting multiple applications:
 
 ```
 variscout-lite/
-├── packages/core/     # @variscout/core - Shared logic
-├── apps/pwa/          # PWA website (mobile + desktop)
-└── apps/excel-addin/  # Excel Add-in (planned)
+├── packages/
+│   ├── core/          # @variscout/core - Shared logic (stats, parser, license)
+│   └── charts/        # @variscout/charts - Props-based Visx chart components
+├── apps/
+│   ├── pwa/           # PWA website (mobile + desktop)
+│   └── excel-addin/   # Excel Add-in (Task Pane + Content Add-in)
+└── docs/              # Documentation
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) and [docs/MONOREPO_ARCHITECTURE.md](docs/MONOREPO_ARCHITECTURE.md) for details.
@@ -202,7 +208,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [docs/MONOREPO_ARCHITECTURE.md](docs/
 - [x] Multi-tier grade specifications
 - [x] Mobile-first responsive design
 - [x] pnpm monorepo architecture
-- [ ] Excel Add-in with Copilot integration
+- [x] Excel Add-in with Task Pane and Content Add-in
+- [x] Shared charts package (@variscout/charts)
+- [ ] Excel Copilot integration
 - [ ] PDF report generation
 - [ ] Batch file processing
 

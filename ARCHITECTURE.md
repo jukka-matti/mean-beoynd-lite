@@ -9,9 +9,11 @@ VariScout Lite uses a **pnpm workspaces monorepo** to support multiple applicati
 ```
 variscout-lite/
 ├── packages/
-│   └── core/              # @variscout/core - Pure logic (stats, parser, license)
+│   ├── core/              # @variscout/core - Pure logic (stats, parser, license)
+│   └── charts/            # @variscout/charts - Props-based Visx chart components
 ├── apps/
-│   └── pwa/               # PWA website (React + Vite + PWA)
+│   ├── pwa/               # PWA website (React + Vite + PWA)
+│   └── excel-addin/       # Excel Add-in (Office.js + React + Fluent UI)
 ├── docs/                  # Documentation
 ├── pnpm-workspace.yaml    # Workspace configuration
 ├── tsconfig.base.json     # Shared TypeScript config
@@ -24,49 +26,69 @@ variscout-lite/
 
 - **Runtime**: Progressive Web App (PWA) with Service Worker
 - **Frontend**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Utility-first)
-- **Visualization**: [Visx](https://airbnb.io/visx/) (Low-level D3 primitives for React)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Utility-first), [Fluent UI](https://developer.microsoft.com/en-us/fluentui) (Excel Add-in)
+- **Visualization**: [Visx](https://airbnb.io/visx/) (Low-level D3 primitives for React) via `@variscout/charts`
 - **Shared Logic**: `@variscout/core` package (stats, parser, license)
-- **Persistence**: IndexedDB + localStorage
+- **Persistence**: IndexedDB + localStorage (PWA), Custom Document Properties (Excel)
 - **PWA**: [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) with Workbox
+- **Excel Integration**: [Office.js](https://learn.microsoft.com/en-us/office/dev/add-ins/) for Excel Add-in
 - **Package Manager**: [pnpm](https://pnpm.io/) with workspaces
 
 ## 3. Package Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    @variscout/pwa                       │
-│                   (apps/pwa/)                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
-│  │ Components  │  │  Context    │  │  Persistence    │ │
-│  │ (Charts,    │  │ (DataCtx)   │  │  (IndexedDB)    │ │
-│  │  Mobile)    │  │             │  │                 │ │
-│  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘ │
-│         │                │                  │          │
-│         └────────────────┼──────────────────┘          │
-│                          │                              │
-│                          ▼                              │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │              @variscout/core                     │   │
-│  │             (packages/core/)                     │   │
-│  │                                                  │   │
-│  │  stats.ts │ parser.ts │ license.ts │ edition.ts │   │
-│  └─────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                  APPS                                        │
+├────────────────────────────────────┬────────────────────────────────────────┤
+│         @variscout/pwa             │        @variscout/excel-addin          │
+│        (apps/pwa/)                 │       (apps/excel-addin/)              │
+│  ┌──────────┐ ┌──────┐ ┌────────┐  │  ┌──────────┐ ┌─────────┐ ┌─────────┐  │
+│  │Components│ │Context│ │Persist │  │  │TaskPane  │ │Content  │ │Office.js│  │
+│  │(Mobile)  │ │(Data) │ │(IDB)   │  │  │(Wizard)  │ │(Charts) │ │(Bridge) │  │
+│  └────┬─────┘ └───┬───┘ └───┬────┘  │  └────┬─────┘ └────┬────┘ └────┬────┘  │
+│       └───────────┼─────────┘       │       └────────────┼───────────┘       │
+│                   │                 │                    │                   │
+└───────────────────┼─────────────────┴────────────────────┼───────────────────┘
+                    │                                      │
+                    ▼                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              PACKAGES                                        │
+├─────────────────────────────────────┬───────────────────────────────────────┤
+│         @variscout/charts           │          @variscout/core              │
+│       (packages/charts/)            │        (packages/core/)               │
+│                                     │                                       │
+│  IChart │ Boxplot │ ParetoChart     │  stats.ts │ parser.ts │ license.ts   │
+│  CapabilityHistogram │ responsive   │  edition.ts │ export.ts │ types.ts   │
+└─────────────────────────────────────┴───────────────────────────────────────┘
 ```
 
 ### @variscout/core
 
 Pure TypeScript logic with no React dependencies:
 
-| Module       | Purpose                                        |
-| ------------ | ---------------------------------------------- |
-| `stats.ts`   | Mean, StdDev, UCL/LCL, Cp, Cpk calculations    |
-| `parser.ts`  | CSV/Excel file parsing                         |
-| `license.ts` | License key validation (offline)               |
-| `edition.ts` | Edition configuration (community/itc/licensed) |
-| `export.ts`  | CSV export utilities                           |
-| `types.ts`   | Shared TypeScript interfaces                   |
+| Module       | Purpose                                                       |
+| ------------ | ------------------------------------------------------------- |
+| `stats.ts`   | Mean, StdDev, UCL/LCL, Cp, Cpk, conformance, factor grouping  |
+| `parser.ts`  | CSV/Excel file parsing                                        |
+| `license.ts` | License key validation (offline)                              |
+| `edition.ts` | Edition configuration (community/itc/licensed)                |
+| `export.ts`  | CSV export utilities                                          |
+| `types.ts`   | Shared TypeScript interfaces (StatsResult, ConformanceResult) |
+
+### @variscout/charts
+
+Props-based React components using Visx for data visualization:
+
+| Module                    | Purpose                                           |
+| ------------------------- | ------------------------------------------------- |
+| `IChart.tsx`              | Individual control chart with `IChartBase` export |
+| `Boxplot.tsx`             | Factor comparison with `BoxplotBase` export       |
+| `ParetoChart.tsx`         | Frequency analysis with `ParetoChartBase` export  |
+| `CapabilityHistogram.tsx` | Distribution histogram with spec limits           |
+| `ProbabilityPlot.tsx`     | Normal probability plot with CI bands             |
+| `ChartSourceBar.tsx`      | Branding footer component                         |
+| `responsive.ts`           | `getResponsiveMargins`, `getResponsiveFonts`      |
+| `types.ts`                | Chart prop interfaces, `calculateBoxplotStats()`  |
 
 ### @variscout/pwa
 
@@ -79,6 +101,19 @@ React application with PWA capabilities:
 | `components/Mobile*.tsx`   | Mobile-optimized components  |
 | `lib/persistence.ts`       | IndexedDB + localStorage     |
 | `hooks/useResponsive*.ts`  | Responsive sizing hooks      |
+
+### @variscout/excel-addin
+
+Excel Add-in with hybrid approach (native slicers + Visx charts):
+
+| Module                   | Purpose                                        |
+| ------------------------ | ---------------------------------------------- |
+| `taskpane/TaskPane.tsx`  | 4-step setup wizard (Data→Factor→Outcome→Spec) |
+| `content/ContentApp.tsx` | Embedded chart panel in worksheet              |
+| `utils/stateBridge.ts`   | State sync via Custom Document Properties      |
+| `utils/tableManager.ts`  | Excel Table creation from data ranges          |
+| `utils/slicerManager.ts` | Native slicer creation and management          |
+| `utils/dataFilter.ts`    | Data filtering logic for slicer changes        |
 
 ## 4. Core Modules
 
@@ -139,38 +174,69 @@ Handles all data storage operations in the browser.
 ```
 variscout-lite/
 ├── packages/
-│   └── core/                    # @variscout/core
+│   ├── core/                    # @variscout/core
+│   │   ├── src/
+│   │   │   ├── index.ts         # Barrel export
+│   │   │   ├── stats.ts         # Statistics calculations
+│   │   │   ├── parser.ts        # File parsing
+│   │   │   ├── license.ts       # License validation
+│   │   │   ├── edition.ts       # Edition configuration
+│   │   │   ├── export.ts        # CSV export
+│   │   │   └── types.ts         # Shared interfaces
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   └── charts/                  # @variscout/charts
 │       ├── src/
 │       │   ├── index.ts         # Barrel export
-│       │   ├── stats.ts         # Statistics calculations
-│       │   ├── parser.ts        # File parsing
-│       │   ├── license.ts       # License validation
-│       │   ├── edition.ts       # Edition configuration
-│       │   ├── export.ts        # CSV export
-│       │   └── types.ts         # Shared interfaces
+│       │   ├── IChart.tsx       # I-Chart component
+│       │   ├── Boxplot.tsx      # Boxplot component
+│       │   ├── ParetoChart.tsx  # Pareto chart component
+│       │   ├── CapabilityHistogram.tsx
+│       │   ├── ProbabilityPlot.tsx
+│       │   ├── ChartSourceBar.tsx
+│       │   ├── responsive.ts    # Responsive utilities
+│       │   └── types.ts         # Chart interfaces
 │       ├── package.json
 │       └── tsconfig.json
 │
 ├── apps/
-│   └── pwa/                     # @variscout/pwa
-│       ├── public/              # Static assets, PWA icons
+│   ├── pwa/                     # @variscout/pwa
+│   │   ├── public/              # Static assets, PWA icons
+│   │   ├── src/
+│   │   │   ├── components/      # UI Components
+│   │   │   │   ├── Dashboard.tsx
+│   │   │   │   ├── MobileDashboard.tsx
+│   │   │   │   ├── MobileStatsPanel.tsx
+│   │   │   │   ├── MobileMenu.tsx
+│   │   │   │   └── charts/      # Chart wrappers (use @variscout/charts)
+│   │   │   ├── context/         # DataContext
+│   │   │   ├── lib/             # PWA utilities (persistence)
+│   │   │   ├── hooks/           # Custom hooks
+│   │   │   ├── App.tsx
+│   │   │   └── main.tsx
+│   │   ├── index.html
+│   │   ├── vite.config.ts
+│   │   └── package.json
+│   │
+│   └── excel-addin/             # @variscout/excel-addin
 │       ├── src/
-│       │   ├── components/      # UI Components
-│       │   │   ├── Dashboard.tsx
-│       │   │   ├── MobileDashboard.tsx
-│       │   │   ├── MobileStatsPanel.tsx
-│       │   │   ├── MobileMenu.tsx
-│       │   │   └── charts/      # Chart components
-│       │   ├── context/         # DataContext
-│       │   ├── lib/             # PWA utilities (persistence)
-│       │   ├── hooks/           # Custom hooks
-│       │   ├── App.tsx
-│       │   └── main.tsx
-│       ├── index.html
+│       │   ├── taskpane/        # Task Pane UI (sidebar)
+│       │   │   └── TaskPane.tsx # 4-step setup wizard
+│       │   ├── content/         # Content Add-in (embedded)
+│       │   │   └── ContentApp.tsx
+│       │   ├── utils/           # Excel integration utilities
+│       │   │   ├── stateBridge.ts
+│       │   │   ├── tableManager.ts
+│       │   │   ├── slicerManager.ts
+│       │   │   └── dataFilter.ts
+│       │   └── commands/        # Excel ribbon commands
+│       ├── manifest.xml         # Office Add-in manifest
 │       ├── vite.config.ts
 │       └── package.json
 │
 ├── docs/                        # Documentation
+│   └── concepts/                # Design concept documents
 ├── dist/                        # Build outputs (gitignored)
 ├── pnpm-workspace.yaml
 ├── tsconfig.base.json
@@ -224,6 +290,7 @@ Components use `window.innerWidth` with resize listeners to conditionally render
 
 ```bash
 pnpm dev             # Start PWA dev server at localhost:5173
+pnpm dev:excel       # Start Excel Add-in dev server at localhost:3000
 ```
 
 ### Production Build
@@ -231,6 +298,7 @@ pnpm dev             # Start PWA dev server at localhost:5173
 ```bash
 pnpm build           # Build all packages and apps
 pnpm build:pwa       # Build PWA only
+pnpm build:excel     # Build Excel Add-in only
 pnpm preview         # Preview production build locally
 ```
 
@@ -244,13 +312,41 @@ pnpm build:pwa:licensed     # No branding (pre-licensed)
 
 ### Deployment
 
-The app deploys as a static site to any hosting provider.
+Both apps deploy as static sites to any hosting provider.
 
-**Vercel (Recommended):**
+**PWA (Vercel Recommended):**
 
 ```bash
 npx vercel
 ```
 
-**Manual:**
-Deploy the `apps/pwa/dist/` folder to any static host (Netlify, GitHub Pages, S3, etc.)
+Deploy `apps/pwa/dist/` to any static host (Netlify, GitHub Pages, S3, etc.)
+
+**Excel Add-in:**
+
+Deploy `apps/excel-addin/dist/` to any HTTPS host (required for Office Add-ins). Update `manifest.xml` with production URLs.
+
+## 10. Excel Add-in Architecture
+
+The Excel Add-in uses a **Hybrid Approach**: native Excel slicers for filtering combined with Visx charts in a Content Add-in.
+
+### Task Pane (Sidebar)
+
+- 4-step setup wizard: Data Selection → Factor Config → Outcome → Spec Config
+- Stats display with conformance analysis
+- Chart panel with I-Chart and Boxplot
+- Configurable Cpk target threshold
+- Fluent UI components for native Office look
+
+### Content Add-in (Embedded in Worksheet)
+
+- Embedded I-Chart and Boxplot charts
+- Live data filtering via native Excel slicers
+- Polls for slicer changes (respects Excel Table filtering)
+- Stats header with n, Mean, StdDev, Cpk
+
+### State Bridge
+
+Configuration is persisted in Excel document via Custom Document Properties, allowing the analysis to survive document save/reload cycles.
+
+> **See also:** [docs/concepts/EXCEL_ADDIN_STRATEGY.md](docs/concepts/EXCEL_ADDIN_STRATEGY.md) for the full strategic analysis.

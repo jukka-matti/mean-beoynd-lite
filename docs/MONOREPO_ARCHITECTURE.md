@@ -10,10 +10,10 @@ VariScout Lite uses a **pnpm workspaces monorepo** to share code between multipl
 variscout-lite/
 ├── packages/
 │   ├── core/          # @variscout/core - Pure logic (stats, parser, license)
-│   └── charts/        # @variscout/charts - React+Visx components
+│   └── charts/        # @variscout/charts - Props-based Visx chart components
 ├── apps/
 │   ├── pwa/           # PWA website (React + Vite + PWA)
-│   └── excel-addin/   # Excel Add-in (Office.js + React) - scaffold
+│   └── excel-addin/   # Excel Add-in (Office.js + React + Fluent UI)
 └── dist/
     ├── pwa/           # PWA build output
     └── excel-addin/   # Add-in build output
@@ -37,33 +37,48 @@ Pure TypeScript logic with no React dependencies. Can be used by any JavaScript/
 
 **Contents:**
 
-- `stats.ts` - Statistical calculations (mean, stdDev, Cp, Cpk, control limits)
+- `stats.ts` - Statistical calculations (mean, stdDev, Cp, Cpk, calculateConformance, groupDataByFactor)
 - `parser.ts` - CSV/Excel file parsing
 - `license.ts` - License key validation (offline, checksum-based)
 - `export.ts` - CSV export utilities
 - `edition.ts` - Edition configuration (community/itc/licensed)
-- `types.ts` - Shared TypeScript interfaces
+- `types.ts` - Shared TypeScript interfaces (StatsResult, ConformanceResult, SpecLimits)
 
 **Usage:**
 
 ```typescript
-import { calculateStats, StatsResult } from '@variscout/core';
+import { calculateStats, calculateConformance, groupDataByFactor } from '@variscout/core';
 import { parseCSV, parseExcel } from '@variscout/core';
 import { isValidLicenseFormat, hasValidLicense } from '@variscout/core';
 ```
 
 ### @variscout/charts (`packages/charts/`)
 
-React components using Visx for data visualization. Props-based for reuse across PWA and Excel Add-in.
+Props-based React components using Visx for data visualization. All components accept data via props (not context), enabling use in both PWA and Excel Add-in.
 
-**Contents:**
+**Chart Components:**
 
-- `IChart.tsx` - Individual control chart (time series)
-- `Boxplot.tsx` - Factor comparison chart
-- `ParetoChart.tsx` - Frequency analysis chart
+- `IChart.tsx` - Individual control chart (time series) with `IChartBase` export
+- `Boxplot.tsx` - Factor comparison chart with `BoxplotBase` export
+- `ParetoChart.tsx` - Frequency analysis chart with `ParetoChartBase` export
 - `CapabilityHistogram.tsx` - Distribution with spec limits
 - `ProbabilityPlot.tsx` - Normal probability plot
 - `ChartSourceBar.tsx` - Branding footer component
+
+**Utilities:**
+
+- `responsive.ts` - Responsive margin/font utilities (getResponsiveMargins, getResponsiveFonts, getResponsiveTickCount)
+- `types.ts` - Chart prop interfaces and `calculateBoxplotStats()` helper
+
+**Usage:**
+
+```typescript
+// Use Base components directly with props (Excel Add-in pattern)
+import { IChartBase, BoxplotBase, calculateBoxplotStats } from '@variscout/charts';
+
+// Use responsive utilities
+import { getResponsiveMargins, getResponsiveFonts } from '@variscout/charts';
+```
 
 ### @variscout/pwa (`apps/pwa/`)
 
@@ -87,25 +102,37 @@ The Progressive Web App - mobile-first website with offline capability.
 
 ### @variscout/excel-addin (`apps/excel-addin/`)
 
-Excel Add-in using the **Hybrid Approach**: Native Excel slicers + Visx charts in Content Add-in.
+Excel Add-in using the **Hybrid Approach**: Native Excel slicers for filtering + Visx charts in Content Add-in.
 
 > See [Excel Add-in Strategy](concepts/EXCEL_ADDIN_STRATEGY.md) for the full strategic analysis.
 
-**Current Status:** Scaffold with basic structure
+**Status:** Fully implemented with Task Pane and Content Add-in
 
-**What Exists:**
+**Task Pane (sidebar UI):**
 
-- Vite build configuration with Office.js
-- Basic task pane with Fluent UI
-- Office.js initialization and data utilities
-- Manifest.xml for sideloading
+- 4-step Setup Wizard (Data Selection → Factor Config → Outcome → Spec Config)
+- Stats display with conformance analysis
+- Chart panel with I-Chart and Boxplot
+- Configurable Cpk target threshold
+- Fluent UI components for native Office look
 
-**Planned (Hybrid Approach):**
+**Content Add-in (embedded in worksheet):**
 
-- Task pane setup flow (Table detection, column mapping)
-- Content Add-in with Visx charts
-- Excel Table binding for live data
-- Slicer integration (automatic via shared Table)
+- Embedded I-Chart and Boxplot charts
+- Live data filtering via native Excel slicers
+- Polls for slicer changes (respects Excel Table filtering)
+- Stats header with n, Mean, StdDev, Cpk
+
+**Excel Integration Utilities:**
+
+- `stateBridge.ts` - State sync via Custom Document Properties
+- `tableManager.ts` - Excel Table creation from data ranges
+- `slicerManager.ts` - Native slicer creation and management
+- `dataFilter.ts` - Data filtering logic for slicer changes
+- `excelData.ts` - Range reading and data extraction
+
+**Future:**
+
 - Copilot actions for natural language queries
 - License validation (same system as PWA)
 
@@ -114,12 +141,12 @@ Excel Add-in using the **Hybrid Approach**: Native Excel slicers + Visx charts i
 ```bash
 # Development
 pnpm dev                    # Start PWA dev server (http://localhost:5173)
-pnpm dev:excel              # Start Excel Add-in dev server (future)
+pnpm dev:excel              # Start Excel Add-in dev server (https://localhost:3000)
 
 # Production builds
 pnpm build                  # Build all packages and apps
 pnpm build:pwa              # Build PWA only
-pnpm build:excel            # Build Excel Add-in only (future)
+pnpm build:excel            # Build Excel Add-in only
 
 # Edition-specific PWA builds
 pnpm build:pwa:community    # Free with "VariScout Lite" branding
@@ -171,10 +198,13 @@ packages:
   "private": true,
   "scripts": {
     "dev": "pnpm --filter @variscout/pwa dev",
+    "dev:excel": "pnpm --filter @variscout/excel-addin dev",
     "build": "pnpm -r build",
     "build:pwa": "pnpm --filter @variscout/pwa build",
+    "build:excel": "pnpm --filter @variscout/excel-addin build",
     "build:pwa:community": "VITE_EDITION=community pnpm --filter @variscout/pwa build",
     "build:pwa:itc": "VITE_EDITION=itc pnpm --filter @variscout/pwa build",
+    "build:pwa:licensed": "VITE_EDITION=licensed pnpm --filter @variscout/pwa build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint"
   }

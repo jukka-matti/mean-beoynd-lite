@@ -10,24 +10,25 @@
 
 A lightweight, offline variation analysis tool for quality professionals. No AI, no subscriptions, no API keys — just fast, linked charts that reveal hidden variation.
 
-**Tagline:** *"Cut through your watermelons — without the cloud."*
+**Tagline:** _"Cut through your watermelons — without the cloud."_
 
 ---
 
 ## Target Users
 
-| User | Context | Why Lite works |
-|------|---------|----------------|
-| **Quality Champions** | SMEs in developing countries (via ITC) | Know statistics, need better tools than Excel |
-| **Experienced analysts** | Already know what to look for | Don't need AI guidance |
-| **Trainers / educators** | Teaching variation analysis | Clean demo tool, no AI unpredictability |
-| **Offline environments** | Factory floor, limited connectivity | 100% local, no internet needed |
+| User                     | Context                                | Why Lite works                                |
+| ------------------------ | -------------------------------------- | --------------------------------------------- |
+| **Quality Champions**    | SMEs in developing countries (via ITC) | Know statistics, need better tools than Excel |
+| **Experienced analysts** | Already know what to look for          | Don't need AI guidance                        |
+| **Trainers / educators** | Teaching variation analysis            | Clean demo tool, no AI unpredictability       |
+| **Offline environments** | Factory floor, limited connectivity    | 100% local, no internet needed                |
 
 ---
 
 ## Core Features
 
 ### 1. Data Import
+
 - CSV and Excel (.xlsx)
 - **Data Mapping Stage**: Interstitial screen to confirm/select Outcome (Y) and Factors (X) before analysis
 - Auto-detect: numeric columns → outcomes, categorical → factors
@@ -67,6 +68,7 @@ Legend:
 ```
 
 **Multi-tier grades view (e.g., coffee defects):**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  DEFECTS per 300g (by shipment)                             │
@@ -87,6 +89,7 @@ Legend:
 ```
 
 **Specification Limits (optional):**
+
 - User inputs USL, LSL, and/or Target
 - OR configures multi-tier grades
 - Shown as distinct colored bands/lines
@@ -94,13 +97,14 @@ Legend:
 - Enables grade summary calculations
 
 ### 3. Interactive Analysis (Multi-Vari)
+
 - **Outcome Selection**: Switch primary metric (Y) directly from I-Chart header
 - **Factor Selection**: Independently select factors (X) for Boxplot and Pareto
 - **Click-to-Edit Axes**: Click Y-axis to manually set Min/Max or reset to Auto
 - **Linked Filtering**:
-    - Click any boxplot → filters I-Chart and Pareto
-    - Click Pareto bar → filters other charts
-    - Brush I-Chart range → filters others
+  - Click any boxplot → filters I-Chart and Pareto
+  - Click Pareto bar → filters other charts
+  - Brush I-Chart range → filters others
 - **"What's selected accounts for X% of total variation"**
 
 ### 4. Statistics Panel
@@ -127,6 +131,7 @@ Legend:
 Best for: Incoming inspection, export certification, lot acceptance
 
 **Simple (single spec):**
+
 ```
 ┌─────────────────────────────────────┐
 │  CONFORMANCE SUMMARY                │
@@ -143,6 +148,7 @@ Best for: Incoming inspection, export certification, lot acceptance
 ```
 
 **Multi-tier grades (e.g., coffee defects):**
+
 ```
 ┌─────────────────────────────────────┐
 │  GRADE SUMMARY (50 shipments)       │
@@ -161,6 +167,7 @@ Best for: Incoming inspection, export certification, lot acceptance
 ```
 
 **Grade configuration:**
+
 ```
 ┌─────────────────────────────────────┐
 │  GRADING TIERS                      │
@@ -178,8 +185,9 @@ Best for: Incoming inspection, export certification, lot acceptance
 ```
 
 Works for any multi-tier classification:
+
 - Coffee: Specialty → Off Grade
-- Textiles: Grade A → Reject  
+- Textiles: Grade A → Reject
 - Food safety: Premium → Unacceptable
 
 **Capability Mode** — "Can our process reliably meet specs?"
@@ -194,10 +202,16 @@ Works for any multi-tier classification:
 Best for: Process improvement, ongoing monitoring, supplier qualification
 
 **Display Options (Settings → Visualization):**
+
 - Toggle Cp display (only available when both USL and LSL are defined)
 - Toggle Cpk display
+- Configurable Cpk target threshold (default: 1.33)
+  - Values below target shown in warning color (yellow/amber)
+  - Values at or above target shown in success color (green)
+  - Currently available in Excel Add-in; PWA uses fixed 1.33 threshold
 
 **Capability Histogram (Stats Panel → Histogram tab):**
+
 ```
 ┌─────────────────────────────────────┐
 │  HISTOGRAM                          │
@@ -236,6 +250,7 @@ Best for: Process improvement, ongoing monitoring, supplier qualification
 **Specs Input (choose one):**
 
 Option A: Simple limits (continuous data)
+
 ```
 ┌─────────────────────────────────────┐
 │  Specification Limits               │
@@ -250,6 +265,7 @@ Option A: Simple limits (continuous data)
 ```
 
 Option B: Multi-tier grades (count/quality data)
+
 ```
 ┌─────────────────────────────────────┐
 │  Grade Tiers (lower is better)      │
@@ -268,6 +284,7 @@ Option B: Multi-tier grades (count/quality data)
 ```
 
 When configured:
+
 - I-Chart shows spec lines OR grade bands
 - Points colored by pass/fail OR grade achieved
 - Summary shows pass rate OR grade breakdown
@@ -278,6 +295,7 @@ When configured:
 **Access**: Click table icon in header toolbar
 
 **Features:**
+
 - View all imported data in Excel-like table format
 - Click any cell to edit inline
 - Keyboard navigation (Tab/Enter between cells)
@@ -306,6 +324,7 @@ When configured:
 ### 6. Save & Load Analysis
 
 **Save Analysis (.vrs file):**
+
 ```
 ┌─────────────────────────────────────┐
 │  Save Analysis                      │
@@ -325,13 +344,16 @@ When configured:
 ```
 
 **File contains:**
+
 ```json
 {
   "version": "1.0",
   "name": "Shift 2 Investigation",
   "created": "2024-12-28T10:30:00Z",
   "modified": "2024-12-28T14:45:00Z",
-  "data": { /* embedded CSV data */ },
+  "data": {
+    /* embedded CSV data */
+  },
   "config": {
     "outcome": "CycleTime",
     "factors": ["Shift", "Station", "Operator"],
@@ -347,11 +369,13 @@ When configured:
 ```
 
 **Load Analysis:**
+
 - File → Open (or drag-drop .vrs file)
 - Recent files list on home screen
 - Double-click .vrs file opens in VaRiScout
 
 **Home Screen:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  VaRiScout Lite                                    ITC logo │
@@ -375,17 +399,20 @@ When configured:
 ### 7. Export
 
 **Implemented:**
+
 - PNG (individual charts or dashboard)
 - CSV (with spec status column)
 - .vrs project files (JSON format)
 
 **Planned (Future Release):**
+
 - PDF (one-page summary)
 - Simple PowerPoint (3 slides: charts + stats)
 
 ### 8. Branding (Implemented)
 
 **Chart Footer Source Bar:**
+
 ```
 ┌─────────────────────────────────────┐
 │  [chart content]                    │
@@ -393,6 +420,7 @@ When configured:
 │ ▌VariScout Lite          n=50      │
 └─────────────────────────────────────┘
 ```
+
 - Blue accent bar (3px) + branding text on left
 - Sample size (n=count) on right
 - Semi-transparent slate background
@@ -400,6 +428,7 @@ When configured:
 - Hidden when Pro edition or valid license key activated
 
 **License Key System:**
+
 - Format: `VSL-XXXX-XXXX-XXXX` (16 chars with checksum)
 - Offline validation (no server required)
 - Stored in localStorage
@@ -409,15 +438,15 @@ When configured:
 
 ## What's NOT Included
 
-| Feature | Why excluded |
-|---------|--------------|
-| AI recommendations | Requires LLM, ongoing costs |
-| Natural language insights | AI-dependent |
-| Intent modes (Explore/Hypothesis/Monitor) | Adds complexity |
-| Investigation lifecycle | Overkill for simple analysis |
-| Playbooks / guided workflows | AI-dependent |
-| Cloud sync | Offline-first design |
-| Multi-user / collaboration | Single-user tool |
+| Feature                                   | Why excluded                 |
+| ----------------------------------------- | ---------------------------- |
+| AI recommendations                        | Requires LLM, ongoing costs  |
+| Natural language insights                 | AI-dependent                 |
+| Intent modes (Explore/Hypothesis/Monitor) | Adds complexity              |
+| Investigation lifecycle                   | Overkill for simple analysis |
+| Playbooks / guided workflows              | AI-dependent                 |
+| Cloud sync                                | Offline-first design         |
+| Multi-user / collaboration                | Single-user tool             |
 
 **Philosophy:** Lite users know what they're doing. They need visualization, not guidance.
 
@@ -450,6 +479,7 @@ NO backend. NO API calls. Works offline after first visit.
 ```
 
 **Deployment:**
+
 - Vercel, Netlify, or any static host
 - Users access via URL
 - "Add to Home Screen" for app-like experience
@@ -458,17 +488,19 @@ NO backend. NO API calls. Works offline after first visit.
 
 ## Editions (Implemented)
 
-| Edition | Footer Bar | Distribution | Price |
-|---------|------------|--------------|-------|
-| **Community** | "VariScout Lite" + n= | Public web | Free |
-| **ITC** | "International Trade Centre" + n= | ITC network | Free |
-| **Pro** | None (hidden) | License key activation | €39-49 |
+| Edition       | Footer Bar                        | Distribution           | Price  |
+| ------------- | --------------------------------- | ---------------------- | ------ |
+| **Community** | "VariScout Lite" + n=             | Public web             | Free   |
+| **ITC**       | "International Trade Centre" + n= | ITC network            | Free   |
+| **Pro**       | None (hidden)                     | License key activation | €39-49 |
 
 **Build Commands:**
+
 ```bash
-npm run build:community  # Default public release
-npm run build:itc        # ITC-branded build
-npm run build:pro        # Pre-licensed builds
+pnpm build:pwa:community  # Default public release
+pnpm build:pwa:itc        # ITC-branded build
+pnpm build:pwa:licensed   # Pre-licensed builds (no branding)
+pnpm build:excel          # Excel Add-in build
 ```
 
 **Runtime Upgrade:**
@@ -510,30 +542,33 @@ VaRiScout Pro (paid)
 
 ## Build Estimate
 
-| Component | Effort | Notes |
-|-----------|--------|-------|
-| Chart components | Done | Already built |
-| Linked filtering | Done | Already built |
-| Statistics engine | Done | Cp/Cpk, grade counts |
-| Data import | Done | CSV + Excel parsing |
-| Save/Load (.vrs) | Done | JSON serialization + file handling |
-| Export (PNG/CSV) | Done | DOM-based capture, CSV generation |
-| Edition config | Done | Watermark + branding |
-| Manual Entry | Done | Touch-optimized data entry |
-| Data Table | Done | Inline editing |
-| **Completed** | ✓ | Core features implemented |
-| PDF/PPT Export | Planned | Future release |
+| Component             | Effort  | Notes                                         |
+| --------------------- | ------- | --------------------------------------------- |
+| Chart components      | Done    | Already built                                 |
+| Linked filtering      | Done    | Already built                                 |
+| Statistics engine     | Done    | Cp/Cpk, grade counts, conformance             |
+| Data import           | Done    | CSV + Excel parsing                           |
+| Save/Load (.vrs)      | Done    | JSON serialization + file handling            |
+| Export (PNG/CSV)      | Done    | DOM-based capture, CSV generation             |
+| Edition config        | Done    | Watermark + branding                          |
+| Manual Entry          | Done    | Touch-optimized data entry                    |
+| Data Table            | Done    | Inline editing                                |
+| Shared charts package | Done    | @variscout/charts with props-based components |
+| Excel Add-in          | Done    | Task Pane wizard + Content Add-in charts      |
+| **Completed**         | ✓       | Core features + Excel Add-in implemented      |
+| Excel Copilot         | Planned | Natural language queries                      |
+| PDF/PPT Export        | Planned | Future release                                |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Downloads (via ITC) | 500 in first year |
-| Active users | 100 monthly |
-| Conversion to Pro | 5% of active users |
-| Support tickets | < 10/month (simple tool = few questions) |
+| Metric              | Target                                   |
+| ------------------- | ---------------------------------------- |
+| Downloads (via ITC) | 500 in first year                        |
+| Active users        | 100 monthly                              |
+| Conversion to Pro   | 5% of active users                       |
+| Support tickets     | < 10/month (simple tool = few questions) |
 
 ---
 
