@@ -4,7 +4,7 @@ import { Bar, Line } from '@visx/shape';
 import { scaleLinear } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { withParentSize } from '@visx/responsive';
-import { bin } from 'd3-array';
+import { bin } from 'd3';
 import type { CapabilityHistogramProps } from './types';
 import { getResponsiveMargins, getResponsiveFonts } from './responsive';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
