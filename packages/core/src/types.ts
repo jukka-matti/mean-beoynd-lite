@@ -53,6 +53,22 @@ export interface SpecLimits {
 }
 
 /**
+ * Result of conformance calculation
+ */
+export interface ConformanceResult {
+  /** Count of values within spec */
+  pass: number;
+  /** Count of values above USL */
+  failUsl: number;
+  /** Count of values below LSL */
+  failLsl: number;
+  /** Total number of values */
+  total: number;
+  /** Pass rate as percentage (0-100) */
+  passRate: number;
+}
+
+/**
  * Data point for probability plot with confidence interval
  */
 export interface ProbabilityPlotPoint {

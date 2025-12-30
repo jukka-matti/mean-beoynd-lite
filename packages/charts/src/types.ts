@@ -3,7 +3,10 @@
  * Props-based chart components for use across PWA and Excel Add-in
  */
 
-import type { StatsResult } from '@variscout/core';
+import type { StatsResult, SpecLimits, GradeTier } from '@variscout/core';
+
+// Re-export types from core for convenience
+export type { SpecLimits, GradeTier };
 
 /**
  * Common props shared by all chart components
@@ -17,24 +20,6 @@ export interface BaseChartProps {
   showBranding?: boolean;
   /** Custom branding text (defaults to edition-based text) */
   brandingText?: string;
-}
-
-/**
- * Specification limits for quality charts
- */
-export interface SpecLimits {
-  usl?: number;
-  lsl?: number;
-  target?: number;
-}
-
-/**
- * Grade tier definition for multi-tier grading
- */
-export interface GradeTier {
-  max: number;
-  label: string;
-  color: string;
 }
 
 /**

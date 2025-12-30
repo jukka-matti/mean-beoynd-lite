@@ -18,7 +18,7 @@ import {
   DismissCircle24Regular,
   ArrowTrendingLines24Regular,
 } from '@fluentui/react-icons';
-import { calculateStats } from '@variscout/core';
+import { calculateStats, calculateConformance } from '@variscout/core';
 import { SelectedData, highlightOutOfSpec } from '../../lib/excelData';
 
 const useStyles = makeStyles({
@@ -123,30 +123,9 @@ export const StatsDisplay: React.FC<StatsDisplayProps> = ({ data, specs, onSpecs
     return calculateStats(data.values, specs.usl, specs.lsl);
   }, [data.values, specs]);
 
-  // Calculate conformance
+  // Calculate conformance using shared utility
   const conformance = useMemo(() => {
-    let pass = 0;
-    let failUsl = 0;
-    let failLsl = 0;
-
-    data.values.forEach(val => {
-      if (specs.usl !== undefined && val > specs.usl) {
-        failUsl++;
-      } else if (specs.lsl !== undefined && val < specs.lsl) {
-        failLsl++;
-      } else {
-        pass++;
-      }
-    });
-
-    const total = data.values.length;
-    return {
-      pass,
-      failUsl,
-      failLsl,
-      total,
-      passRate: total > 0 ? (pass / total) * 100 : 0,
-    };
+    return calculateConformance(data.values, specs.usl, specs.lsl);
   }, [data.values, specs]);
 
   const handleUslChange = (e: React.ChangeEvent<HTMLInputElement>) => {

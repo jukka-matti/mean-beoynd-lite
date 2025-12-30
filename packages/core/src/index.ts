@@ -11,6 +11,7 @@ export type {
   SpecLimits,
   ProbabilityPlotPoint,
   DisplayOptions,
+  ConformanceResult,
 } from './types';
 
 // Statistics
@@ -19,6 +20,8 @@ export {
   getEtaSquared,
   calculateProbabilityPlotData,
   normalQuantile,
+  calculateConformance,
+  groupDataByFactor,
 } from './stats';
 
 // License

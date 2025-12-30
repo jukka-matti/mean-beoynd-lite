@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { IChartBase, BoxplotBase, calculateBoxplotStats } from '@variscout/charts';
-import { calculateStats } from '@variscout/core';
+import { calculateStats, groupDataByFactor } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
 
@@ -158,22 +158,12 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
     }));
   }, [filteredData, state.outcomeColumn]);
 
-  // Prepare Boxplot data
+  // Prepare Boxplot data using shared grouping utility
   const boxplotData = useMemo(() => {
     if (!filteredData.length || !state.factorColumns?.[0]) return [];
 
     const factor = state.factorColumns[0];
-    const groups = new Map<string, number[]>();
-
-    filteredData.forEach(d => {
-      const key = String(d[factor] ?? 'Unknown');
-      const value = Number(d[state.outcomeColumn]);
-      if (!isNaN(value)) {
-        const existing = groups.get(key) || [];
-        existing.push(value);
-        groups.set(key, existing);
-      }
-    });
+    const groups = groupDataByFactor(filteredData, factor, state.outcomeColumn);
 
     return Array.from(groups.entries()).map(([group, values]) =>
       calculateBoxplotStats({ group, values })

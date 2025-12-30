@@ -12,6 +12,7 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
+    "@variscout/charts": "workspace:*",
     "@variscout/core": "workspace:*",
     "@types/react-window": "^1.8.8",
     "@visx/axis": "^3.12.0",

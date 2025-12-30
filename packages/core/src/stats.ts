@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
-import type { StatsResult, GradeTier, ProbabilityPlotPoint } from './types';
+import type { StatsResult, GradeTier, ProbabilityPlotPoint, ConformanceResult } from './types';
 
 // Re-export types for convenience
-export type { StatsResult, ProbabilityPlotPoint } from './types';
+export type { StatsResult, ProbabilityPlotPoint, ConformanceResult } from './types';
 
 /**
  * Calculate statistical metrics for quality analysis
@@ -222,4 +222,79 @@ export function normalQuantile(p: number): number {
  */
 function normalPDF(x: number): number {
   return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+}
+
+/**
+ * Calculate conformance statistics against specification limits
+ *
+ * @param values - Array of numeric measurement values
+ * @param usl - Upper Specification Limit (optional)
+ * @param lsl - Lower Specification Limit (optional)
+ * @returns ConformanceResult with pass/fail counts and percentages
+ *
+ * @example
+ * const result = calculateConformance([10, 12, 14, 16], 15, 9);
+ * // { pass: 3, failUsl: 1, failLsl: 0, total: 4, passRate: 75 }
+ */
+export function calculateConformance(
+  values: number[],
+  usl?: number,
+  lsl?: number
+): ConformanceResult {
+  let pass = 0;
+  let failUsl = 0;
+  let failLsl = 0;
+
+  values.forEach(val => {
+    if (usl !== undefined && val > usl) {
+      failUsl++;
+    } else if (lsl !== undefined && val < lsl) {
+      failLsl++;
+    } else {
+      pass++;
+    }
+  });
+
+  const total = values.length;
+  return {
+    pass,
+    failUsl,
+    failLsl,
+    total,
+    passRate: total > 0 ? (pass / total) * 100 : 0,
+  };
+}
+
+/**
+ * Group data by a factor column and extract outcome values
+ *
+ * @param data - Array of data records
+ * @param factorColumn - Column name for grouping
+ * @param outcomeColumn - Column name for numeric outcome values
+ * @returns Map with factor values as keys and arrays of outcome values
+ *
+ * @example
+ * const groups = groupDataByFactor(data, 'Supplier', 'Weight');
+ * // Map { 'Supplier A' => [10, 12, 11], 'Supplier B' => [14, 15] }
+ */
+export function groupDataByFactor<T extends Record<string, unknown>>(
+  data: T[],
+  factorColumn: string,
+  outcomeColumn: string
+): Map<string, number[]> {
+  const groups = new Map<string, number[]>();
+
+  data.forEach(row => {
+    const factorValue = String(row[factorColumn] ?? 'Unknown');
+    const outcomeValue = Number(row[outcomeColumn]);
+
+    if (!isNaN(outcomeValue)) {
+      if (!groups.has(factorValue)) {
+        groups.set(factorValue, []);
+      }
+      groups.get(factorValue)!.push(outcomeValue);
+    }
+  });
+
+  return groups;
 }

@@ -93,6 +93,9 @@ importers:
       '@types/react-window':
         specifier: ^1.8.8
         version: 1.8.8
+      '@variscout/charts':
+        specifier: workspace:*
+        version: link:../../packages/charts
       '@variscout/core':
         specifier: workspace:*
         version: link:../../packages/core
