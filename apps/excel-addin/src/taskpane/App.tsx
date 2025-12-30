@@ -12,12 +12,18 @@ import {
   Button,
   Card,
   Badge,
+  Input,
+  Divider,
+  Link,
 } from '@fluentui/react-components';
 import {
   Settings24Regular,
   ChartMultiple24Regular,
   ArrowReset24Regular,
   Edit24Regular,
+  Key24Regular,
+  Checkmark24Regular,
+  Dismiss24Regular,
 } from '@fluentui/react-icons';
 import { DataSelector } from './components/DataSelector';
 import { ChartPanel } from './components/ChartPanel';
@@ -25,6 +31,13 @@ import { StatsDisplay } from './components/StatsDisplay';
 import { SetupWizard } from './components/SetupWizard';
 import { SelectedData } from '../lib/excelData';
 import { loadAddInState, clearAddInState, type AddInState } from '../lib/stateBridge';
+import {
+  isValidLicenseFormat,
+  storeLicenseKey,
+  getStoredLicenseKey,
+  removeLicenseKey,
+  hasValidLicense,
+} from '@variscout/core';
 
 const useStyles = makeStyles({
   root: {
@@ -100,6 +113,38 @@ const useStyles = makeStyles({
     gap: tokens.spacingHorizontalM,
     marginTop: tokens.spacingVerticalM,
   },
+  licenseSection: {
+    marginTop: tokens.spacingVerticalL,
+    paddingTop: tokens.spacingVerticalL,
+  },
+  licenseHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    marginBottom: tokens.spacingVerticalM,
+  },
+  licenseInputRow: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalS,
+    marginBottom: tokens.spacingVerticalS,
+  },
+  licenseInput: {
+    flex: 1,
+  },
+  licenseStatus: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    marginBottom: tokens.spacingVerticalM,
+  },
+  licensedBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+  },
+  buyLink: {
+    marginTop: tokens.spacingVerticalS,
+  },
 });
 
 type TabValue = 'data' | 'chart' | 'stats';
@@ -112,6 +157,16 @@ const App: React.FC = () => {
   const [selectedData, setSelectedData] = useState<SelectedData | null>(null);
   const [specs, setSpecs] = useState<{ usl?: number; lsl?: number }>({});
   const [savedState, setSavedState] = useState<AddInState | null>(null);
+
+  // License state
+  const [licenseKeyInput, setLicenseKeyInput] = useState('');
+  const [isLicensed, setIsLicensed] = useState(false);
+  const [licenseError, setLicenseError] = useState<string | null>(null);
+
+  // Check license status on mount
+  useEffect(() => {
+    setIsLicensed(hasValidLicense());
+  }, []);
 
   // Check for existing configuration on mount
   useEffect(() => {
@@ -151,6 +206,36 @@ const App: React.FC = () => {
     } catch (err: unknown) {
       console.error('Failed to clear state:', err);
     }
+  }, []);
+
+  const handleActivateLicense = useCallback(() => {
+    setLicenseError(null);
+
+    if (!licenseKeyInput.trim()) {
+      setLicenseError('Please enter a license key.');
+      return;
+    }
+
+    if (!isValidLicenseFormat(licenseKeyInput)) {
+      setLicenseError('Invalid license key format. Expected: VSL-XXXX-XXXX-XXXX');
+      return;
+    }
+
+    const success = storeLicenseKey(licenseKeyInput);
+    if (success) {
+      setIsLicensed(true);
+      setLicenseKeyInput('');
+      setLicenseError(null);
+    } else {
+      setLicenseError('Failed to store license key. Please try again.');
+    }
+  }, [licenseKeyInput]);
+
+  const handleRemoveLicense = useCallback(() => {
+    removeLicenseKey();
+    setIsLicensed(false);
+    setLicenseKeyInput('');
+    setLicenseError(null);
   }, []);
 
   // Mode selection screen
@@ -301,6 +386,62 @@ const App: React.FC = () => {
               Reset
             </Button>
           </div>
+
+          <Divider className={styles.licenseSection} />
+
+          <div className={styles.licenseHeader}>
+            <Key24Regular />
+            <Body2 style={{ fontWeight: tokens.fontWeightSemibold }}>License</Body2>
+          </div>
+
+          {isLicensed ? (
+            <>
+              <div className={styles.licenseStatus}>
+                <Badge
+                  appearance="filled"
+                  color="success"
+                  icon={<Checkmark24Regular />}
+                  className={styles.licensedBadge}
+                >
+                  Licensed
+                </Badge>
+              </div>
+              <Body2 style={{ marginBottom: tokens.spacingVerticalS }}>
+                Key: {getStoredLicenseKey()?.slice(0, 8)}...
+              </Body2>
+              <Button
+                appearance="subtle"
+                size="small"
+                icon={<Dismiss24Regular />}
+                onClick={handleRemoveLicense}
+              >
+                Remove License
+              </Button>
+            </>
+          ) : (
+            <>
+              <Body2 style={{ marginBottom: tokens.spacingVerticalS }}>
+                Enter your license key to remove branding from charts.
+              </Body2>
+              <div className={styles.licenseInputRow}>
+                <Input
+                  className={styles.licenseInput}
+                  placeholder="VSL-XXXX-XXXX-XXXX"
+                  value={licenseKeyInput}
+                  onChange={(_, data) => setLicenseKeyInput(data.value)}
+                />
+                <Button appearance="primary" onClick={handleActivateLicense}>
+                  Activate
+                </Button>
+              </div>
+              {licenseError && (
+                <Body2 style={{ color: tokens.colorPaletteRedForeground1 }}>{licenseError}</Body2>
+              )}
+              <Link href="https://variscout.com/buy" target="_blank" className={styles.buyLink}>
+                Don't have a license? Buy one (€39)
+              </Link>
+            </>
+          )}
         </div>
       </div>
     );

@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { IChartBase, BoxplotBase, calculateBoxplotStats } from '@variscout/charts';
+import {
+  IChartBase,
+  BoxplotBase,
+  ParetoChartBase,
+  CapabilityHistogramBase,
+  ProbabilityPlotBase,
+  calculateBoxplotStats,
+  type ParetoDataPoint,
+} from '@variscout/charts';
 import { calculateStats, groupDataByFactor } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
@@ -72,6 +80,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 800, height: 300 });
+  const [showProbabilityPlot, setShowProbabilityPlot] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const errorCountRef = useRef(0);
 
@@ -178,6 +187,44 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
     );
   }, [filteredData, state.outcomeColumn, state.factorColumns]);
 
+  // Prepare Pareto data from first factor column
+  const paretoData = useMemo((): ParetoDataPoint[] => {
+    if (!filteredData.length || !state.factorColumns?.[0]) return [];
+
+    const factor = state.factorColumns[0];
+
+    // Count occurrences per category
+    const counts = new Map<string, number>();
+    filteredData.forEach(row => {
+      const category = String(row[factor] ?? 'Unknown');
+      counts.set(category, (counts.get(category) || 0) + 1);
+    });
+
+    // Sort by count descending
+    const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+
+    // Build Pareto data with cumulative values
+    const total = filteredData.length;
+    let cumulative = 0;
+
+    return sorted.map(([key, value]) => {
+      cumulative += value;
+      return {
+        key,
+        value,
+        cumulative,
+        cumulativePercentage: (cumulative / total) * 100,
+      };
+    });
+  }, [filteredData, state.factorColumns]);
+
+  // Prepare histogram data (raw numeric values)
+  const histogramData = useMemo(() => {
+    if (!filteredData.length || !state.outcomeColumn) return [];
+
+    return filteredData.map(d => Number(d[state.outcomeColumn])).filter(v => !isNaN(v));
+  }, [filteredData, state.outcomeColumn]);
+
   if (isLoading) {
     return (
       <div style={styles.loading}>
@@ -255,25 +302,24 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
         )}
       </div>
 
-      {/* Charts row */}
-      <div style={styles.chartsRow} ref={containerRef}>
-        {/* I-Chart */}
+      {/* Top row: I-Chart (full width) */}
+      <div style={styles.topChartsRow} ref={containerRef}>
         <div style={styles.chartContainer}>
           <ChartErrorBoundary chartName="I-Chart">
             <IChartBase
               data={chartData}
               stats={stats ?? null}
               specs={state.specs || {}}
-              parentWidth={Math.max(
-                200,
-                (containerSize.width - 36) * (boxplotData.length > 0 ? 0.6 : 1)
-              )}
-              parentHeight={Math.max(150, containerSize.height - 80)}
+              parentWidth={Math.max(200, containerSize.width - 36)}
+              parentHeight={Math.max(120, (containerSize.height - 100) * 0.45)}
               showBranding={false}
             />
           </ChartErrorBoundary>
         </div>
+      </div>
 
+      {/* Bottom row: Boxplot, Pareto, Histogram/ProbPlot */}
+      <div style={styles.bottomChartsRow}>
         {/* Boxplot */}
         {boxplotData.length > 0 && (
           <div style={styles.chartContainer}>
@@ -281,10 +327,60 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
               <BoxplotBase
                 data={boxplotData}
                 specs={state.specs || {}}
-                parentWidth={Math.max(150, (containerSize.width - 36) * 0.4)}
-                parentHeight={Math.max(150, containerSize.height - 80)}
+                parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
+                parentHeight={Math.max(100, (containerSize.height - 100) * 0.45)}
                 showBranding={false}
               />
+            </ChartErrorBoundary>
+          </div>
+        )}
+
+        {/* Pareto Chart */}
+        {paretoData.length > 0 && (
+          <div style={styles.chartContainer}>
+            <ChartErrorBoundary chartName="Pareto">
+              <ParetoChartBase
+                data={paretoData}
+                totalCount={filteredData.length}
+                xAxisLabel={state.factorColumns?.[0] || 'Category'}
+                parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
+                parentHeight={Math.max(100, (containerSize.height - 100) * 0.45)}
+                showBranding={false}
+              />
+            </ChartErrorBoundary>
+          </div>
+        )}
+
+        {/* Histogram / Probability Plot with toggle */}
+        {histogramData.length > 0 && stats && (
+          <div style={styles.chartContainerWithToggle}>
+            <button
+              onClick={() => setShowProbabilityPlot(!showProbabilityPlot)}
+              style={styles.toggleButton}
+              title={showProbabilityPlot ? 'Show Histogram' : 'Show Probability Plot'}
+            >
+              {showProbabilityPlot ? 'Histogram' : 'Prob Plot'}
+            </button>
+            <ChartErrorBoundary chartName={showProbabilityPlot ? 'Probability Plot' : 'Histogram'}>
+              {showProbabilityPlot ? (
+                <ProbabilityPlotBase
+                  data={histogramData}
+                  mean={stats.mean}
+                  stdDev={stats.stdDev}
+                  parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
+                  parentHeight={Math.max(100, (containerSize.height - 100) * 0.45 - 28)}
+                  showBranding={false}
+                />
+              ) : (
+                <CapabilityHistogramBase
+                  data={histogramData}
+                  specs={state.specs || {}}
+                  mean={stats.mean}
+                  parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
+                  parentHeight={Math.max(100, (containerSize.height - 100) * 0.45 - 28)}
+                  showBranding={false}
+                />
+              )}
             </ChartErrorBoundary>
           </div>
         )}
@@ -335,11 +431,41 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: 'system-ui, sans-serif',
     opacity: 0.8,
   },
-  chartsRow: {
-    flex: 1,
+  topChartsRow: {
+    flex: '0 0 45%',
     display: 'flex',
     gap: darkTheme.spacingM,
     minHeight: 0,
+  },
+  bottomChartsRow: {
+    flex: '0 0 45%',
+    display: 'flex',
+    gap: darkTheme.spacingM,
+    minHeight: 0,
+  },
+  chartContainerWithToggle: {
+    flex: 1,
+    backgroundColor: darkTheme.colorNeutralBackground2,
+    borderRadius: darkTheme.borderRadiusM,
+    padding: darkTheme.spacingS,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  toggleButton: {
+    position: 'absolute',
+    top: darkTheme.spacingXS,
+    right: darkTheme.spacingXS,
+    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
+    backgroundColor: darkTheme.colorNeutralBackground3,
+    border: 'none',
+    borderRadius: darkTheme.borderRadiusS,
+    color: darkTheme.colorNeutralForeground2,
+    fontSize: darkTheme.fontSizeCaption,
+    cursor: 'pointer',
+    zIndex: 1,
   },
   chartContainer: {
     flex: 1,
