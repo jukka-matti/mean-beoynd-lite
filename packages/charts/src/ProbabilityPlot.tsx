@@ -38,8 +38,16 @@ const ProbabilityPlotBase: React.FC<ProbabilityPlotProps> = ({
     if (plotData.length === 0) return null;
 
     const values = plotData.map(d => d.value);
+    const dataMin = Math.min(...values);
+    const dataMax = Math.max(...values);
+    const dataRange = dataMax - dataMin || 1;
+    // CI shouldn't be 100x wider than data range - filter out extreme values
+    const maxReasonableCI = dataRange * 100;
+
     const ciValues = plotData.flatMap(d => [d.lowerCI, d.upperCI]);
-    const allValues = [...values, ...ciValues].filter(v => isFinite(v));
+    const allValues = [...values, ...ciValues].filter(
+      v => isFinite(v) && Math.abs(v - dataMin) < maxReasonableCI
+    );
 
     const min = Math.min(...allValues);
     const max = Math.max(...allValues);

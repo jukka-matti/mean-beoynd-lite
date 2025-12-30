@@ -156,8 +156,12 @@ export function getEtaSquared(data: any[], factor: string, outcome: string): num
 export function calculateProbabilityPlotData(data: number[]): ProbabilityPlotPoint[] {
   if (data.length === 0) return [];
 
-  const n = data.length;
-  const sorted = [...data].sort((a, b) => a - b);
+  // Filter out non-numeric, NaN, and Infinity values
+  const validData = data.filter(v => typeof v === 'number' && isFinite(v) && !isNaN(v));
+  if (validData.length === 0) return [];
+
+  const n = validData.length;
+  const sorted = [...validData].sort((a, b) => a - b);
   const stdDev = d3.deviation(sorted) || 1;
 
   return sorted.map((value, i) => {
@@ -170,7 +174,9 @@ export function calculateProbabilityPlotData(data: number[]): ProbabilityPlotPoi
 
     // Standard error of percentile (approximation)
     const pdf = normalPDF(z);
-    const se = pdf > 0 ? (stdDev * Math.sqrt((p * (1 - p)) / n)) / pdf : 0;
+    const rawSe = pdf > 0 ? (stdDev * Math.sqrt((p * (1 - p)) / n)) / pdf : 0;
+    // Cap SE at 10x stdDev to prevent CI explosion from tiny PDF values at extremes
+    const se = Math.min(rawSe, stdDev * 10);
 
     // 95% CI
     const zCrit = 1.96;
