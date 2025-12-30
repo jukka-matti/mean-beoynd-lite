@@ -5,11 +5,13 @@ import { scaleLinear, scaleBand } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { Line } from '@visx/shape';
 import { withParentSize } from '@visx/responsive';
-import { bin } from 'd3-array';
+import { bin, Bin } from 'd3';
 import {
   useResponsiveChartMargins,
   useResponsiveChartFonts,
 } from '../../hooks/useResponsiveChartMargins';
+
+type HistogramBin = Bin<number, number>;
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 import ChartSignature from './ChartSignature';
 
@@ -35,7 +37,7 @@ const CapabilityHistogram = ({
   const width = Math.max(0, parentWidth - margin.left - margin.right);
   const height = Math.max(0, parentHeight - margin.top - margin.bottom);
 
-  const bins = useMemo(() => {
+  const bins: HistogramBin[] = useMemo(() => {
     if (data.length === 0) return [];
 
     const minVal = Math.min(...data);
