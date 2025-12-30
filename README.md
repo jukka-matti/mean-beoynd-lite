@@ -211,7 +211,6 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [docs/MONOREPO_ARCHITECTURE.md](docs/
 - [x] Excel Add-in with Task Pane and Content Add-in
 - [x] Shared charts package (@variscout/charts)
 - [ ] Excel Copilot integration
-- [ ] PDF report generation
 - [ ] Batch file processing
 
 See [Specs.md](Specs.md) for detailed feature specifications.

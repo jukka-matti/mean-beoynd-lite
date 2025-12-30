@@ -404,11 +404,6 @@ When configured:
 - CSV (with spec status column)
 - .vrs project files (JSON format)
 
-**Planned (Future Release):**
-
-- PDF (one-page summary)
-- Simple PowerPoint (3 slides: charts + stats)
-
 ### 8. Branding (Implemented)
 
 **Chart Footer Source Bar:**
@@ -557,7 +552,6 @@ VaRiScout Pro (paid)
 | Excel Add-in          | Done    | Task Pane wizard + Content Add-in charts      |
 | **Completed**         | ✓       | Core features + Excel Add-in implemented      |
 | Excel Copilot         | Planned | Natural language queries                      |
-| PDF/PPT Export        | Planned | Future release                                |
 
 ---
 
