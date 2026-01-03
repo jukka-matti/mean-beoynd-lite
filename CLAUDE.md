@@ -71,6 +71,7 @@ variscout-lite/
 - `ARCHITECTURE.md` - Technical details
 - `docs/MONOREPO_ARCHITECTURE.md` - Package structure
 - `Specs.md` - Feature specifications
+- `docs/design-system/` - **Design system** (colors, typography, components, charts)
 - `docs/concepts/EXCEL_ADDIN_STRATEGY.md` - Excel Add-in approach
 - `docs/concepts/LSS_TRAINER_STRATEGY.md` - LSS training features (ANOVA, Regression, Gage R&R)
 - `docs/concepts/MONETIZATION_CONCEPT.md` - Product portfolio and pricing
