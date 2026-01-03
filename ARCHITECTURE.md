@@ -351,3 +351,30 @@ The Excel Add-in uses a **Hybrid Approach**: native Excel slicers for filtering 
 Configuration is persisted in Excel document via Custom Document Properties, allowing the analysis to survive document save/reload cycles.
 
 > **See also:** [docs/concepts/EXCEL_ADDIN_STRATEGY.md](docs/concepts/EXCEL_ADDIN_STRATEGY.md) for the full strategic analysis.
+
+## 11. Performance Budget
+
+| Metric              | Budget          |
+| ------------------- | --------------- |
+| Initial bundle      | < 200KB gzipped |
+| Total app size      | < 700KB         |
+| LCP                 | < 2.5s          |
+| FID                 | < 100ms         |
+| CLS                 | < 0.1           |
+| Time to Interactive | < 3s            |
+
+## 12. Browser Support
+
+| Browser | Minimum Version |
+| ------- | --------------- |
+| Chrome  | 90+             |
+| Firefox | 90+             |
+| Safari  | 14+             |
+| Edge    | 90+             |
+
+### Required APIs
+
+- IndexedDB (project storage)
+- Service Workers (offline capability)
+- Web Crypto API (license validation)
+- ES2020+

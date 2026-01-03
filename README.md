@@ -63,11 +63,11 @@ A lightweight, offline-first variation analysis tool for quality professionals. 
 
 ### Editions
 
-| Edition       | Price | Features                                           |
-| ------------- | ----- | -------------------------------------------------- |
-| **Community** | Free  | Full features, "VariScout Lite" branding on charts |
-| **ITC**       | Free  | Full features, ITC branding (for ITC network)      |
-| **Licensed**  | €39   | Full features, no branding                         |
+| Edition       | Price    | Features                                           |
+| ------------- | -------- | -------------------------------------------------- |
+| **Community** | Free     | Full features, "VariScout Lite" branding on charts |
+| **ITC**       | Free     | Full features, ITC branding (for ITC network)      |
+| **Licensed**  | €49/year | Full features, no branding                         |
 
 Activate Licensed edition by entering a license key in Settings → License.
 

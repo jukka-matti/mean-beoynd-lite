@@ -593,13 +593,44 @@ NO backend. NO API calls. Works offline after first visit.
 
 ---
 
-## Editions (Implemented)
+## Editions & Freemium Model
 
-| Edition       | Footer Bar                        | Distribution           | Price  |
-| ------------- | --------------------------------- | ---------------------- | ------ |
-| **Community** | "VariScout Lite" + n=             | Public web             | Free   |
-| **ITC**       | "International Trade Centre" + n= | ITC network            | Free   |
-| **Pro**       | None (hidden)                     | License key activation | €39-49 |
+### Editions
+
+| Edition       | Footer Bar                        | Distribution           | Price    |
+| ------------- | --------------------------------- | ---------------------- | -------- |
+| **Community** | "VariScout Lite" + n=             | Public web             | Free     |
+| **ITC**       | "International Trade Centre" + n= | ITC network            | Free     |
+| **Licensed**  | None (hidden)                     | License key activation | €49/year |
+
+### Freemium Model: Free vs Licensed
+
+| Feature                      | Free            | Licensed (€49/year) |
+| ---------------------------- | --------------- | ------------------- |
+| All chart types              | ✓               | ✓                   |
+| Full analysis features       | ✓               | ✓                   |
+| Copy to clipboard            | ✓ (watermark)   | ✓                   |
+| Export PNG/CSV               | ✓ (watermark)   | ✓                   |
+| **Save projects**            | ❌ Session only | ✓                   |
+| **Export/import .vrs files** | ❌              | ✓                   |
+| **Save templates**           | ❌              | ✓                   |
+| **Watermark-free exports**   | ❌              | ✓                   |
+| Priority support             | ❌              | ✓                   |
+
+**Key insight:** Save is the upgrade gate, not just watermark removal.
+
+- **Free = Try everything**, do quick one-off analyses
+- **Licensed = Save your work**, share with colleagues
+
+### Upgrade Triggers
+
+| Trigger                         | Action                                     |
+| ------------------------------- | ------------------------------------------ |
+| Click "Save Project"            | Show upgrade prompt with features list     |
+| Browser close with unsaved data | Show warning (optional, can disable)       |
+| Export chart                    | Show watermark, mention upgrade removes it |
+
+**"Don't show again" option:** Users can opt out of upgrade prompts in Settings. The upgrade option remains visible in Settings → License.
 
 **Build Commands:**
 
@@ -716,6 +747,54 @@ Measurement System Analysis (MSA) tab:
 - Variance breakdown chart (Part-to-Part vs Repeatability vs Reproducibility)
 - %GRR result with verdict (< 10% Excellent, 10-30% Marginal, > 30% Unacceptable)
 - Operator × Part interaction plot
+
+---
+
+## Competitive Positioning
+
+### vs Minitab
+
+| Aspect         | Minitab          | VaRiScout            |
+| -------------- | ---------------- | -------------------- |
+| Price          | $1,000+/year     | €49/year or free     |
+| Installation   | Desktop software | Browser (no install) |
+| Learning curve | Steep            | Minimal              |
+| Feature depth  | Deep (30 years)  | Focused (essentials) |
+| Target         | Statisticians    | Everyone             |
+
+### vs Excel
+
+| Aspect           | Excel              | VaRiScout    |
+| ---------------- | ------------------ | ------------ |
+| Setup            | Build from scratch | Ready to use |
+| Control limits   | Manual calculation | Automatic    |
+| Linked filtering | Complex            | One click    |
+| Export quality   | Varies             | Consistent   |
+
+### Positioning Statement
+
+> "VaRiScout is for practitioners who need answers, not statisticians who need tools. Simple enough for anyone. Rigorous enough for experts."
+
+---
+
+## Success Metrics
+
+### Product Metrics
+
+| Metric                      | Target        |
+| --------------------------- | ------------- |
+| Time to first chart         | < 2 minutes   |
+| Free → Paid conversion      | 5-10%         |
+| Monthly active users (free) | 1,000+        |
+| Paid subscribers            | 100+ (Year 1) |
+
+### Business Metrics
+
+| Metric               | Year 1 Target |
+| -------------------- | ------------- |
+| ARR (PWA + Excel)    | €25,000       |
+| Support tickets/user | < 0.1         |
+| Churn rate           | < 20%         |
 
 ---
 

@@ -49,7 +49,7 @@ variscout-lite/
 | --------- | --------------------- | -------------------------- |
 | Community | "VariScout Lite"      | `pnpm build:pwa:community` |
 | ITC       | "ITC" branding        | `pnpm build:pwa:itc`       |
-| Licensed  | No branding (€39 key) | `pnpm build:pwa:licensed`  |
+| Licensed  | No branding (€49 key) | `pnpm build:pwa:licensed`  |
 
 ## Key Files
 
@@ -62,6 +62,8 @@ variscout-lite/
 | `apps/excel-addin/src/lib/stateBridge.ts` | Excel state sync                               |
 | `docs/concepts/LSS_TRAINER_STRATEGY.md`   | Green Belt training feature roadmap            |
 | `docs/concepts/POWER_BI_STRATEGY.md`      | Power BI Custom Visual strategy                |
+| `docs/concepts/SUBSCRIPTION_LICENSING.md` | Paddle integration, license key system         |
+| `docs/technical/`                         | PWA storage, deployment, implementation specs  |
 
 > Use `Read` tool to examine these files when needed.
 
@@ -72,6 +74,7 @@ variscout-lite/
 - `docs/MONOREPO_ARCHITECTURE.md` - Package structure
 - `Specs.md` - Feature specifications
 - `docs/design-system/` - **Design system** (colors, typography, components, charts)
+- `docs/technical/` - **Technical specs** (storage, deployment)
 - `docs/concepts/EXCEL_ADDIN_STRATEGY.md` - Excel Add-in approach
 - `docs/concepts/LSS_TRAINER_STRATEGY.md` - LSS training features (ANOVA, Regression, Gage R&R)
-- `docs/concepts/MONETIZATION_CONCEPT.md` - Product portfolio and pricing
+- `docs/concepts/SUBSCRIPTION_LICENSING.md` - Licensing & Paddle integration
