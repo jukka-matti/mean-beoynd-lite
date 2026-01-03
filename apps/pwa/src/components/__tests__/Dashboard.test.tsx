@@ -1,113 +1,121 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import Dashboard from '../Dashboard';
-import { DataProvider } from '../../context/DataContext';
-import * as DataContextModule from '../../context/DataContext'; // Import entire module
+import * as DataContextModule from '../../context/DataContext';
+import * as CoreModule from '@variscout/core';
 
-// Mock react-resizable-panels to avoid CSS style issues in jsdom
-vi.mock('react-resizable-panels', () => ({
-  Group: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div data-testid="panel-group" className={className}>
-      {children}
-    </div>
-  ),
-  Panel: ({ children }: { children: React.ReactNode }) => <div data-testid="panel">{children}</div>,
-  Separator: ({ className }: { className?: string }) => (
-    <div data-testid="separator" className={className} />
-  ),
-}));
-
-// Mock the Visual Charts
-vi.mock('../charts/IChart', () => ({
-  default: () => <div data-testid="i-chart">I-Chart Mock</div>,
-}));
-vi.mock('../charts/Boxplot', () => ({
-  default: () => <div data-testid="boxplot">Boxplot Mock</div>,
-}));
+// Mock components
+vi.mock('../charts/IChart', () => ({ default: () => <div data-testid="i-chart">I-Chart</div> }));
+vi.mock('../charts/Boxplot', () => ({ default: () => <div data-testid="boxplot">Boxplot</div> }));
 vi.mock('../charts/ParetoChart', () => ({
-  default: () => <div data-testid="pareto-chart">Pareto Mock</div>,
+  default: () => <div data-testid="pareto-chart">Pareto</div>,
+}));
+vi.mock('../StatsPanel', () => ({
+  default: () => <div data-testid="stats-panel">Stats Panel</div>,
+}));
+vi.mock('../RegressionPanel', () => ({
+  default: () => <div data-testid="regression-panel">Regression Panel</div>,
+}));
+vi.mock('../GageRRPanel', () => ({
+  default: () => <div data-testid="gagerr-panel">Gage R&R Panel</div>,
+}));
+vi.mock('../AnovaResults', () => ({
+  default: () => <div data-testid="anova-results">ANOVA Results</div>,
 }));
 
-describe('Dashboard Component - Empty State', () => {
-  it('should render nothing when no outcome is selected', () => {
-    render(
-      <DataProvider>
-        <Dashboard />
-      </DataProvider>
-    );
-    expect(screen.queryByText('Analysis Summary')).toBeNull();
-  });
+// Mock resizable panels
+vi.mock('react-resizable-panels', () => ({
+  Group: ({ children }: any) => <div>{children}</div>,
+  Panel: ({ children }: any) => <div>{children}</div>,
+  Separator: () => <div>Separator</div>,
+}));
+
+// Mock html-to-image
+vi.mock('html-to-image', () => ({
+  toBlob: vi.fn(),
+}));
+
+// Mock core functions
+vi.mock('@variscout/core', async () => {
+  const actual = await vi.importActual('@variscout/core');
+  return {
+    ...actual,
+    calculateAnova: vi.fn(),
+  };
 });
 
-describe('Dashboard Component - With Data', () => {
-  it('should render analysis summary and charts', () => {
-    // Spy on useData to return mocked data
-    vi.spyOn(DataContextModule, 'useData').mockReturnValue({
-      outcome: 'Diameter',
-      factors: ['Machine'],
-      timeColumn: null,
-      stats: {
-        mean: 10,
-        stdDev: 1,
-        ucl: 13,
-        lcl: 7,
-        cp: 1.0,
-        cpk: 1.0,
-        outOfSpecPercentage: 5.5,
-      },
-      specs: { usl: 13, lsl: 7 },
-      filteredData: [
-        { Diameter: 10, Machine: 'Machine A' },
-        { Diameter: 11, Machine: 'Machine A' },
-        { Diameter: 10.5, Machine: 'Machine A' },
-        { Diameter: 9, Machine: 'Machine B' },
-        { Diameter: 9.5, Machine: 'Machine B' },
-        { Diameter: 12, Machine: 'Machine C' },
-      ],
-      filters: {},
-      grades: [],
-      rawData: [],
-      setRawData: vi.fn(),
-      setOutcome: vi.fn(),
-      setFactors: vi.fn(),
-      setSpecs: vi.fn(),
-      setGrades: vi.fn(),
-      axisSettings: {},
-      setAxisSettings: vi.fn(),
-      setFilters: vi.fn(),
-      columnAliases: {},
-      setColumnAliases: vi.fn(),
-      valueLabels: {},
-      setValueLabels: vi.fn(),
-      displayOptions: { showCp: false, showCpk: true },
-      setDisplayOptions: vi.fn(),
-      // Persistence properties
-      currentProjectId: null,
-      currentProjectName: null,
-      hasUnsavedChanges: false,
-      dataFilename: null,
-      setDataFilename: vi.fn(),
-      saveProject: vi.fn(),
-      loadProject: vi.fn(),
-      listProjects: vi.fn(),
-      deleteProject: vi.fn(),
-      renameProject: vi.fn(),
-      exportProject: vi.fn(),
-      importProject: vi.fn(),
-      newProject: vi.fn(),
-    });
+describe('Dashboard', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const mockDataCtx = {
+    outcome: 'Result',
+    factors: ['Machine'],
+    rawData: [{ Result: 10, Machine: 'A' }],
+    filteredData: [{ Result: 10, Machine: 'A' }],
+    stats: { mean: 10, ucl: 12, lcl: 8 },
+    specs: {},
+    setOutcome: vi.fn(),
+  };
+
+  it('renders Analysis tab by default', () => {
+    vi.spyOn(DataContextModule, 'useData').mockReturnValue(mockDataCtx as any);
 
     render(<Dashboard />);
 
-    // I-Chart label and outcome selector are separate elements now
-    expect(screen.getByText('I-Chart:')).toBeInTheDocument();
-    expect(screen.getByText('Summary')).toBeInTheDocument(); // Tab button
-    expect(screen.getByText('Histogram')).toBeInTheDocument(); // Tab button
-    expect(screen.getByText('5.5%')).toBeInTheDocument();
+    expect(screen.getByText('Analysis')).toHaveClass('bg-blue-600'); // Active
     expect(screen.getByTestId('i-chart')).toBeInTheDocument();
     expect(screen.getByTestId('boxplot')).toBeInTheDocument();
-    expect(screen.getByTestId('pareto-chart')).toBeInTheDocument();
+    expect(screen.getByTestId('stats-panel')).toBeInTheDocument();
+  });
 
-    vi.restoreAllMocks();
+  it('switches to Regression tab', () => {
+    vi.spyOn(DataContextModule, 'useData').mockReturnValue(mockDataCtx as any);
+
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByText('Regression'));
+
+    expect(screen.getByText('Regression')).toHaveClass('bg-blue-600');
+    expect(screen.getByTestId('regression-panel')).toBeInTheDocument();
+    expect(screen.queryByTestId('i-chart')).not.toBeInTheDocument();
+  });
+
+  it('switches to Gage R&R tab', () => {
+    vi.spyOn(DataContextModule, 'useData').mockReturnValue(mockDataCtx as any);
+
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByText('Gage R&R'));
+
+    expect(screen.getByText('Gage R&R')).toHaveClass('bg-blue-600');
+    expect(screen.getByTestId('gagerr-panel')).toBeInTheDocument();
+  });
+
+  it('renders AnovaResults when ANOVA calculation succeeds', () => {
+    vi.spyOn(DataContextModule, 'useData').mockReturnValue(mockDataCtx as any);
+
+    // Mock calculateAnova to return a result
+    vi.spyOn(CoreModule, 'calculateAnova').mockReturnValue({
+      isSignificant: true,
+      groups: [],
+      // other props...
+    } as any);
+
+    render(<Dashboard />);
+
+    // Need to wait or verify if AnovaResults is rendered
+    expect(screen.getByTestId('anova-results')).toBeInTheDocument();
+  });
+
+  it('does not render AnovaResults when calculation returns null', () => {
+    vi.spyOn(DataContextModule, 'useData').mockReturnValue(mockDataCtx as any);
+
+    vi.spyOn(CoreModule, 'calculateAnova').mockReturnValue(null);
+
+    render(<Dashboard />);
+
+    expect(screen.queryByTestId('anova-results')).not.toBeInTheDocument();
   });
 });
