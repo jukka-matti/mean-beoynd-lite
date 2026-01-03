@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { calculateStats, calculateAnova } from '@variscout/core';
+import {
+  calculateStats,
+  calculateAnova,
+  calculateRegression,
+  calculateGageRR,
+} from '@variscout/core';
 
 describe('Stats Engine', () => {
   it('should calculate basic stats for a normal distribution', () => {
@@ -178,5 +183,401 @@ describe('ANOVA', () => {
     expect(result).not.toBeNull();
     expect(result!.insight).toContain('Fast');
     expect(result!.insight).toContain('best');
+  });
+});
+
+describe('Regression', () => {
+  it('should calculate perfect positive linear relationship', () => {
+    // y = 2x + 1
+    const data = [
+      { X: 1, Y: 3 },
+      { X: 2, Y: 5 },
+      { X: 3, Y: 7 },
+      { X: 4, Y: 9 },
+      { X: 5, Y: 11 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+
+    expect(result).not.toBeNull();
+    expect(result!.linear.slope).toBeCloseTo(2, 5);
+    expect(result!.linear.intercept).toBeCloseTo(1, 5);
+    expect(result!.linear.rSquared).toBeCloseTo(1.0, 5);
+    expect(result!.linear.isSignificant).toBe(true);
+    expect(result!.strengthRating).toBe(5);
+  });
+
+  it('should calculate perfect negative linear relationship', () => {
+    // y = -3x + 20
+    const data = [
+      { X: 1, Y: 17 },
+      { X: 2, Y: 14 },
+      { X: 3, Y: 11 },
+      { X: 4, Y: 8 },
+      { X: 5, Y: 5 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+
+    expect(result).not.toBeNull();
+    expect(result!.linear.slope).toBeCloseTo(-3, 5);
+    expect(result!.linear.intercept).toBeCloseTo(20, 5);
+    expect(result!.linear.rSquared).toBeCloseTo(1.0, 5);
+  });
+
+  it('should detect weak relationship with low R²', () => {
+    // Noisy data with weak relationship
+    const data = [
+      { X: 1, Y: 10 },
+      { X: 2, Y: 5 },
+      { X: 3, Y: 20 },
+      { X: 4, Y: 8 },
+      { X: 5, Y: 15 },
+      { X: 6, Y: 12 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+
+    expect(result).not.toBeNull();
+    expect(result!.linear.rSquared).toBeLessThan(0.5);
+    expect(result!.strengthRating).toBeLessThanOrEqual(2);
+  });
+
+  it('should recommend quadratic for parabolic data', () => {
+    // y = (x-5)² = x² - 10x + 25 (valley at x=5)
+    const data = [
+      { X: 1, Y: 16 },
+      { X: 2, Y: 9 },
+      { X: 3, Y: 4 },
+      { X: 4, Y: 1 },
+      { X: 5, Y: 0 },
+      { X: 6, Y: 1 },
+      { X: 7, Y: 4 },
+      { X: 8, Y: 9 },
+      { X: 9, Y: 16 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+
+    expect(result).not.toBeNull();
+    expect(result!.quadratic).not.toBeNull();
+    expect(result!.quadratic!.rSquared).toBeCloseTo(1.0, 2);
+    expect(result!.quadratic!.optimumX).toBeCloseTo(5, 1);
+    expect(result!.quadratic!.optimumType).toBe('valley');
+    expect(result!.recommendedFit).toBe('quadratic');
+  });
+
+  it('should detect peak in inverted parabola', () => {
+    // y = -(x-3)² + 10 (peak at x=3, y=10)
+    const data = [
+      { X: 0, Y: 1 },
+      { X: 1, Y: 6 },
+      { X: 2, Y: 9 },
+      { X: 3, Y: 10 },
+      { X: 4, Y: 9 },
+      { X: 5, Y: 6 },
+      { X: 6, Y: 1 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+
+    expect(result).not.toBeNull();
+    expect(result!.quadratic).not.toBeNull();
+    expect(result!.recommendedFit).toBe('quadratic');
+    expect(result!.quadratic!.a).toBeLessThan(0); // Concave down
+    expect(result!.quadratic!.optimumX).toBeCloseTo(3, 1);
+    expect(result!.quadratic!.optimumType).toBe('peak');
+  });
+
+  it('should generate insight for positive relationship', () => {
+    const data = [
+      { Speed: 10, Output: 100 },
+      { Speed: 20, Output: 150 },
+      { Speed: 30, Output: 200 },
+      { Speed: 40, Output: 250 },
+    ];
+
+    const result = calculateRegression(data, 'Speed', 'Output');
+
+    expect(result).not.toBeNull();
+    expect(result!.insight).toContain('higher');
+  });
+
+  it('should generate insight for negative relationship', () => {
+    const data = [
+      { Temperature: 10, Viscosity: 100 },
+      { Temperature: 20, Viscosity: 80 },
+      { Temperature: 30, Viscosity: 60 },
+      { Temperature: 40, Viscosity: 40 },
+    ];
+
+    const result = calculateRegression(data, 'Temperature', 'Viscosity');
+
+    expect(result).not.toBeNull();
+    expect(result!.insight).toContain('lower');
+  });
+
+  it('should generate insight for optimum point', () => {
+    // Parabola with clear optimum
+    const data = [
+      { X: 0, Y: 10 },
+      { X: 1, Y: 8 },
+      { X: 2, Y: 5 },
+      { X: 3, Y: 5 },
+      { X: 4, Y: 8 },
+      { X: 5, Y: 10 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+
+    expect(result).not.toBeNull();
+    if (result!.recommendedFit === 'quadratic') {
+      expect(result!.insight).toMatch(/optimum|minimum/i);
+    }
+  });
+
+  it('should return null for insufficient data', () => {
+    const data = [
+      { X: 1, Y: 5 },
+      { X: 2, Y: 10 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+    expect(result).toBeNull();
+  });
+
+  it('should return null for empty data', () => {
+    const result = calculateRegression([], 'X', 'Y');
+    expect(result).toBeNull();
+  });
+
+  it('should return null for missing columns', () => {
+    const data = [
+      { X: 1, Y: 5 },
+      { X: 2, Y: 10 },
+      { X: 3, Y: 15 },
+    ];
+
+    const result = calculateRegression(data, 'Missing', 'Y');
+    expect(result).toBeNull();
+  });
+
+  it('should handle constant Y values', () => {
+    const data = [
+      { X: 1, Y: 10 },
+      { X: 2, Y: 10 },
+      { X: 3, Y: 10 },
+      { X: 4, Y: 10 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+
+    expect(result).not.toBeNull();
+    expect(result!.linear.slope).toBeCloseTo(0, 5);
+    expect(result!.recommendedFit).toBe('none');
+  });
+
+  it('should provide data points in result', () => {
+    const data = [
+      { X: 1, Y: 3 },
+      { X: 2, Y: 5 },
+      { X: 3, Y: 7 },
+    ];
+
+    const result = calculateRegression(data, 'X', 'Y');
+
+    expect(result).not.toBeNull();
+    expect(result!.points).toHaveLength(3);
+    expect(result!.points[0]).toEqual({ x: 1, y: 3 });
+    expect(result!.n).toBe(3);
+  });
+
+  it('should assign correct strength ratings', () => {
+    // Test R² = 0.95 -> 5 stars
+    const strongData = [
+      { X: 1, Y: 1.0 },
+      { X: 2, Y: 2.1 },
+      { X: 3, Y: 2.9 },
+      { X: 4, Y: 4.0 },
+      { X: 5, Y: 5.1 },
+    ];
+
+    const strongResult = calculateRegression(strongData, 'X', 'Y');
+    expect(strongResult).not.toBeNull();
+    expect(strongResult!.linear.rSquared).toBeGreaterThan(0.9);
+    expect(strongResult!.strengthRating).toBe(5);
+  });
+});
+
+describe('Gage R&R', () => {
+  // Standard Gage R&R study: 3 operators, 5 parts, 2 replicates
+  const standardStudy = [
+    // Operator A
+    { Part: '1', Operator: 'A', Measurement: 10.1 },
+    { Part: '1', Operator: 'A', Measurement: 10.2 },
+    { Part: '2', Operator: 'A', Measurement: 12.0 },
+    { Part: '2', Operator: 'A', Measurement: 12.1 },
+    { Part: '3', Operator: 'A', Measurement: 15.0 },
+    { Part: '3', Operator: 'A', Measurement: 15.1 },
+    // Operator B
+    { Part: '1', Operator: 'B', Measurement: 10.0 },
+    { Part: '1', Operator: 'B', Measurement: 10.3 },
+    { Part: '2', Operator: 'B', Measurement: 12.2 },
+    { Part: '2', Operator: 'B', Measurement: 12.0 },
+    { Part: '3', Operator: 'B', Measurement: 15.2 },
+    { Part: '3', Operator: 'B', Measurement: 15.0 },
+    // Operator C
+    { Part: '1', Operator: 'C', Measurement: 10.1 },
+    { Part: '1', Operator: 'C', Measurement: 10.1 },
+    { Part: '2', Operator: 'C', Measurement: 12.1 },
+    { Part: '2', Operator: 'C', Measurement: 12.1 },
+    { Part: '3', Operator: 'C', Measurement: 15.1 },
+    { Part: '3', Operator: 'C', Measurement: 15.0 },
+  ];
+
+  it('should calculate correct study dimensions', () => {
+    const result = calculateGageRR(standardStudy, 'Part', 'Operator', 'Measurement');
+
+    expect(result).not.toBeNull();
+    expect(result!.partCount).toBe(3);
+    expect(result!.operatorCount).toBe(3);
+    expect(result!.replicates).toBe(2);
+    expect(result!.totalMeasurements).toBe(18);
+  });
+
+  it('should detect excellent measurement system', () => {
+    // Study with low measurement variation, high part variation
+    const excellentData = [
+      { Part: '1', Operator: 'A', Measurement: 10.0 },
+      { Part: '1', Operator: 'A', Measurement: 10.01 },
+      { Part: '2', Operator: 'A', Measurement: 50.0 },
+      { Part: '2', Operator: 'A', Measurement: 50.01 },
+      { Part: '1', Operator: 'B', Measurement: 10.0 },
+      { Part: '1', Operator: 'B', Measurement: 10.01 },
+      { Part: '2', Operator: 'B', Measurement: 50.0 },
+      { Part: '2', Operator: 'B', Measurement: 50.01 },
+    ];
+
+    const result = calculateGageRR(excellentData, 'Part', 'Operator', 'Measurement');
+
+    expect(result).not.toBeNull();
+    expect(result!.pctGRR).toBeLessThan(10);
+    expect(result!.verdict).toBe('excellent');
+  });
+
+  it('should detect unacceptable measurement system', () => {
+    // Study with high measurement variation, low part variation
+    const poorData = [
+      { Part: '1', Operator: 'A', Measurement: 10.0 },
+      { Part: '1', Operator: 'A', Measurement: 15.0 }, // 50% variation within operator!
+      { Part: '2', Operator: 'A', Measurement: 11.0 },
+      { Part: '2', Operator: 'A', Measurement: 16.0 },
+      { Part: '1', Operator: 'B', Measurement: 8.0 },
+      { Part: '1', Operator: 'B', Measurement: 13.0 },
+      { Part: '2', Operator: 'B', Measurement: 9.0 },
+      { Part: '2', Operator: 'B', Measurement: 14.0 },
+    ];
+
+    const result = calculateGageRR(poorData, 'Part', 'Operator', 'Measurement');
+
+    expect(result).not.toBeNull();
+    expect(result!.pctGRR).toBeGreaterThan(30);
+    expect(result!.verdict).toBe('unacceptable');
+  });
+
+  it('should calculate interaction data for plot', () => {
+    const result = calculateGageRR(standardStudy, 'Part', 'Operator', 'Measurement');
+
+    expect(result).not.toBeNull();
+    expect(result!.interactionData).toHaveLength(9); // 3 parts × 3 operators
+
+    // Check first interaction point
+    const part1OpA = result!.interactionData.find(d => d.part === '1' && d.operator === 'A');
+    expect(part1OpA).toBeDefined();
+    expect(part1OpA!.mean).toBeCloseTo(10.15, 2); // (10.1 + 10.2) / 2
+  });
+
+  it('should return null for insufficient data', () => {
+    // Only 1 replicate
+    const singleReplicate = [
+      { Part: '1', Operator: 'A', Measurement: 10.0 },
+      { Part: '2', Operator: 'A', Measurement: 12.0 },
+      { Part: '1', Operator: 'B', Measurement: 10.1 },
+      { Part: '2', Operator: 'B', Measurement: 12.1 },
+    ];
+
+    const result = calculateGageRR(singleReplicate, 'Part', 'Operator', 'Measurement');
+    expect(result).toBeNull();
+  });
+
+  it('should return null for single part', () => {
+    const singlePart = [
+      { Part: '1', Operator: 'A', Measurement: 10.0 },
+      { Part: '1', Operator: 'A', Measurement: 10.1 },
+      { Part: '1', Operator: 'B', Measurement: 10.0 },
+      { Part: '1', Operator: 'B', Measurement: 10.1 },
+    ];
+
+    const result = calculateGageRR(singlePart, 'Part', 'Operator', 'Measurement');
+    expect(result).toBeNull();
+  });
+
+  it('should return null for single operator', () => {
+    const singleOperator = [
+      { Part: '1', Operator: 'A', Measurement: 10.0 },
+      { Part: '1', Operator: 'A', Measurement: 10.1 },
+      { Part: '2', Operator: 'A', Measurement: 12.0 },
+      { Part: '2', Operator: 'A', Measurement: 12.1 },
+    ];
+
+    const result = calculateGageRR(singleOperator, 'Part', 'Operator', 'Measurement');
+    expect(result).toBeNull();
+  });
+
+  it('should return null for empty data', () => {
+    const result = calculateGageRR([], 'Part', 'Operator', 'Measurement');
+    expect(result).toBeNull();
+  });
+
+  it('should handle missing columns gracefully', () => {
+    const result = calculateGageRR(standardStudy, 'MissingColumn', 'Operator', 'Measurement');
+    expect(result).toBeNull();
+  });
+
+  it('should calculate reproducibility as sum of operator and interaction', () => {
+    const result = calculateGageRR(standardStudy, 'Part', 'Operator', 'Measurement');
+
+    expect(result).not.toBeNull();
+    // Reproducibility = Operator variance + Interaction variance
+    expect(result!.varReproducibility).toBeCloseTo(
+      result!.varOperator + result!.varInteraction,
+      10
+    );
+  });
+
+  it('should calculate GRR as sum of repeatability and reproducibility', () => {
+    const result = calculateGageRR(standardStudy, 'Part', 'Operator', 'Measurement');
+
+    expect(result).not.toBeNull();
+    // GRR = Repeatability + Reproducibility
+    expect(result!.varGRR).toBeCloseTo(result!.varRepeatability + result!.varReproducibility, 10);
+  });
+
+  it('should have total variance equal to Part + GRR', () => {
+    const result = calculateGageRR(standardStudy, 'Part', 'Operator', 'Measurement');
+
+    expect(result).not.toBeNull();
+    // Total = Part + GRR
+    expect(result!.varTotal).toBeCloseTo(result!.varPart + result!.varGRR, 10);
+  });
+
+  it('should have percentages based on standard deviations', () => {
+    const result = calculateGageRR(standardStudy, 'Part', 'Operator', 'Measurement');
+
+    expect(result).not.toBeNull();
+
+    // %GRR = σ_GRR / σ_Total × 100
+    const expectedPctGRR = (Math.sqrt(result!.varGRR) / Math.sqrt(result!.varTotal)) * 100;
+    expect(result!.pctGRR).toBeCloseTo(expectedPctGRR, 5);
   });
 });

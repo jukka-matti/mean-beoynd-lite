@@ -14,6 +14,11 @@ export type {
   ConformanceResult,
   AnovaResult,
   AnovaGroup,
+  RegressionResult,
+  LinearFit,
+  QuadraticFit,
+  GageRRResult,
+  GageRRInteraction,
 } from './types';
 
 // Statistics
@@ -25,6 +30,8 @@ export {
   calculateConformance,
   groupDataByFactor,
   calculateAnova,
+  calculateRegression,
+  calculateGageRR,
 } from './stats';
 
 // License

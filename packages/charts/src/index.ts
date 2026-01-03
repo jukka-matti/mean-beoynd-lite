@@ -24,6 +24,10 @@ export type {
   ChartFonts,
 } from './types';
 
+export type { ScatterPlotProps } from './ScatterPlot';
+export type { GageRRChartProps } from './GageRRChart';
+export type { InteractionPlotProps } from './InteractionPlot';
+
 // Helper functions
 export { calculateBoxplotStats } from './types';
 
@@ -42,4 +46,7 @@ export { default as Boxplot, BoxplotBase } from './Boxplot';
 export { default as ParetoChart, ParetoChartBase } from './ParetoChart';
 export { default as CapabilityHistogram, CapabilityHistogramBase } from './CapabilityHistogram';
 export { default as ProbabilityPlot, ProbabilityPlotBase } from './ProbabilityPlot';
+export { default as ScatterPlot, ScatterPlotBase } from './ScatterPlot';
+export { default as GageRRChart, GageRRChartBase } from './GageRRChart';
+export { default as InteractionPlot, InteractionPlotBase } from './InteractionPlot';
 export { default as ChartSourceBar, getSourceBarHeight } from './ChartSourceBar';

@@ -6,6 +6,11 @@ import type {
   ConformanceResult,
   AnovaResult,
   AnovaGroup,
+  RegressionResult,
+  LinearFit,
+  QuadraticFit,
+  GageRRResult,
+  GageRRInteraction,
 } from './types';
 
 // Re-export types for convenience
@@ -15,6 +20,11 @@ export type {
   ConformanceResult,
   AnovaResult,
   AnovaGroup,
+  RegressionResult,
+  LinearFit,
+  QuadraticFit,
+  GageRRResult,
+  GageRRInteraction,
 } from './types';
 
 /**
@@ -544,4 +554,545 @@ function generateAnovaInsight(
   } else {
     return `${highest.name} is best (${highest.mean.toFixed(1)} avg)`;
   }
+}
+
+/**
+ * Calculate p-value from t-distribution (two-tailed)
+ * Used for testing significance of regression slope
+ *
+ * @param t - t-statistic value
+ * @param df - Degrees of freedom
+ * @returns Two-tailed p-value
+ */
+function tDistributionPValue(t: number, df: number): number {
+  if (df <= 0) return 1;
+  if (!isFinite(t)) return 0;
+
+  // Use relationship between t-distribution and F-distribution
+  // t² with df degrees of freedom = F(1, df)
+  const f = t * t;
+  return fDistributionPValue(f, 1, df);
+}
+
+/**
+ * Calculate linear regression fit using least squares
+ *
+ * @param points - Array of {x, y} data points
+ * @returns LinearFit with slope, intercept, R², and p-value
+ */
+function calculateLinearFit(points: Array<{ x: number; y: number }>): LinearFit {
+  const n = points.length;
+
+  if (n < 2) {
+    return { slope: 0, intercept: 0, rSquared: 0, pValue: 1, isSignificant: false };
+  }
+
+  // Calculate means
+  const xMean = d3.mean(points, p => p.x) || 0;
+  const yMean = d3.mean(points, p => p.y) || 0;
+
+  // Calculate sums for least squares
+  let ssXX = 0; // Sum of (x - xMean)²
+  let ssXY = 0; // Sum of (x - xMean)(y - yMean)
+  let ssYY = 0; // Sum of (y - yMean)²
+
+  points.forEach(p => {
+    const dx = p.x - xMean;
+    const dy = p.y - yMean;
+    ssXX += dx * dx;
+    ssXY += dx * dy;
+    ssYY += dy * dy;
+  });
+
+  // Guard against division by zero
+  if (ssXX === 0) {
+    return { slope: 0, intercept: yMean, rSquared: 0, pValue: 1, isSignificant: false };
+  }
+
+  // Calculate slope and intercept
+  const slope = ssXY / ssXX;
+  const intercept = yMean - slope * xMean;
+
+  // Calculate R² (coefficient of determination)
+  const ssRes = points.reduce((sum, p) => {
+    const predicted = slope * p.x + intercept;
+    return sum + Math.pow(p.y - predicted, 2);
+  }, 0);
+
+  const rSquared = ssYY > 0 ? 1 - ssRes / ssYY : 0;
+
+  // Calculate t-statistic for slope significance
+  // t = slope / SE(slope), where SE(slope) = sqrt(MSE / ssXX)
+  const mse = ssRes / (n - 2);
+  const seSlope = Math.sqrt(mse / ssXX);
+
+  // Handle perfect or near-perfect correlation (ssRes ≈ 0)
+  // When residuals are essentially zero, the relationship is significant
+  const isPerfectFit = ssRes < 1e-10 && rSquared > 0.999;
+  const tStat = seSlope > 0 ? Math.abs(slope) / seSlope : isPerfectFit ? Infinity : 0;
+
+  // Calculate p-value (two-tailed)
+  // For perfect fit, p-value is essentially 0
+  const pValue = isPerfectFit ? 0 : n > 2 ? tDistributionPValue(tStat, n - 2) : 1;
+  const isSignificant = pValue < 0.05 || isPerfectFit;
+
+  return { slope, intercept, rSquared, pValue, isSignificant };
+}
+
+/**
+ * Calculate quadratic regression fit: y = a*x² + b*x + c
+ * Uses normal equations solved via matrix operations
+ *
+ * @param points - Array of {x, y} data points
+ * @returns QuadraticFit or null if calculation fails
+ */
+function calculateQuadraticFit(points: Array<{ x: number; y: number }>): QuadraticFit | null {
+  const n = points.length;
+
+  if (n < 3) return null;
+
+  // Build sums for normal equations
+  let sumX = 0,
+    sumX2 = 0,
+    sumX3 = 0,
+    sumX4 = 0;
+  let sumY = 0,
+    sumXY = 0,
+    sumX2Y = 0;
+
+  points.forEach(p => {
+    const x = p.x;
+    const x2 = x * x;
+    sumX += x;
+    sumX2 += x2;
+    sumX3 += x2 * x;
+    sumX4 += x2 * x2;
+    sumY += p.y;
+    sumXY += x * p.y;
+    sumX2Y += x2 * p.y;
+  });
+
+  // Solve 3x3 system using Cramer's rule
+  // [sumX4  sumX3  sumX2] [a]   [sumX2Y]
+  // [sumX3  sumX2  sumX ] [b] = [sumXY ]
+  // [sumX2  sumX   n    ] [c]   [sumY  ]
+
+  const det =
+    sumX4 * (sumX2 * n - sumX * sumX) -
+    sumX3 * (sumX3 * n - sumX * sumX2) +
+    sumX2 * (sumX3 * sumX - sumX2 * sumX2);
+
+  if (Math.abs(det) < 1e-10) return null;
+
+  const detA =
+    sumX2Y * (sumX2 * n - sumX * sumX) -
+    sumX3 * (sumXY * n - sumX * sumY) +
+    sumX2 * (sumXY * sumX - sumX2 * sumY);
+
+  const detB =
+    sumX4 * (sumXY * n - sumX * sumY) -
+    sumX2Y * (sumX3 * n - sumX * sumX2) +
+    sumX2 * (sumX3 * sumY - sumXY * sumX2);
+
+  const detC =
+    sumX4 * (sumX2 * sumY - sumX * sumXY) -
+    sumX3 * (sumX3 * sumY - sumX2 * sumXY) +
+    sumX2Y * (sumX3 * sumX - sumX2 * sumX2);
+
+  const a = detA / det;
+  const b = detB / det;
+  const c = detC / det;
+
+  // Calculate R² for quadratic fit
+  const yMean = sumY / n;
+  let ssRes = 0;
+  let ssTot = 0;
+
+  points.forEach(p => {
+    const predicted = a * p.x * p.x + b * p.x + c;
+    ssRes += Math.pow(p.y - predicted, 2);
+    ssTot += Math.pow(p.y - yMean, 2);
+  });
+
+  const rSquared = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+
+  // Calculate optimum (vertex of parabola: x = -b/2a)
+  let optimumX: number | null = null;
+  let optimumType: 'peak' | 'valley' | null = null;
+
+  if (Math.abs(a) > 1e-10) {
+    optimumX = -b / (2 * a);
+    optimumType = a < 0 ? 'peak' : 'valley';
+
+    // Only report optimum if it's within or near the data range
+    const xMin = d3.min(points, p => p.x) || 0;
+    const xMax = d3.max(points, p => p.x) || 0;
+    const range = xMax - xMin;
+
+    if (optimumX < xMin - range * 0.5 || optimumX > xMax + range * 0.5) {
+      optimumX = null;
+      optimumType = null;
+    }
+  }
+
+  return { a, b, c, rSquared, optimumX, optimumType };
+}
+
+/**
+ * Get star rating (1-5) based on R² value
+ */
+function getStrengthRating(rSquared: number): 1 | 2 | 3 | 4 | 5 {
+  if (rSquared >= 0.9) return 5;
+  if (rSquared >= 0.7) return 4;
+  if (rSquared >= 0.5) return 3;
+  if (rSquared >= 0.3) return 2;
+  return 1;
+}
+
+/**
+ * Generate plain-language insight for regression results
+ */
+function generateRegressionInsight(
+  linear: LinearFit,
+  quadratic: QuadraticFit | null,
+  recommendedFit: 'linear' | 'quadratic' | 'none',
+  xColumn: string,
+  yColumn: string
+): string {
+  // Handle quadratic first (may have weak linear but strong quadratic)
+  if (recommendedFit === 'quadratic' && quadratic && quadratic.optimumX !== null) {
+    const optType = quadratic.optimumType === 'peak' ? 'maximum' : 'minimum';
+    return `${optType.charAt(0).toUpperCase() + optType.slice(1)} ${yColumn} at ${xColumn} ≈ ${quadratic.optimumX.toFixed(1)}`;
+  }
+
+  if (recommendedFit === 'none') {
+    return `No significant relationship between ${xColumn} and ${yColumn}`;
+  }
+
+  // Linear relationship
+  const direction = linear.slope > 0 ? 'Higher' : 'Lower';
+  const effect = linear.slope > 0 ? 'higher' : 'lower';
+  return `${direction} ${xColumn} → ${effect} ${yColumn}`;
+}
+
+/**
+ * Calculate regression analysis for X-Y relationship
+ *
+ * Performs both linear and quadratic regression, recommends the best fit,
+ * and generates plain-language insights.
+ *
+ * @param data - Array of data records
+ * @param xColumn - Column name for predictor (X) variable
+ * @param yColumn - Column name for outcome (Y) variable
+ * @returns RegressionResult with fits, recommendation, and insight
+ *
+ * @example
+ * const result = calculateRegression(data, 'Temperature', 'Yield');
+ * if (result?.recommendedFit === 'quadratic') {
+ *   console.log(`Optimum at ${result.quadratic?.optimumX}`);
+ * }
+ */
+export function calculateRegression<T extends Record<string, unknown>>(
+  data: T[],
+  xColumn: string,
+  yColumn: string
+): RegressionResult | null {
+  // Extract numeric pairs
+  const points: Array<{ x: number; y: number }> = [];
+
+  data.forEach(row => {
+    const x = Number(row[xColumn]);
+    const y = Number(row[yColumn]);
+
+    if (!isNaN(x) && !isNaN(y) && isFinite(x) && isFinite(y)) {
+      points.push({ x, y });
+    }
+  });
+
+  // Need at least 3 points for meaningful regression
+  if (points.length < 3) return null;
+
+  // Calculate linear fit
+  const linear = calculateLinearFit(points);
+
+  // Calculate quadratic fit (need at least 4 points for meaningful quadratic)
+  const quadratic = points.length >= 4 ? calculateQuadraticFit(points) : null;
+
+  // Determine recommended fit
+  let recommendedFit: 'linear' | 'quadratic' | 'none' = 'none';
+
+  // Check if quadratic is strong even if linear isn't
+  const quadraticIsStrong = quadratic && quadratic.rSquared >= 0.5;
+
+  if (quadratic && quadratic.rSquared > linear.rSquared + 0.05 && quadraticIsStrong) {
+    // Recommend quadratic if it improves R² by at least 5% AND is reasonably strong
+    recommendedFit = 'quadratic';
+  } else if (linear.isSignificant) {
+    recommendedFit = 'linear';
+  } else {
+    recommendedFit = 'none';
+  }
+
+  // Get strength rating based on best R²
+  const bestRSquared =
+    quadratic && recommendedFit === 'quadratic' ? quadratic.rSquared : linear.rSquared;
+  const strengthRating = getStrengthRating(bestRSquared);
+
+  // Generate insight
+  const insight = generateRegressionInsight(linear, quadratic, recommendedFit, xColumn, yColumn);
+
+  return {
+    xColumn,
+    yColumn,
+    n: points.length,
+    points,
+    linear,
+    quadratic,
+    recommendedFit,
+    strengthRating,
+    insight,
+  };
+}
+
+/**
+ * Calculate Gage R&R (Measurement System Analysis) using ANOVA method
+ *
+ * Performs a two-way ANOVA with interaction to decompose total variation
+ * into Part-to-Part, Operator, Interaction, and Equipment (Repeatability) components.
+ *
+ * @param data - Array of measurement records
+ * @param partColumn - Column name for Part identifier
+ * @param operatorColumn - Column name for Operator identifier
+ * @param measurementColumn - Column name for measurement values
+ * @returns GageRRResult with variance components and %GRR
+ *
+ * @example
+ * const result = calculateGageRR(data, 'Part_ID', 'Operator', 'Measurement');
+ * if (result?.verdict === 'excellent') {
+ *   console.log('Measurement system is capable');
+ * }
+ */
+export function calculateGageRR<T extends Record<string, unknown>>(
+  data: T[],
+  partColumn: string,
+  operatorColumn: string,
+  measurementColumn: string
+): GageRRResult | null {
+  if (data.length === 0) return null;
+
+  // Extract unique parts and operators
+  const parts = [...new Set(data.map(row => String(row[partColumn])))].filter(
+    p => p !== 'undefined'
+  );
+  const operators = [...new Set(data.map(row => String(row[operatorColumn])))].filter(
+    o => o !== 'undefined'
+  );
+
+  const partCount = parts.length;
+  const operatorCount = operators.length;
+
+  // Need at least 2 parts and 2 operators
+  if (partCount < 2 || operatorCount < 2) return null;
+
+  // Group measurements by Part × Operator
+  const cells: Map<string, number[]> = new Map();
+
+  data.forEach(row => {
+    const part = String(row[partColumn]);
+    const operator = String(row[operatorColumn]);
+    const value = Number(row[measurementColumn]);
+
+    if (part === 'undefined' || operator === 'undefined' || isNaN(value)) return;
+
+    const key = `${part}|${operator}`;
+    if (!cells.has(key)) cells.set(key, []);
+    cells.get(key)!.push(value);
+  });
+
+  // Verify balanced design (equal replicates per cell)
+  const replicateCounts = [...cells.values()].map(v => v.length);
+  if (replicateCounts.length === 0) return null;
+
+  const replicates = replicateCounts[0];
+  const isBalanced = replicateCounts.every(r => r === replicates);
+
+  // Need at least 2 replicates
+  if (replicates < 2) return null;
+
+  // For unbalanced designs, use minimum replicates (simplified approach)
+  const effectiveReplicates = isBalanced ? replicates : Math.min(...replicateCounts);
+
+  const totalMeasurements = data.filter(
+    row =>
+      String(row[partColumn]) !== 'undefined' &&
+      String(row[operatorColumn]) !== 'undefined' &&
+      !isNaN(Number(row[measurementColumn]))
+  ).length;
+
+  // Calculate cell means for interaction data
+  const interactionData: GageRRInteraction[] = [];
+  const cellMeans: Map<string, number> = new Map();
+
+  cells.forEach((values, key) => {
+    const [part, operator] = key.split('|');
+    const mean = d3.mean(values) || 0;
+    cellMeans.set(key, mean);
+    interactionData.push({ part, operator, mean });
+  });
+
+  // Calculate marginal means
+  const partMeans: Map<string, number> = new Map();
+  const operatorMeans: Map<string, number> = new Map();
+
+  parts.forEach(part => {
+    const values: number[] = [];
+    operators.forEach(op => {
+      const key = `${part}|${op}`;
+      const cellVals = cells.get(key);
+      if (cellVals) values.push(...cellVals);
+    });
+    partMeans.set(part, d3.mean(values) || 0);
+  });
+
+  operators.forEach(op => {
+    const values: number[] = [];
+    parts.forEach(part => {
+      const key = `${part}|${op}`;
+      const cellVals = cells.get(key);
+      if (cellVals) values.push(...cellVals);
+    });
+    operatorMeans.set(op, d3.mean(values) || 0);
+  });
+
+  // Grand mean
+  const allValues: number[] = [];
+  cells.forEach(values => allValues.push(...values));
+  const grandMean = d3.mean(allValues) || 0;
+
+  // Two-way ANOVA calculations
+  const n = partCount; // number of parts
+  const k = operatorCount; // number of operators
+  const r = effectiveReplicates; // replicates per cell
+
+  // Sum of Squares
+  // SS_Part = k * r * Σ(part_mean - grand_mean)²
+  let ssPart = 0;
+  parts.forEach(part => {
+    const diff = (partMeans.get(part) || 0) - grandMean;
+    ssPart += diff * diff;
+  });
+  ssPart *= k * r;
+
+  // SS_Operator = n * r * Σ(operator_mean - grand_mean)²
+  let ssOperator = 0;
+  operators.forEach(op => {
+    const diff = (operatorMeans.get(op) || 0) - grandMean;
+    ssOperator += diff * diff;
+  });
+  ssOperator *= n * r;
+
+  // SS_Interaction = r * Σ(cell_mean - part_mean - operator_mean + grand_mean)²
+  let ssInteraction = 0;
+  parts.forEach(part => {
+    operators.forEach(op => {
+      const key = `${part}|${op}`;
+      const cellMean = cellMeans.get(key) || 0;
+      const partMean = partMeans.get(part) || 0;
+      const opMean = operatorMeans.get(op) || 0;
+      const diff = cellMean - partMean - opMean + grandMean;
+      ssInteraction += diff * diff;
+    });
+  });
+  ssInteraction *= r;
+
+  // SS_Error (Repeatability) = ΣΣΣ(x_ijk - cell_mean)²
+  let ssError = 0;
+  cells.forEach((values, key) => {
+    const cellMean = cellMeans.get(key) || 0;
+    values.forEach(v => {
+      ssError += Math.pow(v - cellMean, 2);
+    });
+  });
+
+  // Degrees of freedom
+  const dfPart = n - 1;
+  const dfOperator = k - 1;
+  const dfInteraction = (n - 1) * (k - 1);
+  const dfError = n * k * (r - 1);
+
+  // Mean Squares
+  const msPart = dfPart > 0 ? ssPart / dfPart : 0;
+  const msOperator = dfOperator > 0 ? ssOperator / dfOperator : 0;
+  const msInteraction = dfInteraction > 0 ? ssInteraction / dfInteraction : 0;
+  const msError = dfError > 0 ? ssError / dfError : 0;
+
+  // Variance Components (using Expected Mean Squares)
+  // E[MSE] = σ²_error
+  // E[MS_interaction] = σ²_error + r * σ²_interaction
+  // E[MS_operator] = σ²_error + r * σ²_interaction + n * r * σ²_operator
+  // E[MS_part] = σ²_error + r * σ²_interaction + k * r * σ²_part
+
+  const varRepeatability = msError;
+  const varInteraction = Math.max(0, (msInteraction - msError) / r);
+  const varOperator = Math.max(0, (msOperator - msInteraction) / (n * r));
+  const varPart = Math.max(0, (msPart - msInteraction) / (k * r));
+
+  // Reproducibility = Operator + Interaction
+  const varReproducibility = varOperator + varInteraction;
+
+  // GRR = Repeatability + Reproducibility
+  const varGRR = varRepeatability + varReproducibility;
+
+  // Total = Part + GRR
+  const varTotal = varPart + varGRR;
+
+  // Calculate % contributions (based on σ, using %Study Variation method)
+  // %SV = (σ_component / σ_total) × 100
+  const sigmaTotal = Math.sqrt(varTotal);
+  const sigmaPart = Math.sqrt(varPart);
+  const sigmaRepeatability = Math.sqrt(varRepeatability);
+  const sigmaReproducibility = Math.sqrt(varReproducibility);
+  const sigmaGRR = Math.sqrt(varGRR);
+
+  const pctPart = sigmaTotal > 0 ? (sigmaPart / sigmaTotal) * 100 : 0;
+  const pctRepeatability = sigmaTotal > 0 ? (sigmaRepeatability / sigmaTotal) * 100 : 0;
+  const pctReproducibility = sigmaTotal > 0 ? (sigmaReproducibility / sigmaTotal) * 100 : 0;
+  const pctGRR = sigmaTotal > 0 ? (sigmaGRR / sigmaTotal) * 100 : 0;
+
+  // Determine verdict based on %GRR
+  // AIAG guidelines: <10% excellent, 10-30% may be acceptable, >30% unacceptable
+  let verdict: 'excellent' | 'marginal' | 'unacceptable';
+  let verdictText: string;
+
+  if (pctGRR < 10) {
+    verdict = 'excellent';
+    verdictText = 'Measurement system is acceptable';
+  } else if (pctGRR <= 30) {
+    verdict = 'marginal';
+    verdictText = 'May be acceptable depending on application';
+  } else {
+    verdict = 'unacceptable';
+    verdictText = 'Measurement system needs improvement';
+  }
+
+  return {
+    partCount,
+    operatorCount,
+    replicates: effectiveReplicates,
+    totalMeasurements,
+    varPart,
+    varOperator,
+    varInteraction,
+    varRepeatability,
+    varReproducibility,
+    varGRR,
+    varTotal,
+    pctPart,
+    pctRepeatability,
+    pctReproducibility,
+    pctGRR,
+    verdict,
+    verdictText,
+    interactionData,
+  };
 }

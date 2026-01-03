@@ -134,3 +134,124 @@ export interface AnovaResult {
   /** Plain-language interpretation */
   insight: string;
 }
+
+/**
+ * Linear regression fit results
+ */
+export interface LinearFit {
+  /** Slope coefficient (β₁) */
+  slope: number;
+  /** Y-intercept (β₀) */
+  intercept: number;
+  /** Coefficient of determination (0-1) */
+  rSquared: number;
+  /** P-value for slope significance */
+  pValue: number;
+  /** Whether slope is statistically significant (p < 0.05) */
+  isSignificant: boolean;
+}
+
+/**
+ * Quadratic regression fit results
+ */
+export interface QuadraticFit {
+  /** Coefficient for x² term */
+  a: number;
+  /** Coefficient for x term */
+  b: number;
+  /** Constant term */
+  c: number;
+  /** Coefficient of determination (0-1) */
+  rSquared: number;
+  /** X value at peak or valley (-b/2a) */
+  optimumX: number | null;
+  /** Whether optimum is a peak or valley */
+  optimumType: 'peak' | 'valley' | null;
+}
+
+/**
+ * Result of regression analysis for one X-Y pair
+ */
+export interface RegressionResult {
+  /** X column name */
+  xColumn: string;
+  /** Y column name */
+  yColumn: string;
+  /** Sample size */
+  n: number;
+  /** Raw data points for plotting */
+  points: Array<{ x: number; y: number }>;
+  /** Linear fit: y = slope * x + intercept */
+  linear: LinearFit;
+  /** Quadratic fit: y = a*x² + b*x + c (null if not computed) */
+  quadratic: QuadraticFit | null;
+  /** Which fit is recommended based on R² improvement */
+  recommendedFit: 'linear' | 'quadratic' | 'none';
+  /** Star rating 1-5 based on R² strength */
+  strengthRating: 1 | 2 | 3 | 4 | 5;
+  /** Plain-language insight */
+  insight: string;
+}
+
+/**
+ * Interaction data point for Operator × Part plot
+ */
+export interface GageRRInteraction {
+  /** Part identifier */
+  part: string;
+  /** Operator identifier */
+  operator: string;
+  /** Mean measurement for this Part × Operator combination */
+  mean: number;
+}
+
+/**
+ * Result of Gage R&R (Measurement System Analysis)
+ */
+export interface GageRRResult {
+  // Input summary
+  /** Number of unique parts measured */
+  partCount: number;
+  /** Number of operators */
+  operatorCount: number;
+  /** Number of replicate measurements per Part × Operator */
+  replicates: number;
+  /** Total number of measurements */
+  totalMeasurements: number;
+
+  // Variance components (σ² values)
+  /** Part-to-part variance */
+  varPart: number;
+  /** Operator variance */
+  varOperator: number;
+  /** Operator × Part interaction variance */
+  varInteraction: number;
+  /** Repeatability variance (equipment variation) */
+  varRepeatability: number;
+  /** Reproducibility variance (operator + interaction) */
+  varReproducibility: number;
+  /** Total Gage R&R variance */
+  varGRR: number;
+  /** Total variance (Part + GRR) */
+  varTotal: number;
+
+  // Percentage contributions (based on σ, not σ²)
+  /** % contribution from Part-to-Part */
+  pctPart: number;
+  /** % contribution from Repeatability */
+  pctRepeatability: number;
+  /** % contribution from Reproducibility */
+  pctReproducibility: number;
+  /** % Gage R&R (main result) */
+  pctGRR: number;
+
+  // Verdict
+  /** Overall assessment */
+  verdict: 'excellent' | 'marginal' | 'unacceptable';
+  /** Plain-language verdict description */
+  verdictText: string;
+
+  // For interaction plot
+  /** Data for Operator × Part interaction chart */
+  interactionData: GageRRInteraction[];
+}

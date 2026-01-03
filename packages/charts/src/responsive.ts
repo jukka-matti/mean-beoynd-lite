@@ -5,7 +5,7 @@
 
 import type { ChartMargins, ChartFonts } from './types';
 
-export type ChartType = 'ichart' | 'boxplot' | 'pareto' | 'histogram' | 'probability';
+export type ChartType = 'ichart' | 'boxplot' | 'pareto' | 'histogram' | 'probability' | 'scatter';
 
 /**
  * Calculate responsive margins based on container width
@@ -25,6 +25,7 @@ export function getResponsiveMargins(
     pareto: { top: 20, right: 20, bottom: 60, left: 70 },
     histogram: { top: 20, right: 20, bottom: 40, left: 40 },
     probability: { top: 20, right: 20, bottom: 40, left: 50 },
+    scatter: { top: 30, right: 20, bottom: 50, left: 55 },
   };
 
   const base = baseMargins[chartType];

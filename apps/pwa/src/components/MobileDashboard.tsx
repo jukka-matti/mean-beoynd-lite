@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Activity, BarChart3, PieChart, TrendingUp } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Activity,
+  BarChart3,
+  PieChart,
+  TrendingUp,
+  LineChart,
+  Target,
+} from 'lucide-react';
 import IChart from './charts/IChart';
 import Boxplot from './charts/Boxplot';
 import ParetoChart from './charts/ParetoChart';
 import MobileStatsPanel from './MobileStatsPanel';
 import AnovaResults from './AnovaResults';
+import RegressionPanel from './RegressionPanel';
+import GageRRPanel from './GageRRPanel';
 import ErrorBoundary from './ErrorBoundary';
 import type { StatsResult, AnovaResult } from '@variscout/core';
 
-type ChartView = 'ichart' | 'boxplot' | 'pareto' | 'stats';
+type ChartView = 'ichart' | 'boxplot' | 'pareto' | 'stats' | 'regression' | 'gagerr';
 
 interface MobileDashboardProps {
   outcome: string | null;
@@ -44,6 +55,8 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
     { key: 'boxplot', label: 'Boxplot', icon: <BarChart3 size={18} /> },
     { key: 'pareto', label: 'Pareto', icon: <PieChart size={18} /> },
     { key: 'stats', label: 'Stats', icon: <TrendingUp size={18} /> },
+    { key: 'regression', label: 'Regr', icon: <LineChart size={18} /> },
+    { key: 'gagerr', label: 'GR&R', icon: <Target size={18} /> },
   ];
 
   const currentIndex = views.findIndex(v => v.key === activeView);
@@ -167,6 +180,8 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
                 outcome={outcome}
               />
             )}
+            {activeView === 'regression' && <RegressionPanel />}
+            {activeView === 'gagerr' && <GageRRPanel />}
           </ErrorBoundary>
         </div>
         {activeView === 'boxplot' && anovaResult && (
