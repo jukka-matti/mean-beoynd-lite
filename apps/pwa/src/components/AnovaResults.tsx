@@ -12,7 +12,7 @@ interface AnovaResultsProps {
 const AnovaResults = ({ result, factorLabel }: AnovaResultsProps) => {
   if (!result) return null;
 
-  const { groups, pValue, isSignificant, insight, etaSquared } = result;
+  const { groups, pValue, isSignificant, insight, etaSquared, fStatistic } = result;
 
   // Format p-value for display
   const formatPValue = (p: number): string => {
@@ -61,7 +61,9 @@ const AnovaResults = ({ result, factorLabel }: AnovaResultsProps) => {
           <span className={isSignificant ? 'text-green-400 font-semibold' : 'text-slate-300'}>
             {isSignificant ? 'YES' : 'NO'}
           </span>
-          <span className="text-slate-500 ml-1">(p = {formatPValue(pValue)})</span>
+          <span className="text-slate-500 ml-1">
+            (F = {fStatistic.toFixed(2)}, p = {formatPValue(pValue)})
+          </span>
         </span>
         {etaSquared > 0 && (
           <span className="text-slate-500 text-xs">
