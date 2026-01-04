@@ -1,3 +1,4 @@
+import { HelpCircle } from 'lucide-react';
 import type { AnovaResult } from '@variscout/core';
 
 interface AnovaResultsProps {
@@ -49,13 +50,29 @@ const AnovaResults = ({ result, factorLabel }: AnovaResultsProps) => {
 
       {/* Significance result */}
       <div className="flex items-center gap-4 text-sm mt-2 border-t border-slate-700/50 pt-2">
-        <span className="text-slate-400">
+        <span className="text-slate-400 flex items-center gap-1">
           <span className="font-mono text-slate-300">
             F = {fStatistic.toFixed(2)}, p = {formatPValue(pValue)}
           </span>
+          <span className="tooltip-wrapper">
+            <HelpCircle size={12} className="text-slate-500 hover:text-slate-300 cursor-help" />
+            <span className="tooltip">
+              F-statistic measures group difference strength. p-value is the probability this
+              difference happened by chance. p &lt; 0.05 means statistically significant.
+            </span>
+          </span>
         </span>
         {etaSquared > 0 && (
-          <span className="text-slate-500 text-xs">η² = {etaSquared.toFixed(2)}</span>
+          <span className="text-slate-500 text-xs flex items-center gap-1">
+            η² = {etaSquared.toFixed(2)}
+            <span className="tooltip-wrapper">
+              <HelpCircle size={12} className="text-slate-500 hover:text-slate-300 cursor-help" />
+              <span className="tooltip">
+                Eta-squared (η²) is the effect size. Shows how much variation is explained by the
+                factor. Small &lt; 0.06, medium 0.06-0.14, large &gt; 0.14.
+              </span>
+            </span>
+          </span>
         )}
       </div>
     </div>

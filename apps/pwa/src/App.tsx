@@ -12,6 +12,7 @@ import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
 import FilterBar from './components/FilterBar';
 import { useDataIngestion } from './hooks/useDataIngestion';
+import { SAMPLES } from './data/sampleData';
 import type { ExclusionReason } from './logic/parser';
 
 function App() {
@@ -51,6 +52,29 @@ function App() {
   const [saveInputName, setSaveInputName] = useState('');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+
+  // Embed mode - hides header/footer for iframe embedding
+  const [isEmbedMode, setIsEmbedMode] = useState(false);
+
+  // Handle URL parameters on mount (?sample=xxx&embed=true)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sampleKey = params.get('sample');
+    const embedParam = params.get('embed');
+
+    // Set embed mode if specified
+    if (embedParam === 'true') {
+      setIsEmbedMode(true);
+    }
+
+    // Auto-load sample if specified
+    if (sampleKey && rawData.length === 0) {
+      const sample = SAMPLES.find(s => s.urlKey === sampleKey);
+      if (sample) {
+        loadSample(sample);
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Compute excluded row data for DataTableModal
   const excludedRowIndices = useMemo(() => {
@@ -251,26 +275,29 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-slate-200 font-sans selection:bg-blue-500/30">
-      <AppHeader
-        currentProjectName={currentProjectName}
-        hasUnsavedChanges={hasUnsavedChanges}
-        hasData={rawData.length > 0}
-        dataFilename={dataFilename}
-        rowCount={rawData.length}
-        isSaving={isSaving}
-        onSaveToBrowser={handleSaveToBrowser}
-        onOpenProjects={() => setIsProjectsOpen(true)}
-        onOpenDataTable={() => {
-          setHighlightRowIndex(null); // No highlight when opened from header
-          setIsDataTableOpen(true);
-        }}
-        onDownloadFile={handleDownloadFile}
-        onExportCSV={handleExportCSV}
-        onExportImage={handleExport}
-        onEnterPresentationMode={() => setIsPresentationMode(true)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onReset={handleResetRequest}
-      />
+      {/* Hide header in embed mode */}
+      {!isEmbedMode && (
+        <AppHeader
+          currentProjectName={currentProjectName}
+          hasUnsavedChanges={hasUnsavedChanges}
+          hasData={rawData.length > 0}
+          dataFilename={dataFilename}
+          rowCount={rawData.length}
+          isSaving={isSaving}
+          onSaveToBrowser={handleSaveToBrowser}
+          onOpenProjects={() => setIsProjectsOpen(true)}
+          onOpenDataTable={() => {
+            setHighlightRowIndex(null); // No highlight when opened from header
+            setIsDataTableOpen(true);
+          }}
+          onDownloadFile={handleDownloadFile}
+          onExportCSV={handleExportCSV}
+          onExportImage={handleExport}
+          onEnterPresentationMode={() => setIsPresentationMode(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onReset={handleResetRequest}
+        />
+      )}
 
       {/* Save name input modal */}
       {showSaveInput && (
@@ -341,8 +368,8 @@ function App() {
         </div>
       )}
 
-      {/* Filter Context Bar - shows active filters when Dashboard is visible */}
-      {rawData.length > 0 && !isMapping && <FilterBar />}
+      {/* Filter Context Bar - shows active filters when Dashboard is visible (hidden in embed mode) */}
+      {rawData.length > 0 && !isMapping && !isEmbedMode && <FilterBar />}
 
       {/* Main Content */}
       <main className="flex-1 overflow-hidden relative">
@@ -389,7 +416,10 @@ function App() {
         excludedReasons={excludedReasons}
       />
 
-      <AppFooter filteredCount={filteredData.length} totalCount={rawData.length} />
+      {/* Hide footer in embed mode */}
+      {!isEmbedMode && (
+        <AppFooter filteredCount={filteredData.length} totalCount={rawData.length} />
+      )}
     </div>
   );
 }

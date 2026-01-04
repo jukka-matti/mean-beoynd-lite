@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ScatterPlot } from '@variscout/charts';
 import { calculateRegression, type RegressionResult } from '@variscout/core';
 import { useData } from '../context/DataContext';
-import { ChevronDown, TrendingUp, X } from 'lucide-react';
+import { ChevronDown, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 /**
  * Get star rating display
@@ -99,9 +99,19 @@ const RegressionPanel: React.FC = () => {
               <h2 className="text-lg font-semibold text-white">
                 {result.xColumn} vs {result.yColumn}
               </h2>
-              <span className="text-slate-400 text-sm">
+              <span className="text-slate-400 text-sm flex items-center gap-1">
                 R² = {rSquared.toFixed(3)}{' '}
                 <span className="text-yellow-400">{getStars(result.strengthRating)}</span>
+                <span className="tooltip-wrapper">
+                  <HelpCircle
+                    size={12}
+                    className="text-slate-500 hover:text-slate-300 cursor-help"
+                  />
+                  <span className="tooltip">
+                    R-squared measures how much of Y's variation is explained by X. Closer to 1 =
+                    stronger relationship.
+                  </span>
+                </span>
               </span>
             </div>
             <button
@@ -134,14 +144,33 @@ const RegressionPanel: React.FC = () => {
                 <span className="text-slate-500">n:</span>{' '}
                 <span className="text-white">{result.n}</span>
               </div>
-              <div className="text-slate-400">
+              <div className="text-slate-400 flex items-center gap-1">
                 <span className="text-slate-500">Slope:</span>{' '}
                 <span className="text-white">{result.linear.slope.toFixed(4)}</span>
+                <span className="tooltip-wrapper">
+                  <HelpCircle
+                    size={12}
+                    className="text-slate-500 hover:text-slate-300 cursor-help"
+                  />
+                  <span className="tooltip">
+                    How much Y changes for each unit increase in X. Positive = Y increases with X.
+                  </span>
+                </span>
               </div>
-              <div className="text-slate-400">
+              <div className="text-slate-400 flex items-center gap-1">
                 <span className="text-slate-500">p-value:</span>{' '}
                 <span className={result.linear.isSignificant ? 'text-green-400' : 'text-slate-300'}>
                   {result.linear.pValue < 0.001 ? '< 0.001' : result.linear.pValue.toFixed(3)}
+                </span>
+                <span className="tooltip-wrapper">
+                  <HelpCircle
+                    size={12}
+                    className="text-slate-500 hover:text-slate-300 cursor-help"
+                  />
+                  <span className="tooltip">
+                    Probability this relationship happened by chance. p &lt; 0.05 = statistically
+                    significant.
+                  </span>
                 </span>
               </div>
               <div className="text-blue-400 font-medium">{result.insight}</div>
@@ -221,9 +250,18 @@ const RegressionPanel: React.FC = () => {
                     <span className="text-xs font-medium text-slate-300 truncate">
                       {result.xColumn} vs {result.yColumn}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
                       R²={rSquared.toFixed(2)}{' '}
                       <span className="text-yellow-400">{getStars(result.strengthRating)}</span>
+                      <span className="tooltip-wrapper">
+                        <HelpCircle
+                          size={10}
+                          className="text-slate-500 hover:text-slate-300 cursor-help"
+                        />
+                        <span className="tooltip">
+                          R-squared: 0=no relationship, 1=perfect relationship
+                        </span>
+                      </span>
                     </span>
                   </div>
                   <div

@@ -2,6 +2,7 @@ export interface SampleDataset {
   name: string;
   description: string;
   icon: string;
+  urlKey: string; // URL-friendly key for ?sample= parameter
   data: any[];
   config: {
     outcome: string;
@@ -74,6 +75,7 @@ export const SAMPLES: SampleDataset[] = [
     name: 'Agri-Food: Mango Export',
     description: 'Weight compliance analysis for fruit export to EU markets.',
     icon: 'apple',
+    urlKey: 'mango-export',
     data: mangoData,
     config: {
       outcome: 'Fruit Weight (g)',
@@ -85,6 +87,7 @@ export const SAMPLES: SampleDataset[] = [
     name: 'Textiles: Fabric Strength',
     description: 'Quality control for cotton tensile strength in garment production.',
     icon: 'shirt',
+    urlKey: 'textiles-strength',
     data: textileData,
     config: {
       outcome: 'Tensile Strength (N)',
@@ -96,6 +99,7 @@ export const SAMPLES: SampleDataset[] = [
     name: 'Coffee: Defect Analysis',
     description: 'Defect counts per 300g sample (Specialty vs Off-Grade detection).',
     icon: 'coffee',
+    urlKey: 'coffee-defects',
     data: coffeeData,
     config: {
       outcome: 'Total Defects (per 300g)',

@@ -24,6 +24,7 @@ import {
   Minimize2,
   ChevronLeft,
   ChevronRight,
+  HelpCircle,
 } from 'lucide-react';
 import { toBlob } from 'html-to-image';
 
@@ -286,14 +287,41 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
             </h2>
             {stats && (
               <div className="flex gap-4 text-sm text-slate-400 ml-auto">
-                <span>
+                <span className="flex items-center gap-1">
                   UCL: <span className="text-white font-mono">{stats.ucl.toFixed(2)}</span>
+                  <span className="tooltip-wrapper">
+                    <HelpCircle
+                      size={12}
+                      className="text-slate-500 hover:text-slate-300 cursor-help"
+                    />
+                    <span className="tooltip">
+                      Upper Control Limit. Points above this indicate special cause variation.
+                    </span>
+                  </span>
                 </span>
-                <span>
+                <span className="flex items-center gap-1">
                   Mean: <span className="text-white font-mono">{stats.mean.toFixed(2)}</span>
+                  <span className="tooltip-wrapper">
+                    <HelpCircle
+                      size={12}
+                      className="text-slate-500 hover:text-slate-300 cursor-help"
+                    />
+                    <span className="tooltip">
+                      Process average. The center line on the I-Chart.
+                    </span>
+                  </span>
                 </span>
-                <span>
+                <span className="flex items-center gap-1">
                   LCL: <span className="text-white font-mono">{stats.lcl.toFixed(2)}</span>
+                  <span className="tooltip-wrapper">
+                    <HelpCircle
+                      size={12}
+                      className="text-slate-500 hover:text-slate-300 cursor-help"
+                    />
+                    <span className="tooltip">
+                      Lower Control Limit. Points below this indicate special cause variation.
+                    </span>
+                  </span>
                 </span>
               </div>
             )}
@@ -493,14 +521,41 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
                   </div>
                   {stats && (
                     <div className="flex gap-4 text-sm bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
-                      <span className="text-slate-400">
+                      <span className="text-slate-400 flex items-center gap-1">
                         UCL: <span className="text-white font-mono">{stats.ucl.toFixed(2)}</span>
+                        <span className="tooltip-wrapper">
+                          <HelpCircle
+                            size={12}
+                            className="text-slate-500 hover:text-slate-300 cursor-help"
+                          />
+                          <span className="tooltip">
+                            Upper Control Limit. Points above this indicate special cause variation.
+                          </span>
+                        </span>
                       </span>
-                      <span className="text-slate-400">
+                      <span className="text-slate-400 flex items-center gap-1">
                         Mean: <span className="text-white font-mono">{stats.mean.toFixed(2)}</span>
+                        <span className="tooltip-wrapper">
+                          <HelpCircle
+                            size={12}
+                            className="text-slate-500 hover:text-slate-300 cursor-help"
+                          />
+                          <span className="tooltip">
+                            Process average. The center line on the I-Chart.
+                          </span>
+                        </span>
                       </span>
-                      <span className="text-slate-400">
+                      <span className="text-slate-400 flex items-center gap-1">
                         LCL: <span className="text-white font-mono">{stats.lcl.toFixed(2)}</span>
+                        <span className="tooltip-wrapper">
+                          <HelpCircle
+                            size={12}
+                            className="text-slate-500 hover:text-slate-300 cursor-help"
+                          />
+                          <span className="tooltip">
+                            Lower Control Limit. Points below this indicate special cause variation.
+                          </span>
+                        </span>
                       </span>
                     </div>
                   )}

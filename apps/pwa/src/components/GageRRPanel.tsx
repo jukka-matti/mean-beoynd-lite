@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { GageRRChart, InteractionPlot } from '@variscout/charts';
 import { calculateGageRR, type GageRRResult } from '@variscout/core';
 import { useData } from '../context/DataContext';
-import { ChevronDown, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ChevronDown, AlertCircle, CheckCircle, AlertTriangle, HelpCircle } from 'lucide-react';
 import ErrorBoundary from './ErrorBoundary';
 
 /**
@@ -182,8 +182,19 @@ const GageRRPanel: React.FC = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">
+                    <div className="text-xs text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                       %GRR (Study Variation)
+                      <span className="tooltip-wrapper">
+                        <HelpCircle
+                          size={12}
+                          className="text-slate-500 hover:text-slate-300 cursor-help"
+                        />
+                        <span className="tooltip">
+                          Total measurement system variation as a percentage of study variation.
+                          Combines repeatability (equipment) and reproducibility (operator)
+                          variation.
+                        </span>
+                      </span>
                     </div>
                     <div className={`text-3xl font-bold ${getVerdictStyle(result.verdict).text}`}>
                       {result.pctGRR.toFixed(1)}%
@@ -207,8 +218,19 @@ const GageRRPanel: React.FC = () => {
               {/* Variance breakdown chart */}
               <div className="flex-1 bg-slate-800 rounded-xl border border-slate-700 overflow-hidden min-h-0 flex flex-col">
                 <div className="flex-none px-3 py-2 border-b border-slate-700/50">
-                  <span className="text-xs font-medium text-slate-300">
+                  <span className="text-xs font-medium text-slate-300 flex items-center gap-1">
                     Variance Components (%Study Variation)
+                    <span className="tooltip-wrapper">
+                      <HelpCircle
+                        size={12}
+                        className="text-slate-500 hover:text-slate-300 cursor-help"
+                      />
+                      <span className="tooltip">
+                        Breaks down total variation: Part-to-Part (actual product differences),
+                        Repeatability (same operator, same part variation), Reproducibility
+                        (different operator variation).
+                      </span>
+                    </span>
                   </span>
                 </div>
                 <div className="flex-1 min-h-0 relative">
@@ -255,8 +277,18 @@ const GageRRPanel: React.FC = () => {
             {/* Right column: Interaction plot */}
             <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden flex flex-col min-h-0 h-full">
               <div className="flex-none px-3 py-2 border-b border-slate-700/50">
-                <span className="text-xs font-medium text-slate-300">
+                <span className="text-xs font-medium text-slate-300 flex items-center gap-1">
                   Operator × Part Interaction
+                  <span className="tooltip-wrapper">
+                    <HelpCircle
+                      size={12}
+                      className="text-slate-500 hover:text-slate-300 cursor-help"
+                    />
+                    <span className="tooltip">
+                      Shows if operators measure parts consistently. Parallel lines = good (no
+                      interaction). Crossing lines = operators disagree on some parts.
+                    </span>
+                  </span>
                 </span>
                 <span className="text-xs text-slate-500 ml-2">
                   (parallel lines = no interaction)

@@ -454,6 +454,75 @@ When configured:
 - Stored in localStorage
 - UI: Settings → License section
 
+### 9. Statistical Tooltips
+
+Comprehensive hover tooltips explain statistical terms throughout the app. Hover over any metric label or the help icon (?) to see a plain-language explanation.
+
+**Coverage:**
+
+| Component        | Terms Explained                             |
+| ---------------- | ------------------------------------------- |
+| Stats Panel      | Pass Rate, Rejected %, Cp, Cpk              |
+| ANOVA Results    | p-value, F-statistic, η² (eta-squared)      |
+| Dashboard        | UCL, LCL, Mean (control limits)             |
+| Regression Panel | R², p-value, slope                          |
+| Gage R&R Panel   | %GRR, variance components, interaction plot |
+
+**Example Tooltips:**
+
+```
+Cpk: "Process Capability Index. Measures how centered your process
+      is within spec limits. ≥1.33 is typically required."
+
+p-value: "Probability the observed difference happened by chance.
+          p < 0.05 means the groups are statistically different."
+
+UCL: "Upper Control Limit. Points above this indicate special cause
+      variation (something changed in the process)."
+
+%GRR: "Total measurement system variation as a percentage of study
+       variation. <10% excellent, 10-30% marginal, >30% needs work."
+```
+
+**Design:** Tooltips appear on hover/tap with minimal delay. Uses HelpCircle icon next to terms. No clutter when not engaged.
+
+### 10. Embed Mode & Deep Linking
+
+The PWA supports URL parameters for embedding in website case studies or sharing specific analyses.
+
+**URL Parameters:**
+
+| Parameter      | Purpose                       | Example                           |
+| -------------- | ----------------------------- | --------------------------------- |
+| `sample=<key>` | Auto-load a sample dataset    | `?sample=mango-export`            |
+| `embed=true`   | Hide header/footer for iframe | `?sample=mango-export&embed=true` |
+
+**Available Sample Keys:**
+
+| Key                 | Dataset                   | Learning Focus               |
+| ------------------- | ------------------------- | ---------------------------- |
+| `mango-export`      | Agri-Food: Mango Export   | Factor identification, ANOVA |
+| `textiles-strength` | Textiles: Fabric Strength | Process capability, Cpk      |
+| `coffee-defects`    | Coffee: Defect Analysis   | Pareto, grade breakdown      |
+
+**Embed Example:**
+
+```html
+<iframe
+  src="https://app.variscout.com?sample=mango-export&embed=true"
+  title="VariScout Interactive Analysis"
+  width="100%"
+  height="600"
+  frameborder="0"
+></iframe>
+```
+
+**Use Cases:**
+
+- Website case study pages with guided exploration
+- Embedding in training materials or documentation
+- Sharing pre-configured analyses via link
+
 ---
 
 ## UI Design Principles

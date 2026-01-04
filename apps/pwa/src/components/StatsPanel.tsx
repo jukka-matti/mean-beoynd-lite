@@ -151,6 +151,16 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats, specs, filteredData = []
                   <div className="flex items-center gap-2 text-slate-300">
                     <CheckCircle2 size={18} className="text-green-500" />
                     <span>Pass Rate</span>
+                    <span className="tooltip-wrapper">
+                      <HelpCircle
+                        size={14}
+                        className="text-slate-500 hover:text-slate-300 cursor-help"
+                      />
+                      <span className="tooltip">
+                        Percentage of measurements within specification limits (between LSL and
+                        USL).
+                      </span>
+                    </span>
                   </div>
                   <span className="text-xl font-bold text-white">
                     {(100 - (stats?.outOfSpecPercentage || 0)).toFixed(1)}%
@@ -209,6 +219,16 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats, specs, filteredData = []
                   <div className="flex items-center gap-2 text-slate-300">
                     <AlertCircle size={18} className="text-red-400" />
                     <span>Rejected</span>
+                    <span className="tooltip-wrapper">
+                      <HelpCircle
+                        size={14}
+                        className="text-slate-500 hover:text-slate-300 cursor-help"
+                      />
+                      <span className="tooltip">
+                        Percentage of measurements outside specification limits (above USL or below
+                        LSL).
+                      </span>
+                    </span>
                   </div>
                   <span className="text-xl font-bold text-red-400">
                     {stats?.outOfSpecPercentage.toFixed(1)}%

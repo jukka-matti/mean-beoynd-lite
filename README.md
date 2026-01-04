@@ -44,6 +44,7 @@ A lightweight, offline-first variation analysis tool for quality professionals. 
 - **Capability**: Cp and Cpk indices (configurable in Settings)
 - **Capability Histogram**: Visual distribution with spec limit overlays
 - **Data Table**: Excel-like view with inline editing
+- **Statistical Tooltips**: Hover any metric (Cpk, p-value, UCL, etc.) for plain-language explanations
 
 ### Export & Save
 
@@ -62,6 +63,19 @@ A lightweight, offline-first variation analysis tool for quality professionals. 
   - Bottom sheet modals
   - Responsive chart margins that scale with screen size
 - **Offline First**: Works without internet after first visit
+
+### Embed Mode
+
+The PWA can be embedded in iframes for website case studies or documentation:
+
+```
+https://app.variscout.com?sample=mango-export&embed=true
+```
+
+**URL Parameters:**
+
+- `?sample=<key>` - Auto-load a sample dataset (`mango-export`, `textiles-strength`, `coffee-defects`)
+- `?embed=true` - Hide header/footer for clean iframe display
 
 ### Editions
 
@@ -223,6 +237,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [docs/MONOREPO_ARCHITECTURE.md](docs/
 - [x] pnpm monorepo architecture
 - [x] Excel Add-in with Task Pane and Content Add-in
 - [x] Shared charts package (@variscout/charts)
+- [x] Statistical tooltips for all metrics
+- [x] Embed mode with URL parameters for website case studies
 
 ### In Progress (Green Belt Training)
 
@@ -232,9 +248,11 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [docs/MONOREPO_ARCHITECTURE.md](docs/
 
 ### Future
 
-- [ ] Marketing website (Astro)
+- [ ] Marketing website (Astro) with interactive case studies
 - [ ] Power BI Custom Visuals (AppSource)
 - [x] Azure team deployment (SharePoint/OneDrive, SSO)
+
+Case study content is ready in `docs/products/website/content/` — waiting for website implementation.
 
 See [Specs.md](Specs.md) for feature specifications, [docs/products/](docs/products/) for product specs, and [LSS Trainer Strategy](docs/concepts/LSS_TRAINER_STRATEGY.md) for the Green Belt training roadmap.
 

@@ -5,6 +5,29 @@ All notable changes to VariScout Lite will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-01-05
+
+### Added
+
+- **Statistical Tooltips**: Comprehensive hover tooltips explaining statistical terms throughout the app:
+  - Stats Panel: Pass Rate, Rejected %, Cp, Cpk
+  - ANOVA Results: p-value, F-statistic, η² (eta-squared)
+  - Dashboard: UCL, LCL, Mean (control limits)
+  - Regression Panel: R², p-value, slope
+  - Gage R&R Panel: %GRR, variance components, interaction plot
+- **Embed Mode**: PWA can be embedded in iframes for website case studies
+  - `?sample=xxx` URL parameter auto-loads sample datasets
+  - `?embed=true` hides header/footer for clean iframe display
+  - Available sample keys: `mango-export`, `textiles-strength`, `coffee-defects`
+- **Case Study Content**: Three interactive case study tutorials for the website:
+  - Mango Export: Factor identification using Boxplot and ANOVA
+  - Textiles Strength: Process capability analysis with Cpk
+  - Coffee Defects: Defect prioritization with Pareto and grades
+
+### Changed
+
+- Sample datasets now include `urlKey` for deep linking
+
 ## [1.5.0] - 2026-01-04
 
 ### Added
