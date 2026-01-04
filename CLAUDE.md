@@ -57,26 +57,29 @@ variscout-lite/
 
 ## Key Files
 
-| File                                          | Purpose                                        |
-| --------------------------------------------- | ---------------------------------------------- |
-| `packages/core/src/stats.ts`                  | Statistics engine (mean, Cp, Cpk, conformance) |
-| `packages/core/src/__tests__/stats.test.ts`   | Unit tests for statistics engine               |
-| `packages/core/src/types.ts`                  | Shared TypeScript interfaces                   |
-| `packages/core/src/navigation.ts`             | Navigation types and utilities                 |
-| `packages/charts/src/`                        | IChart, Boxplot, ParetoChart, responsive utils |
-| `apps/pwa/src/context/DataContext.tsx`        | Central state management                       |
-| `apps/pwa/src/hooks/useDrillDown.ts`          | Drill-down navigation hook                     |
-| `apps/pwa/src/components/DrillBreadcrumb.tsx` | Breadcrumb UI component                        |
-| `apps/excel-addin/src/lib/stateBridge.ts`     | Excel state sync                               |
-| `docs/concepts/LSS_TRAINER_STRATEGY.md`       | Green Belt training feature roadmap            |
-| `docs/concepts/POWER_BI_STRATEGY.md`          | Power BI Custom Visual strategy                |
-| `docs/concepts/SUBSCRIPTION_LICENSING.md`     | Paddle integration, license key system         |
-| `docs/technical/`                             | PWA storage, deployment, testing strategy      |
-| `docs/products/pwa/`                          | PWA product spec (licensing, storage, stack)   |
-| `docs/products/website/`                      | Marketing website spec (design, copy, pages)   |
-| `docs/products/excel/`                        | Excel Add-in spec                              |
-| `docs/products/powerbi/`                      | Power BI custom visuals spec                   |
-| `docs/products/azure/`                        | Azure team deployment spec (SharePoint, SSO)   |
+| File                                            | Purpose                                                   |
+| ----------------------------------------------- | --------------------------------------------------------- |
+| `packages/core/src/stats.ts`                    | Statistics engine (mean, Cp, Cpk, conformance)            |
+| `packages/core/src/__tests__/stats.test.ts`     | Unit tests for statistics engine                          |
+| `packages/core/src/types.ts`                    | Shared TypeScript interfaces                              |
+| `packages/core/src/navigation.ts`               | Navigation types and utilities                            |
+| `packages/charts/src/`                          | IChart, Boxplot, ParetoChart, responsive utils            |
+| `apps/pwa/src/context/DataContext.tsx`          | Central state management                                  |
+| `packages/core/src/parser.ts`                   | CSV/Excel parsing, validation, keyword detection (shared) |
+| `apps/pwa/src/hooks/useDataIngestion.ts`        | File upload handlers, validation integration              |
+| `apps/pwa/src/components/DataQualityBanner.tsx` | Validation summary UI component                           |
+| `apps/pwa/src/hooks/useDrillDown.ts`            | Drill-down navigation hook                                |
+| `apps/pwa/src/components/DrillBreadcrumb.tsx`   | Breadcrumb UI component                                   |
+| `apps/excel-addin/src/lib/stateBridge.ts`       | Excel state sync                                          |
+| `docs/concepts/LSS_TRAINER_STRATEGY.md`         | Green Belt training feature roadmap                       |
+| `docs/concepts/POWER_BI_STRATEGY.md`            | Power BI Custom Visual strategy                           |
+| `docs/concepts/SUBSCRIPTION_LICENSING.md`       | Paddle integration, license key system                    |
+| `docs/technical/`                               | PWA storage, deployment, testing strategy                 |
+| `docs/products/pwa/`                            | PWA product spec (licensing, storage, stack)              |
+| `docs/products/website/`                        | Marketing website spec (design, copy, pages)              |
+| `docs/products/excel/`                          | Excel Add-in spec                                         |
+| `docs/products/powerbi/`                        | Power BI custom visuals spec                              |
+| `docs/products/azure/`                          | Azure team deployment spec (SharePoint, SSO)              |
 
 > Use `Read` tool to examine these files when needed.
 
@@ -87,6 +90,7 @@ variscout-lite/
 - `docs/MONOREPO_ARCHITECTURE.md` - Package structure
 - `Specs.md` - Feature specifications
 - `docs/design-system/` - **Design system** (colors, typography, components, charts)
-- `docs/technical/` - **Technical specs** (storage, deployment)
+- `docs/technical/` - **Technical specs** (storage, deployment, data input)
+- `docs/technical/DATA_INPUT.md` - **Data input system** (parsing, validation, auto-mapping)
 - `docs/concepts/` - **Strategic decisions** (Excel, LSS, Power BI, Licensing)
 - `docs/products/` - **Product specs** (PWA, Website, Excel, Power BI, Azure)

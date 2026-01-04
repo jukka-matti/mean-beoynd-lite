@@ -32,7 +32,12 @@ A lightweight, offline variation analysis tool for quality professionals. No AI,
 
 - CSV and Excel (.xlsx)
 - **Data Mapping Stage**: Interstitial screen to confirm/select Outcome (Y) and Factors (X) before analysis
-- Auto-detect: numeric columns → outcomes, categorical → factors
+- **Smart Auto-Mapping**: Keyword-based column detection (e.g., "weight" → outcome, "shift" → factor)
+- **Data Validation**: Informational validation showing excluded rows (missing/non-numeric values)
+  - DataQualityBanner shows valid/excluded row counts
+  - "View Excluded Rows" opens Data Table filtered to issues
+  - Analysis proceeds with valid rows only
+- **Separate Pareto**: Optional upload of pre-aggregated count data (not linked to filters)
 - Date/time column detection for time series
 - Manual override if needed
 
@@ -316,6 +321,13 @@ When configured:
 - Add new rows
 - Delete rows
 - Apply changes to update analysis
+
+**Validation Features:**
+
+- "Show Excluded Only" toggle to filter to problem rows
+- Amber background highlighting for excluded rows
+- Warning icon with tooltip showing exclusion reason per row
+- Accessible from DataQualityBanner via "View Excluded Rows"
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

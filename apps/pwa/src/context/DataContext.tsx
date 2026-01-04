@@ -24,6 +24,7 @@ import {
   AnalysisState,
   DisplayOptions,
 } from '../lib/persistence';
+import type { DataQualityReport, ParetoRow } from '../logic/parser';
 
 interface DataContextType {
   rawData: any[];
@@ -43,6 +44,13 @@ interface DataContextType {
   currentProjectName: string | null;
   hasUnsavedChanges: boolean;
   dataFilename: string | null;
+  // Data quality validation
+  dataQualityReport: DataQualityReport | null;
+  // Separate Pareto data support
+  paretoMode: 'derived' | 'separate';
+  separateParetoData: ParetoRow[] | null;
+  separateParetoFilename: string | null;
+  // Setters
   setDataFilename: (filename: string | null) => void;
   setRawData: (data: any[]) => void;
   setOutcome: (col: string) => void;
@@ -54,6 +62,10 @@ interface DataContextType {
   setColumnAliases: (aliases: Record<string, string>) => void;
   setValueLabels: (labels: Record<string, Record<string, string>>) => void;
   setDisplayOptions: (options: DisplayOptions) => void;
+  setDataQualityReport: (report: DataQualityReport | null) => void;
+  setParetoMode: (mode: 'derived' | 'separate') => void;
+  setSeparateParetoData: (data: ParetoRow[] | null) => void;
+  setSeparateParetoFilename: (name: string | null) => void;
   // Persistence methods
   saveProject: (name: string) => Promise<SavedProject>;
   loadProject: (id: string) => Promise<void>;
@@ -87,6 +99,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentProjectName, setCurrentProjectName] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [dataFilename, setDataFilename] = useState<string | null>(null);
+  // Data quality validation
+  const [dataQualityReport, setDataQualityReport] = useState<DataQualityReport | null>(null);
+  // Separate Pareto data support
+  const [paretoMode, setParetoMode] = useState<'derived' | 'separate'>('derived');
+  const [separateParetoData, setSeparateParetoData] = useState<ParetoRow[] | null>(null);
+  const [separateParetoFilename, setSeparateParetoFilename] = useState<string | null>(null);
+
   const isInitialized = useRef(false);
 
   const filteredData = useMemo(() => {
@@ -287,6 +306,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentProjectId(null);
     setCurrentProjectName(null);
     setHasUnsavedChanges(false);
+    // Reset validation and Pareto
+    setDataQualityReport(null);
+    setParetoMode('derived');
+    setSeparateParetoData(null);
+    setSeparateParetoFilename(null);
     clearAutoSave();
   }, []);
 
@@ -310,6 +334,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentProjectName,
         hasUnsavedChanges,
         dataFilename,
+        dataQualityReport,
+        paretoMode,
+        separateParetoData,
+        separateParetoFilename,
         setDataFilename,
         setRawData,
         setOutcome,
@@ -321,6 +349,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setColumnAliases,
         setValueLabels,
         setDisplayOptions,
+        setDataQualityReport,
+        setParetoMode,
+        setSeparateParetoData,
+        setSeparateParetoFilename,
         saveProject,
         loadProject,
         listProjects,

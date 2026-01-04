@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { toPng } from 'html-to-image';
 import { useData } from './context/DataContext';
 import { downloadCSV } from './lib/export';
@@ -12,6 +12,7 @@ import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
 import FilterBar from './components/FilterBar';
 import { useDataIngestion } from './hooks/useDataIngestion';
+import type { ExclusionReason } from './logic/parser';
 
 function App() {
   const {
@@ -22,6 +23,9 @@ function App() {
     currentProjectName,
     hasUnsavedChanges,
     dataFilename,
+    dataQualityReport,
+    paretoMode,
+    separateParetoFilename,
     saveProject,
     exportProject,
     importProject,
@@ -29,17 +33,39 @@ function App() {
     setFactors,
     factors,
   } = useData();
-  const { handleFileUpload: ingestFile, loadSample, clearData } = useDataIngestion();
+  const {
+    handleFileUpload: ingestFile,
+    handleParetoFileUpload,
+    clearParetoFile,
+    loadSample,
+    clearData,
+  } = useDataIngestion();
   const [isMapping, setIsMapping] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
   const [highlightRowIndex, setHighlightRowIndex] = useState<number | null>(null);
+  const [showExcludedOnly, setShowExcludedOnly] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSaveInput, setShowSaveInput] = useState(false);
   const [saveInputName, setSaveInputName] = useState('');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+
+  // Compute excluded row data for DataTableModal
+  const excludedRowIndices = useMemo(() => {
+    if (!dataQualityReport) return undefined;
+    return new Set(dataQualityReport.excludedRows.map(r => r.index));
+  }, [dataQualityReport]);
+
+  const excludedReasons = useMemo(() => {
+    if (!dataQualityReport) return undefined;
+    const map = new Map<number, ExclusionReason[]>();
+    dataQualityReport.excludedRows.forEach(row => {
+      map.set(row.index, row.reasons);
+    });
+    return map;
+  }, [dataQualityReport]);
 
   const handleExport = useCallback(async () => {
     const node = document.getElementById('dashboard-export-container');
@@ -196,6 +222,21 @@ function App() {
   const handleCloseDataTable = useCallback(() => {
     setIsDataTableOpen(false);
     setHighlightRowIndex(null);
+    setShowExcludedOnly(false);
+  }, []);
+
+  // Open data table showing only excluded rows (from validation banner)
+  const openDataTableExcluded = useCallback(() => {
+    setShowExcludedOnly(true);
+    setHighlightRowIndex(null);
+    setIsDataTableOpen(true);
+  }, []);
+
+  // Open data table showing all rows (from validation banner)
+  const openDataTableAll = useCallback(() => {
+    setShowExcludedOnly(false);
+    setHighlightRowIndex(null);
+    setIsDataTableOpen(true);
   }, []);
 
   // Reset confirmation handlers
@@ -317,8 +358,16 @@ function App() {
             availableColumns={Object.keys(rawData[0])}
             initialOutcome={outcome}
             initialFactors={factors}
+            datasetName={dataFilename || undefined}
             onConfirm={handleMappingConfirm}
             onCancel={handleMappingCancel}
+            dataQualityReport={dataQualityReport}
+            onViewExcludedRows={openDataTableExcluded}
+            onViewAllData={openDataTableAll}
+            paretoMode={paretoMode}
+            separateParetoFilename={separateParetoFilename}
+            onParetoFileUpload={handleParetoFileUpload}
+            onClearParetoFile={clearParetoFile}
           />
         ) : (
           <Dashboard
@@ -335,6 +384,9 @@ function App() {
         isOpen={isDataTableOpen}
         onClose={handleCloseDataTable}
         highlightRowIndex={highlightRowIndex ?? undefined}
+        showExcludedOnly={showExcludedOnly}
+        excludedRowIndices={excludedRowIndices}
+        excludedReasons={excludedReasons}
       />
 
       <AppFooter filteredCount={filteredData.length} totalCount={rawData.length} />

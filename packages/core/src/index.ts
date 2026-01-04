@@ -59,8 +59,19 @@ export {
 export { getSpecStatus, generateCSV, downloadCSV } from './export';
 export type { ExportOptions } from './export';
 
-// Parser
-export { parseCSV, parseExcel, detectColumns } from './parser';
+// Parser types
+export type {
+  ColumnAnalysis,
+  DetectedColumns,
+  ExclusionReason,
+  ExcludedRow,
+  ColumnIssue,
+  DataQualityReport,
+  ParetoRow,
+} from './parser';
+
+// Parser functions
+export { parseCSV, parseExcel, detectColumns, validateData, parseParetoFile } from './parser';
 
 // Navigation
 export type {

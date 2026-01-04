@@ -1,7 +1,18 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Plus, Trash2, Save, Table, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  X,
+  Plus,
+  Trash2,
+  Save,
+  Table,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+  Filter,
+} from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { getSpecStatus } from '../lib/export';
+import type { ExclusionReason } from '../logic/parser';
 
 // Pagination threshold - show pagination for datasets larger than this
 const ROWS_PER_PAGE = 500;
@@ -10,9 +21,20 @@ interface DataTableModalProps {
   isOpen: boolean;
   onClose: () => void;
   highlightRowIndex?: number; // Row to scroll to and highlight (0-indexed)
+  // Validation integration
+  showExcludedOnly?: boolean; // Filter to show only excluded rows
+  excludedRowIndices?: Set<number>; // Rows to highlight as excluded
+  excludedReasons?: Map<number, ExclusionReason[]>; // Reason lookup by row index
 }
 
-const DataTableModal = ({ isOpen, onClose, highlightRowIndex }: DataTableModalProps) => {
+const DataTableModal = ({
+  isOpen,
+  onClose,
+  highlightRowIndex,
+  showExcludedOnly = false,
+  excludedRowIndices,
+  excludedReasons,
+}: DataTableModalProps) => {
   const { rawData, outcome, specs, setRawData } = useData();
 
   // Local copy of data for editing (don't mutate context until Apply)
@@ -23,21 +45,34 @@ const DataTableModal = ({ isOpen, onClose, highlightRowIndex }: DataTableModalPr
   const [editingCell, setEditingCell] = useState<{ row: number; col: string } | null>(null);
   const [editValue, setEditValue] = useState('');
 
+  // Filter toggle for showing only excluded rows
+  const [filterExcluded, setFilterExcluded] = useState(showExcludedOnly);
+
+  // Apply filter to get display data with original indices
+  const displayData = useMemo(() => {
+    if (!filterExcluded || !excludedRowIndices) {
+      return localData.map((row, i) => ({ row, originalIndex: i }));
+    }
+    return localData
+      .map((row, i) => ({ row, originalIndex: i }))
+      .filter(item => excludedRowIndices.has(item.originalIndex));
+  }, [localData, filterExcluded, excludedRowIndices]);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
-  const totalPages = Math.ceil(localData.length / ROWS_PER_PAGE);
-  const needsPagination = localData.length > ROWS_PER_PAGE;
+  const totalPages = Math.ceil(displayData.length / ROWS_PER_PAGE);
+  const needsPagination = displayData.length > ROWS_PER_PAGE;
 
   // Highlight animation state
   const [highlightedRow, setHighlightedRow] = useState<number | null>(null);
   const highlightRowRef = useRef<HTMLTableRowElement>(null);
 
-  // Get current page data
+  // Get current page data (from displayData which may be filtered)
   const pageData = useMemo(() => {
-    if (!needsPagination) return localData;
+    if (!needsPagination) return displayData;
     const start = currentPage * ROWS_PER_PAGE;
-    return localData.slice(start, start + ROWS_PER_PAGE);
-  }, [localData, currentPage, needsPagination]);
+    return displayData.slice(start, start + ROWS_PER_PAGE);
+  }, [displayData, currentPage, needsPagination]);
 
   // Refs for keyboard navigation
   const inputRef = useRef<HTMLInputElement>(null);
@@ -98,9 +133,31 @@ const DataTableModal = ({ isOpen, onClose, highlightRowIndex }: DataTableModalPr
   // Get columns from data
   const columns = localData.length > 0 ? Object.keys(localData[0]) : [];
 
-  // Convert page-relative index to absolute index
-  const toAbsoluteIndex = (pageRowIdx: number) => {
-    return needsPagination ? currentPage * ROWS_PER_PAGE + pageRowIdx : pageRowIdx;
+  // Get the original index from pageData item
+  const getOriginalIndex = (pageRowIdx: number): number => {
+    const item = pageData[pageRowIdx];
+    return item ? item.originalIndex : pageRowIdx;
+  };
+
+  // Check if a row is excluded
+  const isRowExcluded = (originalIndex: number): boolean => {
+    return excludedRowIndices?.has(originalIndex) ?? false;
+  };
+
+  // Get exclusion reasons for a row
+  const getExclusionReasons = (originalIndex: number): ExclusionReason[] => {
+    return excludedReasons?.get(originalIndex) ?? [];
+  };
+
+  // Format exclusion reason for display
+  const formatExclusionReason = (reasons: ExclusionReason[]): string => {
+    return reasons
+      .map(r => {
+        if (r.type === 'missing') return `Missing value in ${r.column}`;
+        if (r.type === 'non_numeric') return `Non-numeric: "${r.value}"`;
+        return r.type;
+      })
+      .join(', ');
   };
 
   // Start editing a cell (uses absolute index)
@@ -239,11 +296,27 @@ const DataTableModal = ({ isOpen, onClose, highlightRowIndex }: DataTableModalPr
             <Table size={20} className="text-blue-400" />
             <h2 className="text-xl font-bold text-white">Data Table</h2>
             <span className="text-sm text-slate-400">
-              {localData.length} rows
+              {filterExcluded && excludedRowIndices
+                ? `${displayData.length} excluded rows`
+                : `${localData.length} rows`}
               {hasChanges && <span className="text-amber-400 ml-2">(unsaved changes)</span>}
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {/* Filter toggle for excluded rows */}
+            {excludedRowIndices && excludedRowIndices.size > 0 && (
+              <button
+                onClick={() => setFilterExcluded(!filterExcluded)}
+                className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  filterExcluded
+                    ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                    : 'bg-slate-700 hover:bg-slate-600 text-white'
+                }`}
+              >
+                <Filter size={16} />
+                {filterExcluded ? 'Show All' : `Show Excluded (${excludedRowIndices.size})`}
+              </button>
+            )}
             <button
               onClick={addRow}
               className="flex items-center gap-1 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
@@ -293,19 +366,35 @@ const DataTableModal = ({ isOpen, onClose, highlightRowIndex }: DataTableModalPr
                 </tr>
               </thead>
               <tbody>
-                {pageData.map((row, pageRowIdx) => {
-                  const absoluteIdx = toAbsoluteIndex(pageRowIdx);
-                  const isHighlighted = absoluteIdx === highlightedRow;
+                {pageData.map((item, pageRowIdx) => {
+                  const { row, originalIndex } = item;
+                  const isHighlighted = originalIndex === highlightedRow;
+                  const isExcluded = isRowExcluded(originalIndex);
+                  const exclusionReasons = getExclusionReasons(originalIndex);
                   return (
                     <tr
-                      key={absoluteIdx}
+                      key={originalIndex}
                       ref={isHighlighted ? highlightRowRef : undefined}
                       className={`hover:bg-slate-700/30 transition-colors duration-1000 ${
-                        isHighlighted ? 'bg-blue-500/30 animate-pulse' : ''
+                        isHighlighted
+                          ? 'bg-blue-500/30 animate-pulse'
+                          : isExcluded
+                            ? 'bg-amber-500/10'
+                            : ''
                       }`}
                     >
                       <td className="px-3 py-1.5 text-slate-500 border-b border-slate-700/50 font-mono text-xs">
-                        {absoluteIdx + 1}
+                        <span className="flex items-center gap-1">
+                          {originalIndex + 1}
+                          {isExcluded && (
+                            <span
+                              className="text-amber-500"
+                              title={formatExclusionReason(exclusionReasons)}
+                            >
+                              <AlertTriangle size={12} />
+                            </span>
+                          )}
+                        </span>
                       </td>
                       {columns.map(col => (
                         <td
@@ -313,9 +402,9 @@ const DataTableModal = ({ isOpen, onClose, highlightRowIndex }: DataTableModalPr
                           className={`px-1 py-0.5 border-b border-slate-700/50 ${
                             col === outcome ? getStatusColor(row[col]) : 'text-slate-300'
                           }`}
-                          onClick={() => startEditing(absoluteIdx, col)}
+                          onClick={() => startEditing(originalIndex, col)}
                         >
-                          {editingCell?.row === absoluteIdx && editingCell?.col === col ? (
+                          {editingCell?.row === originalIndex && editingCell?.col === col ? (
                             <input
                               ref={inputRef}
                               type="text"
@@ -338,12 +427,16 @@ const DataTableModal = ({ isOpen, onClose, highlightRowIndex }: DataTableModalPr
                       ))}
                       {outcome && (
                         <td className="px-3 py-1.5 border-b border-slate-700/50 text-center">
-                          {getStatusBadge(row[outcome])}
+                          {isExcluded ? (
+                            <span className="text-amber-500 text-xs font-medium">EXCL</span>
+                          ) : (
+                            getStatusBadge(row[outcome])
+                          )}
                         </td>
                       )}
                       <td className="px-3 py-1.5 border-b border-slate-700/50 text-center">
                         <button
-                          onClick={() => deleteRow(absoluteIdx)}
+                          onClick={() => deleteRow(originalIndex)}
                           className="text-slate-500 hover:text-red-400 transition-colors p-1"
                           title="Delete row"
                         >

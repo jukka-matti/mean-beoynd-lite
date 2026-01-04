@@ -180,15 +180,83 @@ Farm A,Morning,330.1
 | 5,000 - 50,000 rows | Warning prompt (may slow performance) |
 | > 50,000 rows       | Rejected (file too large)             |
 
+### Data Validation
+
+When you upload a file, VariScout automatically validates your data and shows a summary:
+
+**What Gets Validated:**
+
+- The outcome column (Y) is checked for valid numeric values
+- Rows with missing or non-numeric values are excluded from analysis
+
+**Validation Summary Banner:**
+After uploading, you'll see a banner showing:
+
+- Total rows in the file
+- Valid rows ready for analysis
+- Excluded rows with reasons (if any)
+
+**Viewing Excluded Rows:**
+
+1. Click **"View Excluded Rows"** in the validation banner
+2. The Data Table opens filtered to show only problem rows
+3. Excluded rows are highlighted with an amber background
+4. Hover over the warning icon to see the specific issue
+
+**Common Issues:**
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Missing values | Empty cells in outcome column | Fill in values or remove rows in source file |
+| Non-numeric values | Text like "N/A" or "pending" | Replace with numbers or remove rows |
+
+Validation is informational — your analysis proceeds with valid rows. You can inspect issues anytime via the Data Table.
+
+### Pareto Data Source
+
+By default, the Pareto chart counts occurrences from your selected factors. For some use cases, you may want to use pre-aggregated data instead.
+
+**Default: Derived from Factors**
+
+- Counts computed automatically from your data
+- Updates when you apply filters
+- Uses the selected factor for grouping
+
+**Optional: Separate Pareto File**
+
+If you have pre-aggregated counts (e.g., from ERP or MES systems):
+
+1. In the column mapping screen, scroll to **"Pareto Source"**
+2. Drop a CSV/Excel file with category + count columns
+3. The chart will use this data instead
+
+**Important:** Separate Pareto data is NOT linked to main data filters. When you filter your process data, the Pareto chart won't update if using a separate file.
+
 ### Auto-Detection
 
-VariScout automatically detects:
+VariScout uses smart keyword-based detection to suggest column roles:
 
-- **Numeric columns** → Suggested as Outcome (Y)
-- **Categorical columns** → Suggested as Factors (X)
-- **Date/time columns** → Used for I-Chart ordering
+**Outcome (Y) Detection** — Numeric columns containing:
 
-You can always override these suggestions in Settings.
+- Measurement terms: `weight`, `length`, `width`, `height`, `thickness`
+- Time metrics: `time`, `duration`, `cycle`, `lead`, `ct`
+- Process values: `temperature`, `pressure`, `yield`, `output`
+
+**Factor (X) Detection** — Categorical columns containing:
+
+- Process factors: `shift`, `operator`, `machine`, `line`, `station`
+- Grouping terms: `product`, `batch`, `supplier`, `lot`, `team`
+
+**Time Column Detection** — Columns containing:
+
+- `date`, `time`, `timestamp`, `datetime`, `created`, `recorded`
+
+The detection algorithm also:
+
+- Analyzes multiple rows (not just the first) to determine column types
+- Prioritizes keyword matches over simple type detection
+- Limits factors to 3 columns maximum
+
+You can always override these suggestions in the column mapping screen.
 
 ---
 

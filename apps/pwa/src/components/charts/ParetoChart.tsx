@@ -14,7 +14,7 @@ import {
 import AxisEditor from '../AxisEditor';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 import ChartSignature from './ChartSignature';
-import { Edit2 } from 'lucide-react';
+import { Edit2, Info } from 'lucide-react';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 
 interface ParetoChartProps {
@@ -25,7 +25,16 @@ interface ParetoChartProps {
 }
 
 const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoChartProps) => {
-  const { filteredData, filters, setFilters, columnAliases, setColumnAliases, outcome } = useData();
+  const {
+    filteredData,
+    filters,
+    setFilters,
+    columnAliases,
+    setColumnAliases,
+    outcome,
+    paretoMode,
+    separateParetoData,
+  } = useData();
   const [editingAxis, setEditingAxis] = useState<string | null>(null);
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
     useTooltip<any>();
@@ -34,15 +43,29 @@ const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoC
   const margin = useResponsiveChartMargins(parentWidth, 'pareto', sourceBarHeight);
   const fonts = useResponsiveChartFonts(parentWidth);
 
+  // Determine if using separate Pareto data
+  const usingSeparateData =
+    paretoMode === 'separate' && separateParetoData && separateParetoData.length > 0;
+
   const { data, totalCount } = useMemo(() => {
-    const counts = d3.rollup(
-      filteredData,
-      (v: any) => v.length,
-      (d: any) => d[factor]
-    );
-    let sorted = Array.from(counts, ([key, value]: any) => ({ key, value })).sort(
-      (a: any, b: any) => b.value - a.value
-    );
+    let sorted: { key: string; value: number }[];
+
+    if (usingSeparateData && separateParetoData) {
+      // Use pre-aggregated separate Pareto data
+      sorted = separateParetoData
+        .map(row => ({ key: row.category, value: row.count }))
+        .sort((a, b) => b.value - a.value);
+    } else {
+      // Derive from filtered data (default behavior)
+      const counts = d3.rollup(
+        filteredData,
+        (v: any) => v.length,
+        (d: any) => d[factor]
+      );
+      sorted = Array.from(counts, ([key, value]: any) => ({ key, value })).sort(
+        (a: any, b: any) => b.value - a.value
+      );
+    }
 
     const total = d3.sum(sorted, d => d.value);
     let cumulative = 0;
@@ -52,7 +75,7 @@ const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoC
     });
 
     return { data: withCumulative, totalCount: total };
-  }, [filteredData, factor]);
+  }, [filteredData, factor, usingSeparateData, separateParetoData]);
 
   const width = Math.max(0, parentWidth - margin.left - margin.right);
   const height = Math.max(0, parentHeight - margin.top - margin.bottom);
@@ -120,6 +143,16 @@ const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoC
       <svg width={parentWidth} height={parentHeight}>
         <Group left={margin.left} top={margin.top}>
           <GridRows scale={yScale} width={width} stroke="#1e293b" />
+
+          {/* Separate data indicator */}
+          {usingSeparateData && (
+            <foreignObject x={0} y={-margin.top + 4} width={width} height={20}>
+              <div className="flex items-center justify-center gap-1 text-xs text-amber-500">
+                <Info size={12} />
+                <span>Using separate Pareto file (not linked to filters)</span>
+              </div>
+            </foreignObject>
+          )}
 
           {/* Bars */}
           {data.map((d, i) => {
