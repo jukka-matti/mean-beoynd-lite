@@ -72,7 +72,13 @@ variscout-lite/
 │                                     │                                       │
 │  IChart │ Boxplot │ ParetoChart     │  stats.ts │ parser.ts │ license.ts   │
 │  CapabilityHistogram │ responsive   │  edition.ts │ export.ts │ types.ts   │
+├─────────────────────────────────────┼───────────────────────────────────────┤
+│          @variscout/ui              │                                       │
+│         (packages/ui/)              │                                       │
+│      (Shared UI Components)         │                                       │
+│   Button │ Input │ Theme │ Utils    │                                       │
 └─────────────────────────────────────┴───────────────────────────────────────┘
+
 ```
 
 ### @variscout/core
@@ -103,6 +109,22 @@ Props-based React components using Visx for data visualization:
 | `ChartSourceBar.tsx`      | Branding footer component                         |
 | `responsive.ts`           | `getResponsiveMargins`, `getResponsiveFonts`      |
 | `types.ts`                | Chart prop interfaces, `calculateBoxplotStats()`  |
+
+### @variscout/ui
+
+Shared UI component library for Web and Azure apps (not Excel Add-in).
+
+- **Stack**: React + Tailwind CSS + Radix UI + Lucide React.
+- **Goal**: Ensure consistent design system implementation across web properties.
+- **Exports**: `Button`, `Input`, `cn` (utility), shared Tailwind preset.
+
+### Internationalization (i18n)
+
+Implemented using `i18next` and `react-i18next`.
+
+- **Strategy**: Per-app configuration (isolated/bundled JSON files).
+- **Languages**: English (`en`), Finnish (`fi`).
+- **Detection**: Browser language detection with fallback to English.
 
 ### @variscout/pwa
 

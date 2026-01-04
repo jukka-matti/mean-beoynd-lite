@@ -1,0 +1,12 @@
+{
+  "app": {
+    "title": "Complément Excel VariScout",
+    "welcome": "Bienvenue sur VariScout pour Excel"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "analyze": "Analyser"
+  }
+}
