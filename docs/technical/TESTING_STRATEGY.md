@@ -9,20 +9,21 @@
 
 VariScout Lite testing follows these principles:
 
-1. **Test critical paths first** - Statistical accuracy is business-critical
-2. **Behavior over implementation** - Test what the code does, not how it does it
-3. **Local-first** - All tests run locally without CI/CD dependencies
-4. **Test where the code lives** - Unit tests in the same package as the code
+1.  **Test critical paths first** - Statistical accuracy is business-critical
+2.  **Behavior over implementation** - Test what the code does, not how it does it
+3.  **Local-first** - All tests run locally without CI/CD dependencies
+4.  **Agent-Augmented** - Leverage AI agents ("Antigravity") for complex E2E, visual, and regression testing
 
 ---
 
 ## Framework
 
-| Tool                          | Purpose                         |
-| ----------------------------- | ------------------------------- |
-| **Vitest**                    | Test runner (Vite-native, fast) |
-| **React Testing Library**     | Component testing (PWA)         |
-| **@testing-library/jest-dom** | DOM assertions                  |
+| Tool                          | Purpose                                                  |
+| :---------------------------- | :------------------------------------------------------- |
+| **Vitest**                    | Test runner (Vite-native, fast)                          |
+| **React Testing Library**     | Component testing (PWA)                                  |
+| **@testing-library/jest-dom** | DOM assertions                                           |
+| **Antigravity (Agent)**       | **Visual Verification, E2E Flows, Manual QA Automation** |
 
 ### Running Tests
 
@@ -41,28 +42,35 @@ pnpm --filter @variscout/core test -- --watch
 pnpm --filter @variscout/core test -- --coverage
 ```
 
+### Agentic Testing
+
+To run agentic tests, issue a prompt to the agent:
+
+> "Run the smoke test protocol on the PWA"
+> "Verify the StatsPanel visualization matches the data"
+
 ---
 
 ## Test Ownership by Package
 
-| Package                  | Test Type                | What to Test                                                                                                                    |
-| ------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| `@variscout/core`        | **Unit**                 | Statistics (calculateStats, calculateAnova, calculateRegression, calculateGageRR), parser, license validation, export utilities |
-| `@variscout/pwa`         | **Component**            | UI components (StatsPanel, Dashboard, DataTableModal)                                                                           |
-| `@variscout/pwa`         | **Integration**          | Data context, persistence layer                                                                                                 |
-| `@variscout/charts`      | **Unit** (optional)      | Responsive utilities only                                                                                                       |
-| `@variscout/excel-addin` | **Integration** (future) | State bridge, Office.js integration                                                                                             |
+| Package                  | Test Type        | What to Test                                                                                                                    |
+| :----------------------- | :--------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| `@variscout/core`        | **Unit**         | Statistics (calculateStats, calculateAnova, calculateRegression, calculateGageRR), parser, license validation, export utilities |
+| `@variscout/pwa`         | **Component**    | UI components (StatsPanel, Dashboard, DataTableModal)                                                                           |
+| `@variscout/pwa`         | **Agent E2E**    | **Visual verification of charts**, full user flows, persistence layer checks                                                    |
+| `@variscout/charts`      | **Agent Visual** | **Render quality**, responsiveness, interaction handling                                                                        |
+| `@variscout/excel-addin` | **Agent E2E**    | State bridge, Office.js integration simulation                                                                                  |
 
 ---
 
 ## Priority Tiers
 
 | Priority | Category          | Rationale                                                          |
-| -------- | ----------------- | ------------------------------------------------------------------ |
+| :------- | :---------------- | :----------------------------------------------------------------- |
 | **P0**   | Statistics engine | Business-critical accuracy - wrong Cpk could lead to bad decisions |
 | **P1**   | Data persistence  | User data integrity - losing projects is unacceptable              |
 | **P2**   | Export/Import     | Data portability - .vrs files must work reliably                   |
-| **P3**   | UI components     | User interactions - important but less critical                    |
+| **P3**   | UI & Visuals      | **Agent-verified** visuals and interactions                        |
 
 ---
 
@@ -71,7 +79,7 @@ pnpm --filter @variscout/core test -- --coverage
 ### @variscout/core (30+ test cases)
 
 | Function                | Tested | Cases                                                    |
-| ----------------------- | ------ | -------------------------------------------------------- |
+| :---------------------- | :----- | :------------------------------------------------------- |
 | `calculateStats()`      | ✅     | Basic stats, Cp/Cpk, one-sided specs, empty data         |
 | `calculateAnova()`      | ✅     | Significant/non-significant, group stats, eta-squared    |
 | `calculateRegression()` | ✅     | Linear, quadratic, weak relationships, optimum detection |
@@ -80,7 +88,7 @@ pnpm --filter @variscout/core test -- --coverage
 ### @variscout/pwa (25+ test cases)
 
 | Component        | Tested | Focus                                  |
-| ---------------- | ------ | -------------------------------------- |
+| :--------------- | :----- | :------------------------------------- |
 | `StatsPanel`     | ✅     | Conditional display, Cp/Cpk formatting |
 | `Dashboard`      | ✅     | Empty state, chart rendering           |
 | `DataTableModal` | ✅     | Cell editing, row operations           |
@@ -88,17 +96,17 @@ pnpm --filter @variscout/core test -- --coverage
 
 ### @variscout/charts
 
-| Item                 | Tested                    |
-| -------------------- | ------------------------- |
-| Chart components     | ❌ (visual, hard to test) |
-| Responsive utilities | ❌ (optional)             |
+| Item                 | Tested                                                |
+| :------------------- | :---------------------------------------------------- |
+| Chart components     | **Agent Verified** (Visual analysis via browser tool) |
+| Responsive utilities | **Agent Verified** (Browser resize testing)           |
 
 ### @variscout/excel-addin
 
-| Item                  | Tested      |
-| --------------------- | ----------- |
-| State bridge          | ❌ (future) |
-| Office.js integration | ❌ (future) |
+| Item                  | Tested                                          |
+| :-------------------- | :---------------------------------------------- |
+| State bridge          | **Agent Verified** (End-to-End flow simulation) |
+| Office.js integration | **Agent Verified** (Mocked environment checks)  |
 
 ---
 
@@ -148,14 +156,13 @@ vi.mock('../charts/IChart', () => ({
 }));
 ```
 
-### Query Selection
+### Agentic Verification Pattern
 
-| Method          | When to Use                      |
-| --------------- | -------------------------------- |
-| `getByRole()`   | Prefer for accessibility         |
-| `getByText()`   | Static text content              |
-| `queryByText()` | Testing element absence          |
-| `getByTestId()` | Last resort for complex elements |
+When asking the agent to verify a feature:
+
+1.  **State the Goal**: "Verify the new Pareto Chart rendering."
+2.  **Define Success**: "It should show bars sorted by frequency and a cumulative line."
+3.  **Provide Context**: "Open the PWA, load the sample data, and navigate to the Dashboard."
 
 ---
 
@@ -174,41 +181,24 @@ apps/pwa/
 │   ├── components/
 │   │   ├── StatsPanel.tsx
 │   │   └── __tests__/
-│   │       └── StatsPanel.test.tsx
-│   ├── lib/
-│   │   ├── export.ts
-│   │   └── __tests__/
-│   │       └── export.test.ts
-│   └── test/
-│       ├── setup.ts      # Test setup file
-│       └── utils.tsx     # Mock data & helpers
+│       └── StatsPanel.test.tsx
 ```
 
 ---
 
-## Adding New Tests
+## Agent-Verified QA Checklist
 
-### For @variscout/core
+Instead of a manual checklist, assign the following tasks to the Agent for release verification:
 
-1. Create test file in `packages/core/src/__tests__/`
-2. Import from relative path: `import { fn } from '../module'`
-3. Use `describe/it/expect` from vitest (global)
-
-### For @variscout/pwa
-
-1. Create test file in `__tests__/` alongside component
-2. Use mock utilities from `src/test/utils.tsx`
-3. Mock context with `vi.spyOn(DataContextModule, 'useData')`
-
----
-
-## Manual QA Checklist
-
-For features that are difficult to automate, see the manual testing checklist in [docs/technical/README.md](README.md).
+- [ ] **Smoke Test**: Launch PWA, ensuring it loads without console errors.
+- [ ] **Data Flow**: Load sample data, edit a cell, verify stats update.
+- [ ] **Visual Check**: Take screenshots of I-Charts and generic charts; check for layout shifts.
+- [ ] **Persistence**: Reload page, ensure data remains.
+- [ ] **Export**: Generate a PDF/CSV and verify file existence (if environment permits).
 
 ---
 
 ## Related Documentation
 
 - [.claude/rules/testing.md](../../.claude/rules/testing.md) - Quick reference testing rules
-- [docs/technical/README.md](README.md) - Manual QA checklist
+- [docs/technical/README.md](README.md) - Technical Overview
