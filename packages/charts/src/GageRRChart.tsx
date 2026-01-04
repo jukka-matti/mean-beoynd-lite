@@ -6,7 +6,7 @@ import { Bar } from '@visx/shape';
 import { withParentSize } from '@visx/responsive';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { localPoint } from '@visx/event';
-import { getResponsiveMargins, getResponsiveFonts } from './responsive';
+import { getResponsiveFonts } from './responsive';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 
 export interface GageRRChartProps {
@@ -42,12 +42,13 @@ const GageRRChartBase: React.FC<GageRRChartProps> = ({
   pctPart,
   pctRepeatability,
   pctReproducibility,
-  pctGRR,
+  pctGRR: _pctGRR,
   parentWidth,
   parentHeight,
   showBranding = true,
   brandingText,
 }) => {
+  void _pctGRR; // pctGRR is passed for API consistency but not displayed (it's the sum of repeatability + reproducibility)
   const sourceBarHeight = getSourceBarHeight(showBranding);
   const margin = useMemo(
     () => ({

@@ -25,22 +25,25 @@ Pricing:
 Same philosophy as PWA: **Save is the upgrade gate.**
 
 ```
-FEATURE COMPARISON
+FEATURE COMPARISON (IMPLEMENTED)
 ─────────────────────────────────────────────────────────────────
 
 Feature                          Free        Individual (€49/yr)
 ─────────────────────────────────────────────────────────────────
-All 4 charts                     ✅          ✅
-Linked filtering                 ✅          ✅
+All 4 charts + ANOVA             ✅          ✅
+Native Excel slicer filtering    ✅          ✅
 Control limit calculations       ✅          ✅
 Capability analysis (Cp/Cpk)     ✅          ✅
-Copy charts to clipboard         ✅ watermark ✅ clean
-Insert charts into Excel         ✅ watermark ✅ clean
+ANOVA (F-stat, p-value, insight) ✅          ✅
+Histogram / Probability Plot     ✅          ✅
+Copy charts to clipboard         ✅          ✅
+Insert charts into Excel         ✅          ✅
+Write stats to cells             ✅          ✅
+FilterBar (active filter display)✅          ✅
 ─────────────────────────────────────────────────────────────────
 Save settings in workbook        ❌          ✅
 Save spec limits                 ❌          ✅
 Save column mappings             ❌          ✅
-Save templates                   ❌          ✅
 ─────────────────────────────────────────────────────────────────
 ```
 
@@ -133,77 +136,108 @@ PAID USER EXPERIENCE
 
 ## Architecture
 
-### Add-in Type: Task Pane
+### Add-in Type: Hybrid (Task Pane + Content Add-in)
 
 ```
-OFFICE ADD-IN ARCHITECTURE
+OFFICE ADD-IN ARCHITECTURE (IMPLEMENTED)
 ─────────────────────────────────────────────────────────────────
 
 ┌──────────────────────────────────────────────────────────────┐
 │                         Excel                                 │
 │  ┌────────────────────────────────────────────────────────┐  │
 │  │                   Workbook                              │  │
-│  │                                                         │  │
-│  │   User's data lives here                               │  │
-│  │                                                         │  │
+│  │   ┌──────────────┐  ┌────────────────────────────────┐ │  │
+│  │   │ Excel Table  │  │ Content Add-in (charts)        │ │  │
+│  │   │ + Slicers    │  │ ┌─────────────────────────────┐│ │  │
+│  │   │              │  │ │ I-Chart │ Stats │ [Export]  ││ │  │
+│  │   │  [Slicer A]  │  │ ├─────────┼───────┼───────────┤│ │  │
+│  │   │  [Slicer B]  │  │ │ Boxplot │Pareto │ Histogram ││ │  │
+│  │   │              │  │ ├─────────┴───────┴───────────┤│ │  │
+│  │   │              │  │ │ ANOVA Results               ││ │  │
+│  │   └──────────────┘  │ └─────────────────────────────┘│ │  │
+│  │                     └────────────────────────────────┘ │  │
 │  └────────────────────────────────────────────────────────┘  │
 │                            ▲                                  │
-│                            │ Office.js API                    │
+│            Custom Document Properties (state sync)            │
 │                            ▼                                  │
 │  ┌────────────────────────────────────────────────────────┐  │
-│  │              VaRiScout Task Pane (iframe)              │  │
-│  │                                                         │  │
-│  │   React App                                             │  │
-│  │   ├── Uses @variscout/core for analysis                │  │
-│  │   ├── Renders charts with Visx                         │  │
-│  │   └── Communicates with Excel via Office.js            │  │
-│  │                                                         │  │
+│  │              Task Pane (configuration)                  │  │
+│  │   - SetupWizard: Data, columns, specs, slicers         │  │
+│  │   - Stats display with highlight in Excel              │  │
+│  │   - License management                                  │  │
 │  └────────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────┘
 
 Data flow:
-1. User selects range → Office.js reads data
-2. VaRiScout analyzes → Charts render in task pane
-3. User copies chart → Inserted into Excel as image
+1. User runs SetupWizard → Creates Excel Table + optional slicers
+2. State saved to Custom Document Properties (bridge)
+3. Content Add-in polls for state + reads filtered table data
+4. Charts update when slicers filter the data
+5. Export: Copy to clipboard, Insert into sheet, Write stats to cells
 ```
 
-### Project Structure
+### Project Structure (Actual)
 
 ```
-variscout-excel/
+apps/excel-addin/
 ├── src/
 │   ├── taskpane/
-│   │   ├── index.html          # Task pane entry point
-│   │   ├── index.tsx           # React app root
-│   │   ├── App.tsx             # Main component
-│   │   ├── components/
-│   │   │   ├── DataSelector.tsx
-│   │   │   ├── ColumnMapper.tsx
-│   │   │   ├── ChartGrid.tsx
-│   │   │   ├── FilterBar.tsx
-│   │   │   └── ExportPanel.tsx
-│   │   └── hooks/
-│   │       ├── useExcelData.ts     # Office.js data binding
-│   │       ├── useSelection.ts     # Range selection tracking
-│   │       └── useLicense.ts       # License validation
+│   │   ├── App.tsx                 # Main: 4 modes (select/wizard/simple/configured)
+│   │   └── components/
+│   │       ├── SetupWizard.tsx     # 5-step wizard: data, columns, slicers, specs
+│   │       ├── DataSelector.tsx    # Range selection UI
+│   │       ├── ChartPanel.tsx      # Task pane charts (simple mode)
+│   │       └── StatsDisplay.tsx    # Stats + highlight in Excel
 │   │
-│   ├── commands/
-│   │   └── commands.ts         # Ribbon button handlers
+│   ├── content/
+│   │   ├── App.tsx                 # Content Add-in root (polls for state)
+│   │   ├── ContentDashboard.tsx    # Main chart dashboard
+│   │   ├── FilterBar.tsx           # Active slicer filters display
+│   │   └── AnovaResults.tsx        # ANOVA statistics below charts
 │   │
-│   ├── shared/
-│   │   ├── office-helpers.ts   # Office.js utilities
-│   │   └── license.ts          # License validation
+│   ├── lib/
+│   │   ├── stateBridge.ts          # Custom Document Properties sync
+│   │   ├── excelData.ts            # Range/data extraction
+│   │   ├── dataFilter.ts           # Table filtering (respects slicers)
+│   │   ├── tableManager.ts         # Table creation & column detection
+│   │   ├── slicerManager.ts        # Slicer creation & reading
+│   │   ├── chartExport.ts          # Copy/Insert/WriteStats utilities
+│   │   └── darkTheme.ts            # Dark theme tokens
 │   │
-│   └── assets/
-│       ├── icon-16.png
-│       ├── icon-32.png
-│       ├── icon-80.png
-│       └── icon-128.png
+│   └── commands/
+│       └── commands.ts             # Ribbon button handlers
 │
-├── manifest.xml                # Add-in manifest
+├── manifest.xml                    # Task Pane manifest
+├── manifest-content.xml            # Content Add-in manifest
 ├── package.json
-├── webpack.config.js
-└── tsconfig.json
+└── vite.config.ts
+```
+
+### Content Add-in Features (Implemented)
+
+```
+CONTENT ADD-IN LAYOUT
+─────────────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Header: n | Mean | StdDev | Cpk    [Copy] [Insert] [Stats]      │
+├─────────────────────────────────────────────────────────────────┤
+│ FilterBar: [Machine: A, B] [Shift: 1]              [Clear All]  │
+├─────────────────────────────────────────────────────────────────┤
+│                        I-Chart (full width)                      │
+├───────────────────┬───────────────────┬─────────────────────────┤
+│     Boxplot       │   Pareto Chart    │  Histogram/ProbPlot     │
+├───────────────────┴───────────────────┴─────────────────────────┤
+│ ANOVA: Machine | Significant | A: 10.2 (n=45) | B: 9.8 (n=38)   │
+│ Different? YES (F=4.32, p=0.018) η²=0.12 (medium effect)        │
+└─────────────────────────────────────────────────────────────────┘
+
+Features:
+• Export toolbar: Copy All (clipboard), Insert (into sheet), Stats (to cells)
+• FilterBar: Shows active slicer filters with Clear All button
+• Charts: I-Chart, Boxplot, Pareto, Histogram/Probability Plot toggle
+• ANOVA: F-statistic, p-value, group means, effect size, plain-language insight
+• Live updates: Polls table data every 1s, slicer state every 2s
 ```
 
 ### Shared Core
@@ -212,15 +246,16 @@ Same analysis engine as PWA and Power BI:
 
 ```typescript
 // Uses exact same analysis code
-import {
-  calculateControlLimits,
-  calculateCapability,
-  detectSignals,
-  runKruskalWallis,
-} from '@variscout/core';
+import { calculateStats, calculateAnova, groupDataByFactor } from '@variscout/core';
 
 // Uses same chart components
-import { IChart, Boxplot, Pareto, Capability } from '@variscout/core/charts';
+import {
+  IChartBase,
+  BoxplotBase,
+  ParetoChartBase,
+  CapabilityHistogramBase,
+  ProbabilityPlotBase,
+} from '@variscout/charts';
 ```
 
 ---

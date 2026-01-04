@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   IChartBase,
   BoxplotBase,
@@ -8,10 +8,20 @@ import {
   calculateBoxplotStats,
   type ParetoDataPoint,
 } from '@variscout/charts';
-import { calculateStats, groupDataByFactor } from '@variscout/core';
+import { calculateStats, groupDataByFactor, calculateAnova } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
 import { darkTheme } from '../lib/darkTheme';
+import FilterBar, { type ActiveFilter } from './FilterBar';
+import AnovaResults from './AnovaResults';
+import {
+  CHART_IDS,
+  copyChartsToClipboard,
+  insertChartsIntoExcel,
+  writeStatsToExcel,
+  canInsertImages,
+} from '../lib/chartExport';
+import { getAllSlicerSelections, clearAllSlicerSelections } from '../lib/slicerManager';
 
 interface ContentDashboardProps {
   state: AddInState;
@@ -75,12 +85,16 @@ class ChartErrorBoundary extends React.Component<
  * Displays I-Chart, Boxplot, and Stats panel.
  * Reads filtered data from Excel Table (respects slicer selections).
  */
+type ExportStatus = 'idle' | 'copying' | 'inserting' | 'writing' | 'done' | 'error';
+
 const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
   const [filteredData, setFilteredData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 800, height: 300 });
   const [showProbabilityPlot, setShowProbabilityPlot] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
+  const [exportStatus, setExportStatus] = useState<ExportStatus>('idle');
   const containerRef = useRef<HTMLDivElement>(null);
   const errorCountRef = useRef(0);
 
@@ -225,6 +239,138 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
     return filteredData.map(d => Number(d[state.outcomeColumn])).filter(v => !isNaN(v));
   }, [filteredData, state.outcomeColumn]);
 
+  // Calculate ANOVA for factor comparison
+  const anovaResult = useMemo(() => {
+    if (!filteredData.length || !state.factorColumns?.[0] || !state.outcomeColumn) {
+      return null;
+    }
+
+    const factor = state.factorColumns[0];
+
+    // Need at least 2 groups with 2+ samples each for valid ANOVA
+    const groupCounts = new Map<string, number>();
+    filteredData.forEach(d => {
+      const g = String(d[factor]);
+      groupCounts.set(g, (groupCounts.get(g) || 0) + 1);
+    });
+    const validGroups = Array.from(groupCounts.values()).filter(c => c >= 2);
+    if (validGroups.length < 2) return null;
+
+    try {
+      return calculateAnova(filteredData, state.outcomeColumn, factor);
+    } catch (e) {
+      console.warn('ANOVA calculation failed:', e);
+      return null;
+    }
+  }, [filteredData, state.outcomeColumn, state.factorColumns]);
+
+  // Load active slicer filters
+  useEffect(() => {
+    if (!state.slicerNames?.length) {
+      setActiveFilters([]);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadFilters = async () => {
+      try {
+        const selections = await getAllSlicerSelections(state.dataSheetName, state.slicerNames);
+        if (!isMounted) return;
+
+        const filters: ActiveFilter[] = [];
+        // Map slicer names to factor columns for display
+        const factorColumns = state.factorColumns || [];
+
+        for (let i = 0; i < state.slicerNames.length; i++) {
+          const slicerName = state.slicerNames[i];
+          const selected = selections.get(slicerName);
+
+          // If selected is an array with items, some items are filtered (not "all")
+          if (selected && selected.length > 0) {
+            // Use factor column name if available, otherwise slicer name
+            const displayName = factorColumns[i] || slicerName;
+            filters.push({
+              column: displayName,
+              values: selected,
+            });
+          }
+        }
+
+        setActiveFilters(filters);
+      } catch (err) {
+        console.warn('Failed to load slicer filters:', err);
+      }
+    };
+
+    loadFilters();
+    // Poll for filter changes (slicers have no events)
+    const interval = setInterval(loadFilters, 2000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [state.dataSheetName, state.slicerNames, state.factorColumns]);
+
+  // Export handlers
+  const handleCopyAll = useCallback(async () => {
+    setExportStatus('copying');
+    try {
+      await copyChartsToClipboard();
+      setExportStatus('done');
+      setTimeout(() => setExportStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Copy failed:', err);
+      setExportStatus('error');
+      setTimeout(() => setExportStatus('idle'), 3000);
+    }
+  }, []);
+
+  const handleInsertCharts = useCallback(async () => {
+    if (!canInsertImages()) {
+      alert('Image insertion requires Excel 2019 or later');
+      return;
+    }
+    setExportStatus('inserting');
+    try {
+      await insertChartsIntoExcel();
+      setExportStatus('done');
+      setTimeout(() => setExportStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Insert failed:', err);
+      setExportStatus('error');
+      setTimeout(() => setExportStatus('idle'), 3000);
+    }
+  }, []);
+
+  const handleWriteStats = useCallback(async () => {
+    if (!stats) return;
+    setExportStatus('writing');
+    try {
+      await writeStatsToExcel(stats, state.specs || {}, filteredData.length);
+      setExportStatus('done');
+      setTimeout(() => setExportStatus('idle'), 2000);
+    } catch (err) {
+      console.error('Write stats failed:', err);
+      setExportStatus('error');
+      setTimeout(() => setExportStatus('idle'), 3000);
+    }
+  }, [stats, state.specs, filteredData.length]);
+
+  const handleClearFilters = useCallback(async () => {
+    if (!state.slicerNames?.length) return;
+    try {
+      await clearAllSlicerSelections(state.dataSheetName, state.slicerNames);
+    } catch (err) {
+      console.error('Failed to clear filters:', err);
+    }
+  }, [state.dataSheetName, state.slicerNames]);
+
+  // Check if any export is in progress
+  const isExporting =
+    exportStatus !== 'idle' && exportStatus !== 'done' && exportStatus !== 'error';
+
   if (isLoading) {
     return (
       <div style={styles.loading}>
@@ -256,55 +402,93 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
 
   return (
     <div style={styles.container}>
-      {/* Header with stats summary */}
+      {/* Header with stats summary and export toolbar */}
       <div style={styles.header}>
-        <div style={styles.stat} title="Sample size: number of data points">
-          <span style={styles.statLabel}>n</span>
-          <span style={styles.statValue}>{filteredData.length}</span>
-        </div>
-        {stats && (
-          <>
-            <div style={styles.stat} title="Arithmetic mean: average of all values">
-              <span style={styles.statLabel}>Mean</span>
-              <span style={styles.statValue}>{stats.mean.toFixed(2)}</span>
-            </div>
-            <div style={styles.stat} title="Standard deviation: measure of data spread">
-              <span style={styles.statLabel}>StdDev</span>
-              <span style={styles.statValue}>{stats.stdDev.toFixed(2)}</span>
-            </div>
-            {stats.cpk !== undefined &&
-              (() => {
-                const cpkTarget = state.specs?.cpkTarget ?? 1.33;
-                return (
-                  <div
-                    style={styles.stat}
-                    title={`Process capability index: ≥${cpkTarget} is good (green), <${cpkTarget} needs improvement (red)`}
-                  >
-                    <span style={styles.statLabel}>Cpk</span>
-                    <span
-                      style={{
-                        ...styles.statValue,
-                        color:
-                          stats.cpk >= cpkTarget
-                            ? darkTheme.colorStatusSuccessForeground
-                            : darkTheme.colorStatusDangerForeground,
-                      }}
+        <div style={styles.statsRow}>
+          <div style={styles.stat} title="Sample size: number of data points">
+            <span style={styles.statLabel}>n</span>
+            <span style={styles.statValue}>{filteredData.length}</span>
+          </div>
+          {stats && (
+            <>
+              <div style={styles.stat} title="Arithmetic mean: average of all values">
+                <span style={styles.statLabel}>Mean</span>
+                <span style={styles.statValue}>{stats.mean.toFixed(2)}</span>
+              </div>
+              <div style={styles.stat} title="Standard deviation: measure of data spread">
+                <span style={styles.statLabel}>StdDev</span>
+                <span style={styles.statValue}>{stats.stdDev.toFixed(2)}</span>
+              </div>
+              {stats.cpk !== undefined &&
+                (() => {
+                  const cpkTarget = state.specs?.cpkTarget ?? 1.33;
+                  return (
+                    <div
+                      style={styles.stat}
+                      title={`Process capability index: ≥${cpkTarget} is good (green), <${cpkTarget} needs improvement (red)`}
                     >
-                      {stats.cpk.toFixed(2)}
-                      <span style={styles.cpkLabel}>
-                        {stats.cpk >= cpkTarget ? ' (Good)' : ' (Poor)'}
+                      <span style={styles.statLabel}>Cpk</span>
+                      <span
+                        style={{
+                          ...styles.statValue,
+                          color:
+                            stats.cpk >= cpkTarget
+                              ? darkTheme.colorStatusSuccessForeground
+                              : darkTheme.colorStatusDangerForeground,
+                        }}
+                      >
+                        {stats.cpk.toFixed(2)}
+                        <span style={styles.cpkLabel}>
+                          {stats.cpk >= cpkTarget ? ' (Good)' : ' (Poor)'}
+                        </span>
                       </span>
-                    </span>
-                  </div>
-                );
-              })()}
-          </>
-        )}
+                    </div>
+                  );
+                })()}
+            </>
+          )}
+        </div>
+
+        {/* Export toolbar */}
+        <div style={styles.exportToolbar}>
+          {exportStatus === 'done' && <span style={styles.exportSuccess}>Done</span>}
+          {exportStatus === 'error' && <span style={styles.exportError}>Failed</span>}
+          {isExporting && <span style={styles.exportSpinner} />}
+          <button
+            onClick={handleCopyAll}
+            disabled={isExporting}
+            style={isExporting ? styles.exportButtonDisabled : styles.exportButton}
+            title="Copy all charts to clipboard"
+          >
+            Copy
+          </button>
+          <button
+            onClick={handleInsertCharts}
+            disabled={isExporting || !canInsertImages()}
+            style={
+              isExporting || !canInsertImages() ? styles.exportButtonDisabled : styles.exportButton
+            }
+            title={canInsertImages() ? 'Insert charts into worksheet' : 'Requires Excel 2019+'}
+          >
+            Insert
+          </button>
+          <button
+            onClick={handleWriteStats}
+            disabled={isExporting || !stats}
+            style={isExporting || !stats ? styles.exportButtonDisabled : styles.exportButton}
+            title="Write statistics to cells"
+          >
+            Stats
+          </button>
+        </div>
       </div>
+
+      {/* Active filters bar */}
+      <FilterBar filters={activeFilters} onClearAll={handleClearFilters} />
 
       {/* Top row: I-Chart (full width) */}
       <div style={styles.topChartsRow} ref={containerRef}>
-        <div style={styles.chartContainer}>
+        <div id={CHART_IDS.iChart} style={styles.chartContainer}>
           <ChartErrorBoundary chartName="I-Chart">
             <IChartBase
               data={chartData}
@@ -322,7 +506,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
       <div style={styles.bottomChartsRow}>
         {/* Boxplot */}
         {boxplotData.length > 0 && (
-          <div style={styles.chartContainer}>
+          <div id={CHART_IDS.boxplot} style={styles.chartContainer}>
             <ChartErrorBoundary chartName="Boxplot">
               <BoxplotBase
                 data={boxplotData}
@@ -337,7 +521,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
 
         {/* Pareto Chart */}
         {paretoData.length > 0 && (
-          <div style={styles.chartContainer}>
+          <div id={CHART_IDS.pareto} style={styles.chartContainer}>
             <ChartErrorBoundary chartName="Pareto">
               <ParetoChartBase
                 data={paretoData}
@@ -353,7 +537,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
 
         {/* Histogram / Probability Plot with toggle */}
         {histogramData.length > 0 && stats && (
-          <div style={styles.chartContainerWithToggle}>
+          <div id={CHART_IDS.histogram} style={styles.chartContainerWithToggle}>
             <button
               onClick={() => setShowProbabilityPlot(!showProbabilityPlot)}
               style={styles.toggleButton}
@@ -385,6 +569,11 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
           </div>
         )}
       </div>
+
+      {/* ANOVA Results - shows when factor column exists */}
+      {anovaResult && state.factorColumns?.[0] && (
+        <AnovaResults result={anovaResult} factorLabel={state.factorColumns[0]} />
+      )}
     </div>
   );
 };
@@ -402,11 +591,61 @@ const styles: Record<string, React.CSSProperties> = {
   },
   header: {
     display: 'flex',
-    gap: darkTheme.spacingXL,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: darkTheme.spacingM,
     padding: `${darkTheme.spacingS}px ${darkTheme.spacingM}px`,
     backgroundColor: darkTheme.colorNeutralBackground2,
     borderRadius: darkTheme.borderRadiusM,
     marginBottom: darkTheme.spacingM,
+  },
+  statsRow: {
+    display: 'flex',
+    gap: darkTheme.spacingXL,
+  },
+  exportToolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: darkTheme.spacingS,
+  },
+  exportButton: {
+    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
+    backgroundColor: darkTheme.colorNeutralBackground3,
+    border: 'none',
+    borderRadius: darkTheme.borderRadiusS,
+    color: darkTheme.colorNeutralForeground1,
+    fontSize: darkTheme.fontSizeSmall,
+    cursor: 'pointer',
+    transition: 'background-color 0.15s',
+  },
+  exportButtonDisabled: {
+    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
+    backgroundColor: darkTheme.colorNeutralBackground3,
+    border: 'none',
+    borderRadius: darkTheme.borderRadiusS,
+    color: darkTheme.colorNeutralForeground3,
+    fontSize: darkTheme.fontSizeSmall,
+    cursor: 'not-allowed',
+    opacity: 0.5,
+  },
+  exportSuccess: {
+    fontSize: darkTheme.fontSizeSmall,
+    color: darkTheme.colorStatusSuccessForeground,
+    marginRight: darkTheme.spacingXS,
+  },
+  exportError: {
+    fontSize: darkTheme.fontSizeSmall,
+    color: darkTheme.colorStatusDangerForeground,
+    marginRight: darkTheme.spacingXS,
+  },
+  exportSpinner: {
+    width: 14,
+    height: 14,
+    border: `2px solid ${darkTheme.colorNeutralStroke1}`,
+    borderTopColor: darkTheme.colorBrandForeground1,
+    borderRadius: darkTheme.borderRadiusCircular,
+    animation: 'spin 1s linear infinite',
+    marginRight: darkTheme.spacingXS,
   },
   stat: {
     display: 'flex',

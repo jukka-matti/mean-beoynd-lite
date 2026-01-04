@@ -8,7 +8,7 @@ import { withParentSize } from '@visx/responsive';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { localPoint } from '@visx/event';
 import type { GageRRInteraction } from '@variscout/core';
-import { getResponsiveMargins, getResponsiveFonts } from './responsive';
+import { getResponsiveFonts } from './responsive';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 
 export interface InteractionPlotProps {
@@ -155,7 +155,7 @@ const InteractionPlotBase: React.FC<InteractionPlotProps> = ({
           })}
 
           {/* Points for each data item */}
-          {data.map((d, i) => (
+          {data.map(d => (
             <Circle
               key={`${d.part}-${d.operator}`}
               cx={xScale(d.part) ?? 0}
