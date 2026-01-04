@@ -17,6 +17,7 @@ We deliberately chose simplicity over feature richness. Instead of building a co
 - **Pareto**: Frequency analysis for categorical data
 - **Linked Filtering**: Click any chart element to filter all others instantly
 - **Interactive Labels**: Rename axes and categories directly on the chart
+- **Focus Mode**: Maximize any chart for presentation or detailed analysis (Carousel navigation)
 
 ### Data Input
 

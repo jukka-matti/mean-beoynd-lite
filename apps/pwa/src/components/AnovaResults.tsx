@@ -34,13 +34,6 @@ const AnovaResults = ({ result, factorLabel }: AnovaResultsProps) => {
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           ANOVA: {factorLabel}
         </span>
-        <span
-          className={`text-xs font-medium px-2 py-0.5 rounded ${
-            isSignificant ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
-          }`}
-        >
-          {isSignificant ? 'Significant' : 'Not Significant'}
-        </span>
       </div>
 
       {/* Group means and sample sizes */}
@@ -55,27 +48,16 @@ const AnovaResults = ({ result, factorLabel }: AnovaResultsProps) => {
       </div>
 
       {/* Significance result */}
-      <div className="flex items-center gap-4 text-sm">
+      <div className="flex items-center gap-4 text-sm mt-2 border-t border-slate-700/50 pt-2">
         <span className="text-slate-400">
-          Different?{' '}
-          <span className={isSignificant ? 'text-green-400 font-semibold' : 'text-slate-300'}>
-            {isSignificant ? 'YES' : 'NO'}
-          </span>
-          <span className="text-slate-500 ml-1">
-            (F = {fStatistic.toFixed(2)}, p = {formatPValue(pValue)})
+          <span className="font-mono text-slate-300">
+            F = {fStatistic.toFixed(2)}, p = {formatPValue(pValue)}
           </span>
         </span>
         {etaSquared > 0 && (
-          <span className="text-slate-500 text-xs">
-            η² = {etaSquared.toFixed(2)} ({getEffectSizeLabel(etaSquared)} effect)
-          </span>
+          <span className="text-slate-500 text-xs">η² = {etaSquared.toFixed(2)}</span>
         )}
       </div>
-
-      {/* Plain-language insight */}
-      {isSignificant && insight && (
-        <div className="mt-2 text-sm text-blue-400 font-medium">{insight}</div>
-      )}
     </div>
   );
 };
