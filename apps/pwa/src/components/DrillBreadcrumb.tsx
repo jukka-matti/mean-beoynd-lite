@@ -1,9 +1,10 @@
 import React from 'react';
 import { ChevronRight, X, Home } from 'lucide-react';
 import type { BreadcrumbItem } from '@variscout/core';
+import { getVariationImpactLevel, getVariationInsight } from '@variscout/core';
 
 interface DrillBreadcrumbProps {
-  /** Breadcrumb items from useDrillDown hook */
+  /** Breadcrumb items from useDrillDown hook (with variation data) */
   items: BreadcrumbItem[];
   /** Called when user clicks a breadcrumb to navigate */
   onNavigate: (id: string) => void;
@@ -13,6 +14,8 @@ interface DrillBreadcrumbProps {
   onRemove?: (id: string) => void;
   /** Show clear all button */
   showClearAll?: boolean;
+  /** Final cumulative variation percentage (for badge display) */
+  cumulativeVariationPct?: number | null;
 }
 
 /**
@@ -32,15 +35,65 @@ interface DrillBreadcrumbProps {
  * />
  * ```
  */
+/**
+ * Get color classes for variation badge based on impact level
+ */
+function getVariationBadgeColors(impactLevel: 'high' | 'moderate' | 'low'): {
+  bg: string;
+  text: string;
+  border: string;
+} {
+  switch (impactLevel) {
+    case 'high':
+      return {
+        bg: 'bg-red-500/20',
+        text: 'text-red-400',
+        border: 'border-red-500/30',
+      };
+    case 'moderate':
+      return {
+        bg: 'bg-amber-500/20',
+        text: 'text-amber-400',
+        border: 'border-amber-500/30',
+      };
+    case 'low':
+    default:
+      return {
+        bg: 'bg-slate-500/20',
+        text: 'text-slate-400',
+        border: 'border-slate-500/30',
+      };
+  }
+}
+
+/**
+ * Format a label with variation percentage inline
+ * e.g., "Shift: Night" -> "Shift: Night (67%)"
+ */
+function formatLabelWithVariation(label: string, variationPct?: number): string {
+  if (variationPct === undefined || variationPct === null) {
+    return label;
+  }
+  return `${label} (${Math.round(variationPct)}%)`;
+}
+
 const DrillBreadcrumb: React.FC<DrillBreadcrumbProps> = ({
   items,
   onNavigate,
   onClearAll,
   onRemove,
   showClearAll = true,
+  cumulativeVariationPct,
 }) => {
   // Don't render if only root item (no drills active)
   if (items.length <= 1) return null;
+
+  // Determine cumulative badge properties
+  const showCumulativeBadge =
+    cumulativeVariationPct !== undefined && cumulativeVariationPct !== null;
+  const impactLevel = showCumulativeBadge ? getVariationImpactLevel(cumulativeVariationPct!) : null;
+  const badgeColors = impactLevel ? getVariationBadgeColors(impactLevel) : null;
+  const insightText = showCumulativeBadge ? getVariationInsight(cumulativeVariationPct!) : null;
 
   return (
     <div className="flex items-center gap-1 px-4 sm:px-6 py-2 bg-slate-900/50 border-b border-slate-800 overflow-x-auto scrollbar-hide">
@@ -81,7 +134,11 @@ const DrillBreadcrumb: React.FC<DrillBreadcrumbProps> = ({
                   aria-current={isLast ? 'page' : undefined}
                 >
                   {isRoot && <Home size={12} className="flex-shrink-0" />}
-                  <span className="truncate max-w-[150px]">{item.label}</span>
+                  <span className="truncate max-w-[180px]">
+                    {isRoot
+                      ? item.label
+                      : formatLabelWithVariation(item.label, item.localVariationPct)}
+                  </span>
                 </button>
 
                 {/* Remove button for non-root items */}
@@ -103,10 +160,52 @@ const DrillBreadcrumb: React.FC<DrillBreadcrumbProps> = ({
         })}
       </nav>
 
-      {/* Spacer + Clear All */}
-      {showClearAll && onClearAll && (
-        <div className="flex-shrink-0 flex items-center gap-2 ml-auto pl-2">
-          <div className="h-4 w-px bg-slate-700" />
+      {/* Cumulative Variation Badge + Clear All */}
+      <div className="flex-shrink-0 flex items-center gap-2 ml-auto pl-2">
+        {/* Cumulative Variation Badge */}
+        {showCumulativeBadge && badgeColors && (
+          <div className="relative group">
+            <span
+              className={`
+                inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                border ${badgeColors.bg} ${badgeColors.text} ${badgeColors.border}
+                cursor-help
+              `}
+              aria-label={`${Math.round(cumulativeVariationPct!)}% of total variation isolated`}
+            >
+              {Math.round(cumulativeVariationPct!)}%
+            </span>
+
+            {/* Tooltip */}
+            <div
+              className="
+                absolute bottom-full right-0 mb-2 w-64 p-3 rounded-lg
+                bg-slate-800 border border-slate-700 shadow-xl
+                opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                transition-all duration-200 z-50
+                text-xs
+              "
+            >
+              <div className={`font-semibold ${badgeColors.text} mb-1`}>
+                {Math.round(cumulativeVariationPct!)}% of total variation isolated
+              </div>
+              <p className="text-slate-300">{insightText}</p>
+              <div className="mt-2 pt-2 border-t border-slate-700 text-slate-500">
+                {impactLevel === 'high' && '🔴 High impact — strong case for action'}
+                {impactLevel === 'moderate' && '🟡 Moderate impact — worth investigating'}
+                {impactLevel === 'low' && '⚪ One of several contributing factors'}
+              </div>
+              {/* Tooltip arrow */}
+              <div className="absolute bottom-0 right-4 translate-y-1/2 rotate-45 w-2 h-2 bg-slate-800 border-r border-b border-slate-700" />
+            </div>
+          </div>
+        )}
+
+        {/* Divider */}
+        {showClearAll && onClearAll && <div className="h-4 w-px bg-slate-700" />}
+
+        {/* Clear All */}
+        {showClearAll && onClearAll && (
           <button
             onClick={onClearAll}
             className="flex items-center gap-1 px-2 py-1 text-xs text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded transition-colors whitespace-nowrap"
@@ -115,8 +214,8 @@ const DrillBreadcrumb: React.FC<DrillBreadcrumbProps> = ({
             <X size={14} />
             <span className="hidden sm:inline">Clear All</span>
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

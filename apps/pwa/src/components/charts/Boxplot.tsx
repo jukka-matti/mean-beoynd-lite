@@ -15,15 +15,27 @@ import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 import ChartSignature from './ChartSignature';
 import { Edit2 } from 'lucide-react';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
+import { VARIATION_THRESHOLDS } from '@variscout/core';
 
 interface BoxplotProps {
   factor: string;
   parentWidth: number;
   parentHeight: number;
   onDrillDown?: (factor: string, value: string) => void;
+  /** Variation % explained by this factor (for drill suggestion indicator) */
+  variationPct?: number;
 }
 
-const Boxplot = ({ factor, parentWidth, parentHeight, onDrillDown }: BoxplotProps) => {
+const Boxplot = ({
+  factor,
+  parentWidth,
+  parentHeight,
+  onDrillDown,
+  variationPct,
+}: BoxplotProps) => {
+  // Determine if this factor should be highlighted as a drill target
+  const isHighVariation =
+    variationPct !== undefined && variationPct >= VARIATION_THRESHOLDS.HIGH_IMPACT;
   const sourceBarHeight = getSourceBarHeight();
   const margin = useResponsiveChartMargins(parentWidth, 'boxplot', sourceBarHeight);
   const fonts = useResponsiveChartFonts(parentWidth);
@@ -297,21 +309,35 @@ const Boxplot = ({ factor, parentWidth, parentHeight, onDrillDown }: BoxplotProp
             })}
           />
 
-          {/* Custom Clickable Axis Label */}
+          {/* Custom Clickable Axis Label with Variation Indicator */}
           <Group onClick={() => setIsEditingLabel(true)} className="cursor-pointer group/label2">
             <text
               x={xParams.x}
               y={xParams.y}
               textAnchor="middle"
-              fill="#94a3b8"
+              fill={isHighVariation ? '#f87171' : '#94a3b8'}
               fontSize={13}
-              fontWeight={500}
+              fontWeight={isHighVariation ? 600 : 500}
               className="group-hover/label2:fill-blue-400 transition-colors"
             >
               {xParams.label}
+              {variationPct !== undefined && ` (${Math.round(variationPct)}%)`}
             </text>
+            {/* Drill suggestion indicator */}
+            {isHighVariation && (
+              <text
+                x={xParams.x}
+                y={xParams.y + 14}
+                textAnchor="middle"
+                fill="#f87171"
+                fontSize={10}
+                className="pointer-events-none"
+              >
+                ↓ drill here
+              </text>
+            )}
             <foreignObject
-              x={xParams.x + 8}
+              x={xParams.x + (variationPct !== undefined ? 40 : 8)}
               y={xParams.y - 12}
               width={16}
               height={16}

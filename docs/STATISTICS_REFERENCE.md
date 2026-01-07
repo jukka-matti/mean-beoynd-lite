@@ -10,6 +10,7 @@ This document explains the statistical calculations used in VariScout Lite. Unde
 - [Conformance Metrics](#conformance-metrics)
 - [Multi-Tier Grading](#multi-tier-grading)
 - [Effect Size (Eta-Squared)](#effect-size-eta-squared)
+- [Cumulative Variation Tracking](#cumulative-variation-tracking)
 - [Probability Plot](#probability-plot)
 
 ---
@@ -82,12 +83,12 @@ Cp = (USL - LSL) / (6 × StdDev)
 
 **Requires both USL and LSL to be defined.**
 
-| Cp Value | Interpretation |
-|----------|----------------|
-| < 1.00 | Process is not capable |
-| 1.00 - 1.33 | Marginally capable |
-| 1.33 - 1.67 | Capable |
-| > 1.67 | Highly capable |
+| Cp Value    | Interpretation         |
+| ----------- | ---------------------- |
+| < 1.00      | Process is not capable |
+| 1.00 - 1.33 | Marginally capable     |
+| 1.33 - 1.67 | Capable                |
+| > 1.67      | Highly capable         |
 
 ### Cpk (Actual Capability)
 
@@ -100,22 +101,23 @@ Cpk = min(CPU, CPL)
 ```
 
 **Works with one-sided specifications too:**
+
 - Only USL defined: `Cpk = (USL - Mean) / (3 × StdDev)`
 - Only LSL defined: `Cpk = (Mean - LSL) / (3 × StdDev)`
 
-| Cpk Value | Interpretation |
-|-----------|----------------|
-| < 1.00 | Process is not meeting specs |
+| Cpk Value   | Interpretation                        |
+| ----------- | ------------------------------------- |
+| < 1.00      | Process is not meeting specs          |
 | 1.00 - 1.33 | Meeting specs, but with little margin |
-| 1.33 - 1.67 | Good capability |
-| > 1.67 | Excellent capability |
+| 1.33 - 1.67 | Good capability                       |
+| > 1.67      | Excellent capability                  |
 
 ### Cp vs Cpk: When to Use Each
 
-| Metric | Use When | Tells You |
-|--------|----------|-----------|
-| **Cp** | Assessing potential | How capable the process could be if centered |
-| **Cpk** | Assessing actual performance | How capable the process actually is |
+| Metric  | Use When                     | Tells You                                    |
+| ------- | ---------------------------- | -------------------------------------------- |
+| **Cp**  | Assessing potential          | How capable the process could be if centered |
+| **Cpk** | Assessing actual performance | How capable the process actually is          |
 
 **Key Insight**: If Cpk < Cp, your process is off-center. Focus on centering (reducing bias) before reducing variation.
 
@@ -132,6 +134,7 @@ Out of Spec % = (Count outside specs / Total count) × 100
 ```
 
 A measurement is "out of spec" if:
+
 - Value > USL (exceeds upper limit)
 - Value < LSL (below lower limit)
 
@@ -166,6 +169,7 @@ Result: Grade = "Premium"
 ### Grade Summary
 
 For each grade, VariScout calculates:
+
 - **Count**: Number of measurements in this grade
 - **Percentage**: `(Count / Total) × 100`
 
@@ -180,6 +184,7 @@ Eta-squared (η²) measures how much of the total variation is explained by a gr
 ```
 
 Where:
+
 - **SS_total**: Total sum of squares (overall variation)
 - **SS_between**: Sum of squares between groups
 
@@ -193,13 +198,87 @@ Where:
 
 ### Interpretation
 
-| η² Value | Interpretation |
-|----------|----------------|
-| 0.01 - 0.06 | Small effect |
-| 0.06 - 0.14 | Medium effect |
-| > 0.14 | Large effect |
+| η² Value    | Interpretation |
+| ----------- | -------------- |
+| 0.01 - 0.06 | Small effect   |
+| 0.06 - 0.14 | Medium effect  |
+| > 0.14      | Large effect   |
 
 **Example**: If η² = 0.34 for "Supplier" factor, it means 34% of the variation in your outcome can be attributed to differences between suppliers.
+
+---
+
+## Cumulative Variation Tracking
+
+VariScout uses eta-squared to track variation through drill-down analysis. This helps users understand how much variation is isolated at each step.
+
+### The Multiplicative Model
+
+When drilling down through multiple factors, variation percentages are **multiplied** (not added) to show the cumulative impact:
+
+```
+Cumulative η² = η²₁ × η²₂ × η²₃ × ...
+```
+
+**Example drill-down sequence:**
+
+| Step | Action                 | Local η² | Cumulative η²       |
+| ---- | ---------------------- | -------- | ------------------- |
+| 1    | All Data               | 100%     | 100%                |
+| 2    | Drill to "Night Shift" | 65%      | 65%                 |
+| 3    | Drill to "Machine C"   | 71%      | 65% × 71% = 46.2%   |
+| 4    | Drill to "Operator B"  | 89%      | 46.2% × 89% = 41.1% |
+
+**Interpretation**: After drilling through Shift → Machine → Operator, you've isolated 41% of the original variation into this specific combination.
+
+### Thresholds and Insights
+
+VariScout uses predefined thresholds to guide analysis:
+
+| Cumulative η² | Classification  | Insight                                                        |
+| ------------- | --------------- | -------------------------------------------------------------- |
+| ≥ 50%         | High Impact     | "Fix this combination to address more than half the variation" |
+| 30-50%        | Moderate Impact | "This factor combination explains significant variation"       |
+| < 30%         | Low Impact      | "Consider investigating other factors"                         |
+
+### Drill Suggestions
+
+On the Boxplot chart, factors with η² ≥ 50% are highlighted with:
+
+- Red-colored axis label showing `Factor (X%)`
+- "↓ drill here" indicator text
+
+This helps users identify which factor to drill into next for maximum insight.
+
+### API Functions
+
+```typescript
+import {
+  calculateDrillVariation,
+  calculateFactorVariations,
+  shouldHighlightDrill,
+  VARIATION_THRESHOLDS,
+  getVariationImpactLevel,
+  getVariationInsight,
+} from '@variscout/core';
+
+// Calculate cumulative variation through a drill path
+const result = calculateDrillVariation(rawData, filters, 'Weight');
+// result.cumulativeVariationPct = 46.5
+// result.impactLevel = 'moderate'
+// result.insightText = "This factor combination explains significant variation"
+
+// Calculate η² for each factor (for drill suggestions)
+const variations = calculateFactorVariations(data, ['Shift', 'Machine', 'Operator'], 'Weight', [
+  'Shift',
+]);
+// variations.get('Machine') = 67.5 -> highlight in UI
+
+// Check if a factor should be highlighted
+shouldHighlightDrill(67.5); // true (≥50%)
+```
+
+> **Detailed documentation:** [docs/products/pwa/VARIATION_TRACKING.md](products/pwa/VARIATION_TRACKING.md)
 
 ---
 
@@ -235,6 +314,7 @@ p = (i - 0.375) / (n + 0.25)
 ```
 
 Where:
+
 - `i` = rank position (1, 2, 3, ...)
 - `n` = total number of data points
 
@@ -249,18 +329,19 @@ CI = Value ± 1.96 × SE
 ```
 
 Where the standard error (SE) at each percentile depends on:
+
 - Sample size (n)
 - Standard deviation
 - Position on the distribution (tails have wider CIs)
 
 ### Interpretation
 
-| Pattern | Meaning |
-|---------|---------|
-| Points follow the line closely | Data is approximately normal |
-| S-curve pattern | Data has heavier or lighter tails than normal |
-| Points curve away at ends | Skewed distribution |
-| Points far outside CI bands | Significant departure from normality |
+| Pattern                        | Meaning                                       |
+| ------------------------------ | --------------------------------------------- |
+| Points follow the line closely | Data is approximately normal                  |
+| S-curve pattern                | Data has heavier or lighter tails than normal |
+| Points curve away at ends      | Skewed distribution                           |
+| Points far outside CI bands    | Significant departure from normality          |
 
 ### When to Use
 
@@ -299,4 +380,4 @@ normalQuantile(p: number): number  // Inverse normal CDF
 
 - [NIST Engineering Statistics Handbook](https://www.itl.nist.gov/div898/handbook/)
 - [ASQ Quality Glossary](https://asq.org/quality-resources/quality-glossary)
-- Montgomery, D.C. (2012). *Statistical Quality Control*
+- Montgomery, D.C. (2012). _Statistical Quality Control_

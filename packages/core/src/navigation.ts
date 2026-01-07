@@ -39,6 +39,8 @@ export interface DrillAction {
   timestamp: number;
   /** Display label for breadcrumb UI */
   label: string;
+  /** Eta-squared (η²) - variation explained by this factor at drill time (0-100) */
+  variationPct?: number;
 }
 
 /**
@@ -192,6 +194,10 @@ export interface BreadcrumbItem {
   label: string;
   isActive: boolean;
   source: DrillSource;
+  /** Local variation % (η²) explained at this drill level (0-100) */
+  localVariationPct?: number;
+  /** Cumulative variation % isolated by all drills up to this point (0-100) */
+  cumulativeVariationPct?: number;
 }
 
 /**
@@ -230,3 +236,39 @@ export const initialNavigationState: NavigationState = {
   drillStack: [],
   currentHighlight: null,
 };
+
+/**
+ * Variation tracking thresholds for UI feedback
+ *
+ * HIGH_IMPACT (>50%): Green - "More than half your problem is HERE"
+ * MODERATE_IMPACT (30-50%): Amber - "Significant chunk isolated"
+ * Below 30%: Gray - "One of several contributors"
+ */
+export const VARIATION_THRESHOLDS = {
+  /** Above this = high impact, green indicator, strong recommendation */
+  HIGH_IMPACT: 50,
+  /** Above this = moderate impact, amber indicator */
+  MODERATE_IMPACT: 30,
+} as const;
+
+/**
+ * Get the impact level for a variation percentage
+ */
+export function getVariationImpactLevel(variationPct: number): 'high' | 'moderate' | 'low' {
+  if (variationPct >= VARIATION_THRESHOLDS.HIGH_IMPACT) return 'high';
+  if (variationPct >= VARIATION_THRESHOLDS.MODERATE_IMPACT) return 'moderate';
+  return 'low';
+}
+
+/**
+ * Get insight text for a cumulative variation percentage
+ */
+export function getVariationInsight(cumulativePct: number): string {
+  if (cumulativePct >= VARIATION_THRESHOLDS.HIGH_IMPACT) {
+    return `Fix this combination to address more than half your quality problems.`;
+  }
+  if (cumulativePct >= VARIATION_THRESHOLDS.MODERATE_IMPACT) {
+    return `This combination represents a significant chunk of your variation.`;
+  }
+  return `This is one of several contributing factors.`;
+}

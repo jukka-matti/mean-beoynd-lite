@@ -8,7 +8,12 @@ import {
   calculateBoxplotStats,
   type ParetoDataPoint,
 } from '@variscout/charts';
-import { calculateStats, groupDataByFactor, calculateAnova } from '@variscout/core';
+import {
+  calculateStats,
+  groupDataByFactor,
+  calculateAnova,
+  calculateFactorVariations,
+} from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
 import { darkTheme } from '../lib/darkTheme';
@@ -238,6 +243,23 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
 
     return filteredData.map(d => Number(d[state.outcomeColumn])).filter(v => !isNaN(v));
   }, [filteredData, state.outcomeColumn]);
+
+  // Calculate factor variation for the active factor (for drill suggestion on boxplot)
+  const factorVariationPct = useMemo(() => {
+    if (!filteredData.length || !state.factorColumns?.[0] || !state.outcomeColumn) {
+      return undefined;
+    }
+
+    const factor = state.factorColumns[0];
+    const variations = calculateFactorVariations(
+      filteredData,
+      [factor],
+      state.outcomeColumn,
+      [] // No excluded factors since this is based on current slicer view
+    );
+
+    return variations.get(factor);
+  }, [filteredData, state.outcomeColumn, state.factorColumns]);
 
   // Calculate ANOVA for factor comparison
   const anovaResult = useMemo(() => {
@@ -504,16 +526,18 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
 
       {/* Bottom row: Boxplot, Pareto, Histogram/ProbPlot */}
       <div style={styles.bottomChartsRow}>
-        {/* Boxplot */}
+        {/* Boxplot with variation % indicator */}
         {boxplotData.length > 0 && (
           <div id={CHART_IDS.boxplot} style={styles.chartContainer}>
             <ChartErrorBoundary chartName="Boxplot">
               <BoxplotBase
                 data={boxplotData}
                 specs={state.specs || {}}
+                xAxisLabel={state.factorColumns?.[0] || 'Group'}
                 parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
                 parentHeight={Math.max(100, (containerSize.height - 100) * 0.45)}
                 showBranding={false}
+                variationPct={factorVariationPct}
               />
             </ChartErrorBoundary>
           </div>

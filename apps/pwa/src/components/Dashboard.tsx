@@ -12,7 +12,13 @@ import DrillBreadcrumb from './DrillBreadcrumb';
 import FactorSelector from './FactorSelector';
 import FilterChips from './FilterChips';
 import { useData } from '../context/DataContext';
-import { calculateAnova, type AnovaResult, type BreadcrumbItem } from '@variscout/core';
+import {
+  calculateAnova,
+  type AnovaResult,
+  type BreadcrumbItem,
+  getEtaSquared,
+} from '@variscout/core';
+import useVariationTracking from '../hooks/useVariationTracking';
 import {
   Activity,
   Copy,
@@ -141,20 +147,32 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
   }, [filteredData, outcome, boxplotFactor]);
 
   // Convert current filters to breadcrumb items for navigation display
-  const breadcrumbItems: BreadcrumbItem[] = useMemo(() => {
+  // Enhanced with variation tracking data
+  const { breadcrumbItems, cumulativeVariationPct, factorVariations } = useMemo(() => {
     const items: BreadcrumbItem[] = [
-      { id: 'root', label: 'All Data', isActive: false, source: 'ichart' as const },
+      {
+        id: 'root',
+        label: 'All Data',
+        isActive: false,
+        source: 'ichart' as const,
+        localVariationPct: 100,
+        cumulativeVariationPct: 100,
+      },
     ];
 
     // Guard against undefined filters (e.g., in tests)
-    if (!filters) {
+    if (!filters || !outcome) {
       items[0].isActive = true;
-      return items;
+      return { breadcrumbItems: items, cumulativeVariationPct: null, factorVariations: new Map() };
     }
 
     const activeFilters = Object.entries(filters).filter(
       ([_, values]) => Array.isArray(values) && values.length > 0
     );
+
+    // Calculate cumulative variation through the drill path
+    let cumulative = 100;
+    let currentData = rawData;
 
     activeFilters.forEach(([factor, values], index) => {
       const alias = columnAliases[factor] || factor;
@@ -162,11 +180,24 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
       const suffix = values.length > 2 ? ` +${values.length - 2}` : '';
       const label = `${alias}: ${displayValues.join(', ')}${suffix}`;
 
+      // Calculate local η² for this factor on current data
+      let localPct: number | undefined;
+      if (currentData.length >= 2 && outcome) {
+        const etaSq = getEtaSquared(currentData, factor, outcome);
+        localPct = etaSq * 100;
+        cumulative = (cumulative * localPct) / 100;
+
+        // Filter data for next level
+        currentData = currentData.filter(row => values.includes(row[factor]));
+      }
+
       items.push({
         id: factor,
         label,
         isActive: index === activeFilters.length - 1,
-        source: 'boxplot' as const, // Default source for filter-based navigation
+        source: 'boxplot' as const,
+        localVariationPct: localPct,
+        cumulativeVariationPct: cumulative,
       });
     });
 
@@ -175,8 +206,27 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
       items[0].isActive = true;
     }
 
-    return items;
-  }, [filters, columnAliases]);
+    // Calculate factor variations for drill suggestions (on current filtered data)
+    const variations = new Map<string, number>();
+    if (filteredData.length >= 2 && outcome) {
+      for (const factor of factors) {
+        // Skip factors already in filter
+        const isAlreadyFiltered = activeFilters.some(([f]) => f === factor);
+        if (isAlreadyFiltered) continue;
+
+        const etaSq = getEtaSquared(filteredData, factor, outcome);
+        if (etaSq > 0) {
+          variations.set(factor, etaSq * 100);
+        }
+      }
+    }
+
+    return {
+      breadcrumbItems: items,
+      cumulativeVariationPct: activeFilters.length > 0 ? cumulative : null,
+      factorVariations: variations,
+    };
+  }, [filters, columnAliases, rawData, filteredData, outcome, factors]);
 
   // Handle breadcrumb navigation
   const handleBreadcrumbNavigate = useCallback(
@@ -341,7 +391,12 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
             </h3>
             <div className="flex-1 min-h-0">
               <ErrorBoundary componentName="Boxplot">
-                {boxplotFactor && <Boxplot factor={boxplotFactor} />}
+                {boxplotFactor && (
+                  <Boxplot
+                    factor={boxplotFactor}
+                    variationPct={factorVariations.get(boxplotFactor)}
+                  />
+                )}
               </ErrorBoundary>
             </div>
           </div>
@@ -400,12 +455,13 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
     >
       {/* Sticky Navigation */}
       <div className="sticky top-0 z-30 bg-slate-900">
-        {/* Drill Breadcrumb Navigation */}
+        {/* Drill Breadcrumb Navigation with Variation Tracking */}
         <DrillBreadcrumb
           items={breadcrumbItems}
           onNavigate={handleBreadcrumbNavigate}
           onClearAll={handleClearAllFilters}
           onRemove={handleRemoveFilter}
+          cumulativeVariationPct={cumulativeVariationPct}
         />
 
         {/* Filter Chips */}
@@ -609,7 +665,11 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
                     <div id="boxplot-container" className="flex-1 min-h-[180px]">
                       <ErrorBoundary componentName="Boxplot">
                         {boxplotFactor && (
-                          <Boxplot factor={boxplotFactor} onDrillDown={handleDrillDown} />
+                          <Boxplot
+                            factor={boxplotFactor}
+                            onDrillDown={handleDrillDown}
+                            variationPct={factorVariations.get(boxplotFactor)}
+                          />
                         )}
                       </ErrorBoundary>
                     </div>
@@ -759,7 +819,11 @@ const Dashboard = ({ onPointClick, isPresentationMode, onExitPresentation }: Das
                   <div className="flex-1 min-h-0">
                     <ErrorBoundary componentName="Boxplot">
                       {boxplotFactor && (
-                        <Boxplot factor={boxplotFactor} onDrillDown={handleDrillDown} />
+                        <Boxplot
+                          factor={boxplotFactor}
+                          onDrillDown={handleDrillDown}
+                          variationPct={factorVariations.get(boxplotFactor)}
+                        />
                       )}
                     </ErrorBoundary>
                   </div>

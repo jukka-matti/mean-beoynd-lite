@@ -1,0 +1,301 @@
+# Cumulative Variation Tracking
+
+**Status:** Specification  
+**Version:** 1.0  
+**Last Updated:** January 2026
+
+---
+
+## Overview
+
+Cumulative Variation Tracking transforms the breadcrumb navigation from simple filter history into an actionable insight tool. Each drill-down level shows what percentage of variation is explained, and the cumulative total tells users exactly how much of their problem they've isolated.
+
+**Key Insight:** The breadcrumb trail isn't just navigation — it's cumulative math that tells you exactly how much of your total problem you've isolated.
+
+---
+
+## The Methodology
+
+### Eta-Squared (η²) at Each Level
+
+At each drill level, we calculate **eta-squared** — the proportion of variance in the outcome explained by the grouping factor:
+
+```
+η² = SS_between / SS_total
+```
+
+Where:
+
+- SS_between = Sum of squares between groups
+- SS_total = Total sum of squares
+
+### Cumulative Calculation
+
+Each drilldown level **multiplies** to show cumulative impact:
+
+| Level | Factor      | Local η² | Cumulative Calculation | Total Impact     |
+| ----- | ----------- | -------- | ---------------------- | ---------------- |
+| 0     | All Data    | 100%     | 100%                   | 100% (baseline)  |
+| 1     | Shift       | 67%      | 100% × 67%             | = 67% of total   |
+| 2     | Night Shift | 89%      | 100% × 67% × 89%       | = 59.6% of total |
+| 3     | Machine C   | 78%      | 100% × 67% × 89% × 78% | = 46.5% of total |
+
+**The insight:** By drilling three levels deep, you've isolated 46.5% of ALL your variation into ONE specific condition: Machine C on Night Shift.
+
+---
+
+## Decision Thresholds
+
+### Local Variation (η²) — What to drill into
+
+| Variation % | Action                                     | Rationale                   |
+| ----------- | ------------------------------------------ | --------------------------- |
+| > 50%       | **Recommended drill** — highlight visually | Primary driver of variation |
+| > 80%       | **Strong focus**                           | Highly concentrated issue   |
+| 30-50%      | Investigate                                | Worth exploring             |
+| < 30%       | Multiple factors                           | Check for interactions      |
+
+### Cumulative Variation — What you've isolated
+
+| Cumulative % | Color | Interpretation                        |
+| ------------ | ----- | ------------------------------------- |
+| > 50%        | Red   | "More than half your problem is HERE" |
+| 30-50%       | Amber | "Significant chunk isolated"          |
+| < 30%        | Gray  | "One of several contributors"         |
+
+---
+
+## UI Design
+
+### Compact Breadcrumb (Default View)
+
+```
+🏠 All Data → Shift (67%) → Night (89%) → Machine C (78%)  [46%]  [×]
+```
+
+Components:
+
+- **Home icon** — Root/All Data link
+- **Factor labels** — With local variation % in parentheses
+- **Cumulative badge** — Color-coded total (green/amber/gray)
+- **Clear button** — Reset all filters
+
+### Tooltip on Cumulative Badge
+
+On hover over the cumulative badge `[46%]`:
+
+```
+┌─────────────────────────────────────────────────┐
+│ 📊 46.5% of total variation isolated            │
+│                                                 │
+│ Fix this combination to address nearly half    │
+│ your quality problems.                          │
+│                                                 │
+│ 🔴 High impact — strong case for action         │
+└─────────────────────────────────────────────────┘
+```
+
+### Visual Drill Suggestions (Boxplot)
+
+When a boxplot category explains > 50% of variation:
+
+- Subtle glow or highlight on that bar
+- Small indicator icon (↓ or similar)
+- NOT auto-drilling — just a visual cue
+
+---
+
+## Data Flow
+
+```
+┌─────────────────┐
+│   Raw Data      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│  Level 1: getEtaSquared(rawData, "Shift", outcome)      │
+│  Result: 67% — Shift explains 67% of total variation    │
+└────────┬────────────────────────────────────────────────┘
+         │ Filter: Shift = "Night"
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│  Level 2: getEtaSquared(filtered1, "Machine", outcome)  │
+│  Result: 89% — Within Night Shift, Machine explains 89% │
+│  Cumulative: 67% × 89% = 59.6%                          │
+└────────┬────────────────────────────────────────────────┘
+         │ Filter: Machine = "C"
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│  Level 3: getEtaSquared(filtered2, "Operator", outcome) │
+│  Result: 78% — Within Machine C, Operator explains 78%  │
+│  Cumulative: 67% × 89% × 78% = 46.5%                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Implementation
+
+### Shared Architecture
+
+Variation tracking is implemented as shared functionality in `@variscout/core`, enabling use across all VariScout platforms:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          @variscout/core                                     │
+│  ├─ variation.ts      → Pure calculation functions                          │
+│  └─ navigation.ts     → Types, thresholds, insight helpers                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        ▼                           ▼                           ▼
+     PWA                      Excel Add-in                Azure (future)
+  (full breadcrumb)     (boxplot % indicator)         (full breadcrumb)
+```
+
+### Core Functions (packages/core/src/variation.ts)
+
+```typescript
+// Calculate cumulative variation through a drill path
+export function calculateDrillVariation(
+  rawData: any[],
+  filters: Record<string, (string | number)[]>,
+  outcome: string
+): DrillVariationResult | null;
+
+// Calculate η² for each factor (for drill suggestions)
+export function calculateFactorVariations(
+  data: any[],
+  factors: string[],
+  outcome: string,
+  excludeFactors?: string[]
+): Map<string, number>;
+
+// Check if factor should be highlighted (≥50% threshold)
+export function shouldHighlightDrill(variationPct: number): boolean;
+```
+
+### Types (packages/core/src/navigation.ts)
+
+```typescript
+export interface BreadcrumbItem {
+  id: string;
+  label: string;
+  isActive: boolean;
+  source: DrillSource;
+  // Variation tracking
+  localVariationPct?: number; // η² at this level (e.g., 67)
+  cumulativeVariationPct?: number; // Product of all η² (e.g., 46.5)
+}
+
+export const VARIATION_THRESHOLDS = {
+  HIGH_IMPACT: 50, // Red, strong recommendation
+  MODERATE_IMPACT: 30, // Amber, worth investigating
+} as const;
+```
+
+### PWA Hook (apps/pwa/src/hooks/useVariationTracking.ts)
+
+A thin React wrapper around the shared calculation functions:
+
+```typescript
+export function useVariationTracking(
+  rawData: any[],
+  drillStack: DrillAction[],
+  outcome: string | null,
+  factors: string[]
+): VariationTrackingResult {
+  // Uses calculateDrillVariation and calculateFactorVariations from @variscout/core
+  // Returns enhanced breadcrumb items with variation data
+}
+```
+
+### Boxplot Integration (packages/charts/src/Boxplot.tsx)
+
+The shared `BoxplotBase` component accepts optional variation props:
+
+```typescript
+interface BoxplotProps {
+  // ... existing props ...
+  variationPct?: number; // Display % on axis label
+  variationThreshold?: number; // Default: 50 for "drill here" indicator
+}
+```
+
+When `variationPct` is provided:
+
+- X-axis label shows `Factor (X%)`
+- If ≥ threshold: red color + "↓ drill here" indicator
+
+---
+
+## User Flow Example
+
+### Starting Point
+
+User loads data showing high variation in product weight.
+
+**I-Chart:** Shows instability pattern  
+**Boxplot:** Comparing by Shift  
+**Breadcrumb:** `🏠 All Data`
+
+### Drill 1: Into Shift
+
+User sees Shift explains 67% of variation. Clicks "Night Shift" bar.
+
+**Breadcrumb:** `🏠 All Data → Shift (67%)`  
+**Badge:** `[67%]` (green)
+
+### Drill 2: Into Machine
+
+Within Night Shift, Machine explains 89%. Clicks "Machine C".
+
+**Breadcrumb:** `🏠 All Data → Shift (67%) → Machine C (89%)`  
+**Badge:** `[60%]` (green)
+
+### Drill 3: Root Cause
+
+Within Machine C on Night Shift, Operator explains 78%.
+
+**Breadcrumb:** `🏠 All Data → Shift (67%) → Machine C (89%) → New Ops (78%)`  
+**Badge:** `[46%]` (green)
+
+**Tooltip:** "Fix this combination to address nearly half your quality problems."
+
+### Actionable Outcome
+
+User now knows: **New operators on Machine C during Night Shift** account for 46% of all weight variation. This is a specific, actionable finding for targeted training.
+
+---
+
+## Why This Changes Everything
+
+| Traditional Approach                | VaRiScout Breadcrumb                              |
+| ----------------------------------- | ------------------------------------------------- |
+| "Our Cp is 0.4, process is chaotic" | "46% of variation = Machine C on Nights"          |
+| "We need to improve quality"        | "Fix this ONE combination = half the problem"     |
+| Scatter resources across everything | Laser focus on highest-impact target              |
+| Months of unfocused effort          | Days to targeted solution                         |
+| "Quality is everyone's job"         | "Machine C Night Shift team: here's your mission" |
+
+---
+
+## Platform Support
+
+| Platform  | Feature                           | Implementation                                  |
+| --------- | --------------------------------- | ----------------------------------------------- |
+| **PWA**   | Full breadcrumb with cumulative % | `useVariationTracking` hook → `DrillBreadcrumb` |
+| **PWA**   | Drill suggestions on boxplot      | `factorVariations` → boxplot with highlight     |
+| **Excel** | Variation % on boxplot axis label | `calculateFactorVariations` → `BoxplotBase`     |
+| **Azure** | Full breadcrumb experience        | Same as PWA (future)                            |
+
+---
+
+## Related Documentation
+
+- [Architecture Overview](../../../ARCHITECTURE.md) — Shared architecture diagram
+- [Statistics Reference](../../STATISTICS_REFERENCE.md) — Eta-squared calculation details
+- [Navigation Architecture](../../design-system/NAVIGATION_ARCHITECTURE.md) — Drill-down patterns
+- [Monorepo Architecture](../../MONOREPO_ARCHITECTURE.md) — Package structure
+- [Product Specification](./VaRiScout-Product-Specification.md) — Full feature spec

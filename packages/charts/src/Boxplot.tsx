@@ -8,6 +8,9 @@ import type { BoxplotProps, BoxplotGroupData } from './types';
 import { getResponsiveMargins, getResponsiveFonts } from './responsive';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 
+/** Default threshold for high variation highlight (50%) */
+const DEFAULT_VARIATION_THRESHOLD = 50;
+
 /**
  * Boxplot Chart - Props-based version
  * Shows distribution comparison across groups
@@ -24,7 +27,11 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
   brandingText,
   onBoxClick,
   sampleSize,
+  variationPct,
+  variationThreshold = DEFAULT_VARIATION_THRESHOLD,
 }) => {
+  // Determine if this factor should be highlighted as a drill target
+  const isHighVariation = variationPct !== undefined && variationPct >= variationThreshold;
   const sourceBarHeight = getSourceBarHeight(showBranding);
   const margin = getResponsiveMargins(parentWidth, 'boxplot', sourceBarHeight);
   const fonts = getResponsiveFonts(parentWidth);
@@ -247,17 +254,30 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
             })}
           />
 
-          {/* X-Axis Label */}
+          {/* X-Axis Label with Variation Indicator */}
           <text
             x={width / 2}
             y={height + (parentWidth < 400 ? 35 : 50)}
             textAnchor="middle"
-            fill="#94a3b8"
+            fill={isHighVariation ? '#f87171' : '#94a3b8'}
             fontSize={fonts.axisLabel}
-            fontWeight={500}
+            fontWeight={isHighVariation ? 600 : 500}
           >
             {xAxisLabel}
+            {variationPct !== undefined && ` (${Math.round(variationPct)}%)`}
           </text>
+          {/* Drill suggestion indicator */}
+          {isHighVariation && (
+            <text
+              x={width / 2}
+              y={height + (parentWidth < 400 ? 35 : 50) + 14}
+              textAnchor="middle"
+              fill="#f87171"
+              fontSize={10}
+            >
+              ↓ drill here
+            </text>
+          )}
 
           {/* Source Bar (branding) */}
           {showBranding && (

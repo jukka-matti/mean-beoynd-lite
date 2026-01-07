@@ -140,6 +140,10 @@ export interface BoxplotProps extends BaseChartProps {
   onBoxClick?: (key: string) => void;
   /** Sample size for branding bar */
   sampleSize?: number;
+  /** Variation % explained by this factor (for drill suggestion indicator) */
+  variationPct?: number;
+  /** Threshold for "high variation" highlight (default: 50) */
+  variationThreshold?: number;
 }
 
 /**

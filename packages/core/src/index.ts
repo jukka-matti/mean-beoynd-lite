@@ -95,4 +95,17 @@ export {
   shouldToggleDrill,
   drillStackToBreadcrumbs,
   initialNavigationState,
+  VARIATION_THRESHOLDS,
+  getVariationImpactLevel,
+  getVariationInsight,
 } from './navigation';
+
+// Variation tracking
+export type { DrillVariationResult, DrillLevelVariation } from './variation';
+
+export {
+  calculateDrillVariation,
+  calculateFactorVariations,
+  shouldHighlightDrill,
+  applyFilters,
+} from './variation';

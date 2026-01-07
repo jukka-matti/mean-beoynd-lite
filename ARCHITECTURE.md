@@ -85,15 +85,16 @@ variscout-lite/
 
 Pure TypeScript logic with no React dependencies:
 
-| Module          | Purpose                                                       |
-| --------------- | ------------------------------------------------------------- |
-| `stats.ts`      | Mean, StdDev, UCL/LCL, Cp, Cpk, conformance, factor grouping  |
-| `parser.ts`     | CSV/Excel file parsing                                        |
-| `navigation.ts` | Navigation types and utilities (DrillAction, BreadcrumbItem)  |
-| `license.ts`    | License key validation (offline)                              |
-| `edition.ts`    | Edition configuration (community/itc/licensed)                |
-| `export.ts`     | CSV export utilities                                          |
-| `types.ts`      | Shared TypeScript interfaces (StatsResult, ConformanceResult) |
+| Module          | Purpose                                                         |
+| --------------- | --------------------------------------------------------------- |
+| `stats.ts`      | Mean, StdDev, UCL/LCL, Cp, Cpk, conformance, factor grouping    |
+| `parser.ts`     | CSV/Excel file parsing                                          |
+| `navigation.ts` | Navigation types and utilities (DrillAction, BreadcrumbItem)    |
+| `variation.ts`  | Cumulative variation tracking (η² cascading, drill suggestions) |
+| `license.ts`    | License key validation (offline)                                |
+| `edition.ts`    | Edition configuration (community/itc/licensed)                  |
+| `export.ts`     | CSV export utilities                                            |
+| `types.ts`      | Shared TypeScript interfaces (StatsResult, ConformanceResult)   |
 
 ### @variscout/charts
 
@@ -404,7 +405,78 @@ Configuration is persisted in Excel document via Custom Document Properties, all
 
 > **See also:** [docs/concepts/EXCEL_ADDIN_STRATEGY.md](docs/concepts/EXCEL_ADDIN_STRATEGY.md) for the full strategic analysis.
 
-## 11. Performance Budget
+## 11. Variation Tracking Architecture
+
+VariScout implements **cumulative variation tracking** to help users identify the most impactful factors during drill-down analysis. This feature is shared across all platforms.
+
+### Core Concept
+
+When drilling down through factors, variation percentages (η² / eta-squared) are **multiplied** to show the cumulative impact. For example:
+
+- Root: 100% of variation
+- Drill to "Night Shift" (65% η²): 65% of total variation explained
+- Drill to "Machine C" (71% η²): 65% × 71% = 46% cumulative
+
+### Shared Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          @variscout/core                                     │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │  variation.ts                                                         │   │
+│  │  ├─ calculateDrillVariation()  → cumulative η² through drill path    │   │
+│  │  ├─ calculateFactorVariations() → η² for each factor (suggestions)   │   │
+│  │  ├─ shouldHighlightDrill()     → threshold check (≥50%)              │   │
+│  │  └─ applyFilters()             → utility for filtering data          │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │  navigation.ts                                                        │   │
+│  │  ├─ VARIATION_THRESHOLDS       → 50% high, 30% moderate              │   │
+│  │  ├─ getVariationImpactLevel()  → 'high' | 'moderate' | 'low'         │   │
+│  │  └─ getVariationInsight()      → plain-language insight text         │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        ▼                           ▼                           ▼
+┌───────────────────┐   ┌───────────────────────┐   ┌───────────────────┐
+│    PWA            │   │    Excel Add-in       │   │    Azure (future) │
+│                   │   │                       │   │                   │
+│ useVariationTracking │ │ calculateFactorVariations │ │ useVariationTracking │
+│       ↓           │   │         ↓             │   │       ↓           │
+│ DrillBreadcrumb   │   │    BoxplotBase        │   │ DrillBreadcrumb   │
+│ (cumulative %)    │   │   (variation % label) │   │ (cumulative %)    │
+└───────────────────┘   └───────────────────────┘   └───────────────────┘
+```
+
+### Platform-Specific Implementation
+
+| Platform  | Feature                             | Implementation                                  |
+| --------- | ----------------------------------- | ----------------------------------------------- |
+| **PWA**   | Full breadcrumb with cumulative %   | `useVariationTracking` hook → `DrillBreadcrumb` |
+| **PWA**   | Drill suggestions on boxplot        | `factorVariations` → `Boxplot.tsx`              |
+| **Excel** | Variation % on boxplot axis label   | `calculateFactorVariations` → `BoxplotBase`     |
+| **Azure** | Full breadcrumb experience (future) | Same as PWA, import shared functions            |
+
+### Visual Indicators
+
+| Variation | Color  | Meaning                               |
+| --------- | ------ | ------------------------------------- |
+| ≥50%      | Red    | High impact - "drill here" suggestion |
+| 30-50%    | Yellow | Moderate impact - worth investigating |
+| <30%      | Gray   | Low impact - consider other factors   |
+
+### Boxplot Integration
+
+The `@variscout/charts` `BoxplotBase` component accepts optional `variationPct` prop:
+
+- Displays factor name + percentage on x-axis label
+- Shows "↓ drill here" indicator when `variationPct ≥ variationThreshold`
+- Red highlighting for high-impact factors
+
+> **Detailed documentation:** [docs/products/pwa/VARIATION_TRACKING.md](docs/products/pwa/VARIATION_TRACKING.md)
+
+## 12. Performance Budget
 
 | Metric              | Budget          |
 | ------------------- | --------------- |

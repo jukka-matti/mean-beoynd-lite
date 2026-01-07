@@ -42,8 +42,10 @@ Pure TypeScript logic with no React dependencies. Can be used by any JavaScript/
 
 **Contents:**
 
-- `stats.ts` - Statistical calculations (mean, stdDev, Cp, Cpk, calculateConformance, groupDataByFactor)
+- `stats.ts` - Statistical calculations (mean, stdDev, Cp, Cpk, calculateConformance, groupDataByFactor, getEtaSquared)
 - `parser.ts` - CSV/Excel file parsing
+- `navigation.ts` - Drill-down navigation types and utilities (DrillAction, BreadcrumbItem, thresholds)
+- `variation.ts` - Cumulative variation tracking (calculateDrillVariation, calculateFactorVariations, shouldHighlightDrill)
 - `license.ts` - License key validation (offline, checksum-based)
 - `export.ts` - CSV export utilities
 - `edition.ts` - Edition configuration (community/itc/licensed)
@@ -55,6 +57,16 @@ Pure TypeScript logic with no React dependencies. Can be used by any JavaScript/
 import { calculateStats, calculateConformance, groupDataByFactor } from '@variscout/core';
 import { parseCSV, parseExcel } from '@variscout/core';
 import { isValidLicenseFormat, hasValidLicense } from '@variscout/core';
+
+// Variation tracking for drill-down analysis
+import {
+  calculateDrillVariation,
+  calculateFactorVariations,
+  shouldHighlightDrill,
+  VARIATION_THRESHOLDS,
+  getVariationImpactLevel,
+  getVariationInsight,
+} from '@variscout/core';
 ```
 
 ### @variscout/charts (`packages/charts/`)
@@ -64,7 +76,7 @@ Props-based React components using Visx for data visualization. All components a
 **Chart Components:**
 
 - `IChart.tsx` - Individual control chart (time series) with `IChartBase` export
-- `Boxplot.tsx` - Factor comparison chart with `BoxplotBase` export
+- `Boxplot.tsx` - Factor comparison chart with `BoxplotBase` export (supports `variationPct` prop for drill suggestions)
 - `ParetoChart.tsx` - Frequency analysis chart with `ParetoChartBase` export
 - `CapabilityHistogram.tsx` - Distribution with spec limits
 - `ProbabilityPlot.tsx` - Normal probability plot
