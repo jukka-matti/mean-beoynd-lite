@@ -190,17 +190,18 @@ Learn More →
 
 ## Hero Section
 
-### Component: HeroWithCTA
+### Component: Hero
+
+Basic hero with optional AVERAGES visual hook.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│         Find what's driving variation.                          │
-│               In minutes.                                       │
+│         See Beyond Averages. Find your 46%.                     │
 │                                                                 │
-│    Simple enough for anyone. Rigorous enough for experts.       │
+│    46% of your improvement potential may be hiding...           │
 │                                                                 │
-│           [Try Free]    [Watch Demo]                            │
+│           [Try Free]    [Take the Journey]                      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -212,6 +213,141 @@ Learn More →
 | CTA Gap         | `--space-4`                                           |
 | Section Padding | `--space-20` vertical                                 |
 | Max Width       | 800px (text), centered                                |
+
+### Component: Hero with AVERAGES Hook
+
+When `showAveragesHook={true}`, displays the AVERAGES visual:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│         See Beyond Averages. Find your 46%.                     │
+│                                                                 │
+│           [Try Free]    [Take the Journey]                      │
+│                                                                 │
+│     ┌─────────────────────────────────────────────────┐        │
+│     │  YOUR DASHBOARD SAYS:                           │        │
+│     │                                                 │        │
+│     │   [████ 96%] [████ 94%] [████ 95%]             │        │
+│     │   Factor A   Factor B   Factor C               │        │
+│     │                                                 │        │
+│     │   "Everything looks fine. 95% pass rate."      │        │
+│     └─────────────────────────────────────────────────┘        │
+│                                                                 │
+│                      But is it?                                 │
+│                                                                 │
+│              [↓ See what's hiding]                              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Element        | Style                                         |
+| -------------- | --------------------------------------------- |
+| Dashboard Card | `--color-neutral-900` background              |
+| Bar Chart      | `--color-green-500` bars, height varies       |
+| "But is it?"   | `--text-2xl` / `--font-bold`                  |
+| Arrow Link     | `--color-brand-primary` with bounce animation |
+
+---
+
+## MiniJourney Section
+
+### Component: MiniJourney
+
+Before/after transformation showing the "aha moment" in one scroll.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    THE TRANSFORMATION                           │
+│                                                                 │
+│   ┌───────────────────────┐   ┌───────────────────────┐        │
+│   │  ALL DATA MIXED       │   │  FILTERED BY FACTOR   │        │
+│   │                       │   │                       │        │
+│   │  [Chaotic I-Chart]    │   │  [Clean I-Chart]      │        │
+│   │  UCL ─────────────    │   │  UCL ─────────────    │        │
+│   │      ●  ●             │   │                       │        │
+│   │   ●       ●  ●        │   │    ● ● ● ● ● ● ●     │        │
+│   │  ─────────────── x̄    │   │  ─────────────── x̄    │        │
+│   │     ●  ●    ●         │   │                       │        │
+│   │  LCL ─────────────    │   │  LCL ─────────────    │        │
+│   │                       │   │                       │        │
+│   │  "Looks unstable"     │   │  "Factor A stable"    │        │
+│   └───────────────────────┘   └───────────────────────┘        │
+│                                                                 │
+│          Same data. Different questions.                        │
+│          46% of variation in one place.                         │
+│                                                                 │
+│              [Take the Full Journey →]                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Property        | Value                               |
+| --------------- | ----------------------------------- |
+| Background      | `--color-neutral-900`               |
+| Text Color      | `--color-white`                     |
+| Section Padding | `--space-24` vertical               |
+| Card Background | `--color-neutral-800` (50% opacity) |
+| Before Badge    | `--color-red-500` (Chaotic)         |
+| After Badge     | `--color-green-500` (Clear)         |
+| Discovery Box   | `--color-purple-500` accent         |
+
+---
+
+## Four Pillars Section
+
+### Component: FourPillars
+
+Color-coded cards representing the VaRiScout methodology pillars.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              Four Questions. Four Tools.                        │
+│                                                                 │
+│   ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌───────────┐│
+│   │   CHANGE    │ │    FLOW     │ │   FAILURE   │ │   VALUE   ││
+│   │   (blue)    │ │  (orange)   │ │    (red)    │ │  (green)  ││
+│   │             │ │             │ │             │ │           ││
+│   │ Is it       │ │ Which       │ │ Where do    │ │ Does it   ││
+│   │ stable?     │ │ factor?     │ │ problems    │ │ meet      ││
+│   │             │ │             │ │ cluster?    │ │ specs?    ││
+│   │             │ │             │ │             │ │           ││
+│   │ I-Chart     │ │ Boxplot     │ │ Pareto      │ │Capability ││
+│   │             │ │             │ │             │ │           ││
+│   │ Learn more →│ │ Learn more →│ │ Learn more →│ │Learn more→││
+│   └─────────────┘ └─────────────┘ └─────────────┘ └───────────┘│
+│                                                                 │
+│              [Experience the full journey →]                    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Property        | Value                                 |
+| --------------- | ------------------------------------- |
+| Background      | `--color-neutral-50`                  |
+| Section Padding | `--space-24` vertical                 |
+| Grid            | 4 columns desktop, 2 tablet, 1 mobile |
+| Gap             | `--space-6`                           |
+
+**Pillar Card Colors:**
+
+| Pillar  | Border Color    | Icon Color   | Background      |
+| ------- | --------------- | ------------ | --------------- |
+| CHANGE  | `blue-500/30`   | `blue-500`   | `blue-500/10`   |
+| FLOW    | `orange-500/30` | `orange-500` | `orange-500/10` |
+| FAILURE | `red-500/30`    | `red-500`    | `red-500/10`    |
+| VALUE   | `green-500/30`  | `green-500`  | `green-500/10`  |
+
+**Pillar Card Structure:**
+
+| Element     | Style                                    |
+| ----------- | ---------------------------------------- |
+| Icon        | 56px container, pillar color background  |
+| Pillar Name | `--text-xs` / uppercase / pillar color   |
+| Question    | `--text-lg` / `--font-bold`              |
+| Tool Name   | `--text-sm` / `--color-neutral-500`      |
+| Description | `--text-sm` / `--color-neutral-600`      |
+| Link        | Pillar color with arrow, hover translate |
 
 ---
 

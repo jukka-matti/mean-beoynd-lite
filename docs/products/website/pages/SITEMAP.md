@@ -2,7 +2,7 @@
 
 ## Overview
 
-Complete site architecture for variscout.com.
+Complete site architecture for variscout.com. The **Journey** is the central experience—every page either leads TO, is part OF, or leads FROM the journey.
 
 ---
 
@@ -11,7 +11,27 @@ Complete site architecture for variscout.com.
 ```
 variscout.com
 │
-├── /                           Home
+├── /                           Home (AVERAGES hook → Journey)
+│
+├── /journey                    ★ THE JOURNEY (central experience)
+│
+├── /tools/                     Tool pages (Four Pillars)
+│   ├── /i-chart                CHANGE pillar - Patterns over time
+│   ├── /boxplot                FLOW pillar - Compare factors
+│   ├── /pareto                 FAILURE pillar - Prioritize problems
+│   └── /capability             VALUE pillar - Meet specs
+│
+├── /cases/                     Interactive case studies
+│   ├── /bottleneck             Week 1: Process step analysis
+│   ├── /hospital-ward          Week 5: Aggregation trap
+│   ├── /coffee                 Week 9: Drying bed comparison
+│   ├── /packaging              Week 9: Defect analysis
+│   └── /avocado                Week 12: Regression analysis
+│
+├── /learn/                     Conceptual learning
+│   ├── /two-voices             Control vs Spec limits
+│   ├── /four-pillars           Watson framework
+│   └── /eda-philosophy         Visual exploration
 │
 ├── /product/
 │   ├── /web-app                VaRiScout Web (PWA)
@@ -50,35 +70,64 @@ variscout.com
 
 ### Primary Navigation (Desktop)
 
+Journey is the **primary nav item** (bold, brand color), not hidden in a dropdown.
+
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  🔍 VaRiScout    Product ▼    Use Cases ▼    Pricing    [Try Free] │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│  🔍 VaRiScout   Journey   Explore ▼   Tools ▼   Learn ▼   Product ▼   Pricing  [Try Free]│
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+                    ↑
+              Bold, primary color
+```
+
+#### Explore Dropdown
+
+```
+┌─────────────────────────────┐
+│ Journey                     │ → /journey (See the 46% story)
+│ Case Studies                │ → /cases (Practice scenarios)
+└─────────────────────────────┘
+```
+
+#### Tools Dropdown
+
+```
+┌─────────────────────────────┐
+│ I-Chart                     │ → /tools/i-chart (Patterns over time)
+│ Boxplot                     │ → /tools/boxplot (Compare factors)
+│ Pareto                      │ → /tools/pareto (Prioritize problems)
+│ Capability                  │ → /tools/capability (Meet specs)
+│ ─────────────────────────── │
+│ All Tools →                 │ → /tools
+└─────────────────────────────┘
+```
+
+#### Learn Dropdown
+
+```
+┌─────────────────────────────┐
+│ Two Voices                  │ → /learn/two-voices (Control vs Spec)
+│ Four Pillars                │ → /learn/four-pillars (Watson framework)
+│ EDA Philosophy              │ → /learn/eda-philosophy (Visual exploration)
+└─────────────────────────────┘
 ```
 
 #### Product Dropdown
 
 ```
-┌─────────────────────┐
-│ Web App             │ → /product/web-app
-│ Excel               │ → /product/excel
-│ Power BI            │ → /product/power-bi
-│ Azure               │ → /product/azure
-│ ─────────────────── │
-│ Compare All →       │ → /product/compare
-└─────────────────────┘
-```
-
-#### Use Cases Dropdown
-
-```
-┌─────────────────────────┐
-│ LSS Training & Projects │ → /use-cases/lss-training
-│ Quality & Operations    │ → /use-cases/operations
-└─────────────────────────┘
+┌─────────────────────────────┐
+│ Web App                     │ → /product/web-app
+│ Excel                       │ → /product/excel
+│ Power BI                    │ → /product/power-bi
+│ Azure                       │ → /product/azure
+│ ─────────────────────────── │
+│ Compare All →               │ → /product/compare
+└─────────────────────────────┘
 ```
 
 ### Mobile Navigation
+
+Journey is prominently featured at the top of mobile menu.
 
 ```
 ┌─────────────────────────────────┐
@@ -87,21 +136,28 @@ variscout.com
 
 (Expanded)
 ┌─────────────────────────────────┐
-│ Product                     ▼   │
+│ ★ Take the Journey              │ → /journey (highlighted, primary color)
+│ ─────────────────────────────── │
+│ EXPLORE                         │
+│   Journey                       │
+│   Case Studies                  │
+│ TOOLS                           │
+│   I-Chart                       │
+│   Boxplot                       │
+│   Pareto                        │
+│   Capability                    │
+│ LEARN                           │
+│   Two Voices                    │
+│   Four Pillars                  │
+│   EDA Philosophy                │
+│ PRODUCT                         │
 │   Web App                       │
 │   Excel                         │
 │   Power BI                      │
 │   Azure                         │
-│   Compare                       │
-│ Use Cases                   ▼   │
-│   LSS Training                  │
-│   Operations                    │
-│ Pricing                         │
-│ Resources                   ▼   │
-│   #VariationScouting            │
-│   Sample Data                   │
-│   Tutorials                     │
 │ ─────────────────────────────── │
+│ Pricing                         │
+│ [🌐 EN | FI | SV]               │
 │ [Try Free]                      │
 └─────────────────────────────────┘
 ```
@@ -111,24 +167,24 @@ variscout.com
 ## Footer Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│  🔍 VaRiScout                                                       │
-│                                                                     │
-│  Product           Use Cases        Resources        Company        │
-│  ─────────         ──────────       ─────────        ───────        │
-│  Web App           LSS Training     Tutorials        About          │
-│  Excel             Operations       Sample Data      Contact        │
-│  Power BI                           #VariationScouting              │
-│  Azure                                                              │
-│  Pricing                                                            │
-│  Compare                                                            │
-│                                                                     │
-│  ─────────────────────────────────────────────────────────────────  │
-│                                                                     │
-│  © 2026 RDMAIC Oy    Privacy  |  Terms  |  AppSource  |  Azure     │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  🔍 VaRiScout                                                                   │
+│  Find it. Fix it. Check it. Continue.                                           │
+│                                                                                 │
+│  Explore          Tools            Learn            Product         Company     │
+│  ────────         ──────           ──────           ────────        ───────     │
+│  Journey          I-Chart          Two Voices       Web App         About       │
+│  Case Studies     Boxplot          Four Pillars     Excel           Contact     │
+│                   Pareto           EDA Philosophy   Power BI                    │
+│                   Capability                        Azure                       │
+│                                                     Pricing                     │
+│                                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│                                                                                 │
+│  © 2026 RDMAIC Oy    Privacy  |  Terms  |  AppSource  |  Azure                  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -137,44 +193,85 @@ variscout.com
 
 ### High Priority (Core Pages)
 
-| Page         | Primary Keyword    | Secondary Keywords                    |
-| ------------ | ------------------ | ------------------------------------- |
-| Home         | variation analysis | SPC, control charts, Lean Six Sigma   |
-| Web App      | online SPC tool    | control chart online, boxplot tool    |
-| Power BI     | Power BI SPC       | Power BI control chart, custom visual |
-| Pricing      | VaRiScout pricing  | SPC software cost                     |
-| LSS Training | Six Sigma tools    | Green Belt software, training         |
+| Page         | Primary Keyword                 | Secondary Keywords                    |
+| ------------ | ------------------------------- | ------------------------------------- |
+| Home         | variation analysis              | SPC, control charts, Lean Six Sigma   |
+| **Journey**  | **variation analysis tutorial** | **learn SPC, Six Sigma journey**      |
+| Web App      | online SPC tool                 | control chart online, boxplot tool    |
+| Power BI     | Power BI SPC                    | Power BI control chart, custom visual |
+| Pricing      | VaRiScout pricing               | SPC software cost                     |
+| LSS Training | Six Sigma tools                 | Green Belt software, training         |
 
 ### Medium Priority
 
-| Page       | Primary Keyword          |
-| ---------- | ------------------------ |
-| Excel      | Excel SPC add-in         |
-| Azure      | Azure SPC deployment     |
-| Operations | quality management tools |
-| Compare    | SPC software comparison  |
+| Page        | Primary Keyword             |
+| ----------- | --------------------------- |
+| I-Chart     | control chart tool          |
+| Boxplot     | boxplot comparison tool     |
+| Pareto      | pareto chart analysis       |
+| Capability  | process capability analysis |
+| Excel       | Excel SPC add-in            |
+| Azure       | Azure SPC deployment        |
+| Operations  | quality management tools    |
+| Compare     | SPC software comparison     |
+| Cases (hub) | SPC case studies, examples  |
 
 ### Supporting Pages
 
-| Page        | Purpose                  |
-| ----------- | ------------------------ |
-| Resources   | Content hub, SEO landing |
-| Tutorials   | Long-tail keywords       |
-| Sample Data | Lead generation          |
+| Page         | Purpose                  |
+| ------------ | ------------------------ |
+| Learn pages  | Conceptual SEO content   |
+| Case studies | Long-tail + engagement   |
+| Resources    | Content hub, SEO landing |
+| Tutorials    | Long-tail keywords       |
+| Sample Data  | Lead generation          |
 
 ---
 
 ## Internal Linking Strategy
 
+The Journey is central—every page connects to it.
+
 ### From Homepage
 
 ```
 Homepage
-├── → /product/web-app (primary CTA)
-├── → /product/* (product cards)
+├── → /journey (primary path - "Take the Journey")
+├── → /app (secondary CTA - "Try Free")
+├── → /tools/* (Four Pillars cards)
 ├── → /use-cases/* (use case cards)
-├── → /pricing (pricing preview)
-└── → /resources (demo/content)
+└── → /product/* (product cards)
+```
+
+### From Journey Page
+
+```
+Journey Page (/journey)
+├── → /app (primary CTA - "Try with Your Data")
+├── → /tools/* (each pillar links to tool page)
+├── → /cases/* (practice scenarios)
+└── → /learn/* (deeper concepts)
+```
+
+### From Tool Pages
+
+```
+Tool Page (e.g., /tools/i-chart)
+├── → /journey (see tool in context)
+├── → /app (primary CTA)
+├── → /cases/* (related case studies)
+├── → Other tools (Four Pillars cross-links)
+└── → /learn/* (related concepts)
+```
+
+### From Case Study Pages
+
+```
+Case Study Page (e.g., /cases/coffee)
+├── → /app (primary CTA - embedded PWA)
+├── → /journey (see methodology)
+├── → /tools/* (tools used in case)
+└── → Other cases (related scenarios)
 ```
 
 ### From Product Pages
@@ -182,20 +279,20 @@ Homepage
 ```
 Product Page (e.g., /product/web-app)
 ├── → /app (primary CTA)
+├── → /journey (see methodology)
 ├── → /pricing (pricing section)
 ├── → /product/compare (comparison link)
-├── → /resources/tutorials (help link)
 └── → Other products (cross-sell)
 ```
 
-### From Use Case Pages
+### From Learn Pages
 
 ```
-Use Case Page (e.g., /use-cases/lss-training)
-├── → /app (primary CTA)
-├── → /product/* (relevant products)
-├── → /resources/sample-data (sample data)
-└── → /pricing (pricing link)
+Learn Page (e.g., /learn/four-pillars)
+├── → /journey (see concepts in action)
+├── → /tools/* (related tools)
+├── → /app (try it yourself)
+└── → Other learn pages (related concepts)
 ```
 
 ---

@@ -16,42 +16,67 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │  HEADER (sticky)                                                    │
-│  🔍 VaRiScout    Product ▼   Use Cases ▼   Pricing      [Try Free] │
+│  🔍 VaRiScout   Journey   Explore ▼   Tools ▼   Product ▼  [Try Free]│
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │                    HERO SECTION                                     │
 │                                                                     │
-│         Find what's driving variation.                              │
-│                  In minutes.                                        │
+│              See Beyond Averages. Find your 46%.                    │
 │                                                                     │
-│    Simple enough for anyone. Rigorous enough for experts.           │
+│              [Try Free]    [Take the Journey]                       │
 │                                                                     │
-│              [Try Free]    [Watch Demo]                             │
+│     ┌─────────────────────────────────────────────────────────┐    │
+│     │  YOUR DASHBOARD SAYS:                                   │    │
+│     │                                                         │    │
+│     │   [████ 96%] [████ 94%] [████ 95%]                     │    │
+│     │   Factor A   Factor B   Factor C                       │    │
+│     │                                                         │    │
+│     │   "Everything looks fine. 95% pass rate."              │    │
+│     └─────────────────────────────────────────────────────────┘    │
 │                                                                     │
-├─────────────────────────────────────────────────────────────────────┤
+│                      But is it?                                     │
 │                                                                     │
-│                    HERO IMAGE/ANIMATION                             │
-│         (Dashboard screenshot or animation)                         │
-│                                                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│                    VALUE PROPS (3 columns)                          │
-│                                                                     │
-│   📊 See Variation    🔍 Find the Factor    📋 Present Instantly    │
-│   I-Chart, Boxplot,   Click to filter.      One-click copy          │
-│   Pareto — all at     Drill down in         to PowerPoint.          │
-│   once.               seconds.                                      │
+│              [↓ See what's hiding]                                  │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│                    HOW IT WORKS (4 steps)                           │
+│                    MINI-JOURNEY SECTION                             │
+│                    "The Transformation"                             │
 │                                                                     │
-│      ①              ②              ③              ④                │
-│    Upload         Select        Explore         Copy                │
+│   ┌───────────────────────┐   ┌───────────────────────┐            │
+│   │  ALL DATA MIXED       │   │  FILTERED BY FACTOR   │            │
+│   │                       │   │                       │            │
+│   │  [Chaotic I-Chart]    │   │  [Clean I-Chart]      │            │
+│   │                       │   │                       │            │
+│   │  "Looks unstable"     │   │  "Factor A is stable" │            │
+│   └───────────────────────┘   └───────────────────────┘            │
+│                                                                     │
+│          Same data. Different questions.                            │
+│          46% of variation in one place.                             │
+│                                                                     │
+│              [Take the Full Journey →]                              │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                    FOUR PILLARS SECTION                             │
+│                "Four Questions. Four Tools."                        │
+│                                                                     │
+│   ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│   │   CHANGE    │ │    FLOW     │ │   FAILURE   │ │    VALUE    │  │
+│   │   (blue)    │ │  (orange)   │ │    (red)    │ │   (green)   │  │
+│   │             │ │             │ │             │ │             │  │
+│   │ "Is it      │ │ "Which      │ │ "Where do   │ │ "Does it    │  │
+│   │  stable?"   │ │  factor?"   │ │  problems   │ │  meet       │  │
+│   │             │ │             │ │  cluster?"  │ │  specs?"    │  │
+│   │  [I-Chart]  │ │  [Boxplot]  │ │  [Pareto]   │ │[Capability] │  │
+│   └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘  │
+│                                                                     │
+│              [Experience the full journey →]                        │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │                    USE CASES (2 columns)                            │
+│                    "Two Worlds, One Tool"                           │
 │                                                                     │
 │   ┌───────────────────┐   ┌───────────────────┐                     │
 │   │ LSS Training      │   │ Quality &         │                     │
@@ -63,31 +88,19 @@
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │                    PRODUCTS (4 cards)                               │
+│                    "Choose Your Platform"                           │
 │                                                                     │
 │   [Web App]  [Excel]  [Power BI]  [Azure]                          │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│                    WHY VARISCOUT (4 items)                          │
-│                                                                     │
-│   No Installation | No Training | Plain Language | MS Certified    │
-│                                                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│                    PRICING PREVIEW                                  │
-│                                                                     │
-│       Free €0    |    Individual €49    |    Team from €399        │
-│                                                                     │
-│                       [See All Pricing]                             │
-│                                                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
 │                    FINAL CTA                                        │
 │                                                                     │
-│              Start Scouting Variation                               │
-│    No signup required. Your data stays in your browser.             │
+│              Where's YOUR 46%?                                      │
+│    Your data is hiding opportunity.                                 │
+│    Find it. Fix it. Check it. Continue.                            │
 │                                                                     │
-│                    [Open VaRiScout]                                 │
+│         [Try Free - No Signup]   [Take the Journey]                │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
@@ -108,118 +121,114 @@
 | Position   | Sticky top                           |
 | Background | White (scrolled) / Transparent (top) |
 
+**Navigation order:** Journey | Explore ▼ | Tools ▼ | Learn ▼ | Product ▼ | Pricing
+
 ### 2. Hero Section
 
-| Property   | Value                   |
-| ---------- | ----------------------- |
-| Component  | `HeroWithCTA`           |
-| Content    | `COPY-HOME.md#hero`     |
-| Layout     | Centered text           |
-| Background | Light gradient or white |
-| Padding    | `--space-20` vertical   |
+| Property   | Value                            |
+| ---------- | -------------------------------- |
+| Component  | `Hero` with `showAveragesHook`   |
+| Layout     | Centered text + dashboard visual |
+| Background | White                            |
+| Padding    | `--space-20` vertical            |
 
 **Content Mapping:**
 
 ```yaml
-headline: "Find what's driving variation."
-headline_emphasis: 'In minutes.' # Different color/weight
-subhead: 'Simple enough for anyone. Rigorous enough for experts.'
+headline: 'See Beyond Averages.'
+headline_emphasis: 'Find your 46%.'
+subhead: '46% of your improvement potential may be hiding in one place. VaRiScout finds WHERE to focus.'
 cta_primary:
   text: 'Try Free'
   url: '/app'
-  style: 'primary'
 cta_secondary:
-  text: 'Watch Demo'
-  url: '#demo'
-  style: 'secondary'
+  text: 'Take the Journey'
+  url: '/journey'
+showAveragesHook: true
 ```
 
-### 3. Hero Image
+**AVERAGES Hook Visual:**
 
-| Property      | Value                      |
-| ------------- | -------------------------- |
-| Component     | `HeroImage` or `Animation` |
-| Content       | Dashboard screenshot       |
-| Max Width     | 1000px                     |
-| Shadow        | `--shadow-xl`              |
-| Border Radius | `--radius-xl`              |
+- Bar chart showing 96%, 94%, 95% for Factors A, B, C
+- Message: "Everything looks fine. 95% pass rate."
+- Hook: "But is it?"
+- Link: "See what's hiding ↓" → scrolls to MiniJourney
 
-Options:
+### 3. MiniJourney Section
 
-- Static screenshot (faster load)
-- Animated GIF showing filter interaction
-- Live demo embed
+| Property   | Value                 |
+| ---------- | --------------------- |
+| Component  | `MiniJourney`         |
+| Background | `--color-neutral-900` |
+| Text Color | White                 |
+| Padding    | `--space-24` vertical |
 
-### 4. Value Props
+**Content:**
 
-| Property  | Value                              |
-| --------- | ---------------------------------- |
-| Component | `ThreeColumnFeatures`              |
-| Content   | `COPY-HOME.md#value_props`         |
-| Layout    | 3 columns desktop, 1 column mobile |
-| Gap       | `--space-8`                        |
+- Header: "The Transformation"
+- Before/After I-Chart comparison
+- Discovery: "46% of variation in one place"
+- CTA: "Take the Full Journey →" → `/journey`
 
-### 5. How It Works
+### 4. Four Pillars Section
 
-| Property  | Value                                 |
-| --------- | ------------------------------------- |
-| Component | `StepsHorizontal`                     |
-| Content   | `COPY-HOME.md#how_it_works`           |
-| Layout    | 4 columns desktop, 2 tablet, 1 mobile |
-| Connector | Dashed line between steps             |
+| Property   | Value                                 |
+| ---------- | ------------------------------------- |
+| Component  | `FourPillars`                         |
+| Background | `--color-neutral-50`                  |
+| Layout     | 4 columns desktop, 2 tablet, 1 mobile |
 
-### 6. Use Cases
+**Pillars:**
+| Pillar | Color | Tool | Question |
+|--------|-------|------|----------|
+| CHANGE | blue-500 | I-Chart | "Is it stable over time?" |
+| FLOW | orange-500 | Boxplot | "Which factor drives variation?" |
+| FAILURE | red-500 | Pareto | "Where do problems concentrate?" |
+| VALUE | green-500 | Capability | "Does it meet customer specs?" |
+
+Each card links to respective tool page.
+
+### 5. Use Cases
 
 | Property   | Value                        |
 | ---------- | ---------------------------- |
 | Component  | `TwoColumnCards`             |
-| Content    | `COPY-HOME.md#use_cases`     |
+| Layout     | 2 columns desktop, 1 mobile  |
 | Card Style | Clickable, with hover effect |
-| CTA        | "Learn More" ghost button    |
 
-### 7. Products Overview
+### 6. Products Overview
 
 | Property   | Value                                |
 | ---------- | ------------------------------------ |
 | Component  | `ProductCards`                       |
-| Content    | `COPY-HOME.md#products_overview`     |
 | Layout     | 4 columns desktop, 2 tablet          |
 | Card Style | Compact with icon, title, price hint |
 
-### 8. Why VaRiScout
+### 7. Final CTA
 
-| Property  | Value                            |
-| --------- | -------------------------------- |
-| Component | `FeatureGrid`                    |
-| Content   | `COPY-HOME.md#why_variscout`     |
-| Layout    | 4 columns desktop, 2 mobile      |
-| Style     | Icon + title + short description |
+| Property   | Value                                  |
+| ---------- | -------------------------------------- |
+| Component  | `CTASection`                           |
+| Background | Brand primary                          |
+| Text Color | White                                  |
+| Headline   | "Where's YOUR 46%?"                    |
+| Tagline    | "Find it. Fix it. Check it. Continue." |
 
-### 9. Pricing Preview
+---
 
-| Property  | Value                          |
-| --------- | ------------------------------ |
-| Component | `PricingPreview`               |
-| Content   | `COPY-HOME.md#pricing_preview` |
-| Layout    | 3 tier cards + CTA             |
-| Link      | "See All Pricing" → /pricing   |
+## Journey Integration
 
-### 10. Final CTA
+The homepage now serves as the **entry point** to the VaRiScout Journey:
 
-| Property   | Value                              |
-| ---------- | ---------------------------------- |
-| Component  | `CTASection`                       |
-| Content    | `COPY-HOME.md#final_cta`           |
-| Background | Brand primary (dark) or light gray |
-| Text Color | White or dark                      |
-| Padding    | `--space-16` vertical              |
-
-### 11. Footer
-
-| Property  | Value                 |
-| --------- | --------------------- |
-| Component | `Footer`              |
-| Content   | `COPY-HOME.md#footer` |
+```
+Hero (AVERAGES hook)
+    ↓ "See what's hiding"
+MiniJourney (transformation teaser)
+    ↓ "Take the Full Journey"
+/journey (full 9-section experience)
+    ↓
+/app (apply to your data)
+```
 
 ---
 
@@ -229,8 +238,8 @@ Options:
 | ---------- | -------------------------------- |
 | < 768px    | Stack all multi-column sections  |
 | < 768px    | Hero text smaller (`--text-3xl`) |
-| < 768px    | Hide product cards, show list    |
-| < 1024px   | 2-column for features/products   |
+| < 768px    | Four Pillars → 1 column          |
+| < 1024px   | Four Pillars → 2 columns         |
 
 ---
 
@@ -242,33 +251,27 @@ Options:
 | FID    | < 100ms |
 | CLS    | < 0.1   |
 
-Optimizations:
-
-- Lazy load below-fold images
-- Preload hero image
-- Inline critical CSS
-- Defer non-critical JS
-
 ---
 
 ## SEO
 
-| Element          | Content                                      |
-| ---------------- | -------------------------------------------- |
-| Title            | "VaRiScout \| Find What's Driving Variation" |
-| Meta Description | See `COPY-HOME.md#meta`                      |
-| H1               | "Find what's driving variation. In minutes." |
-| Schema           | Organization, SoftwareApplication            |
+| Element          | Content                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------- | -------------------- |
+| Title            | "VaRiScout                                                                                      | See Beyond Averages" |
+| Meta Description | "46% of your improvement potential may be hiding in one place. VaRiScout finds WHERE to focus." |
+| H1               | "See Beyond Averages. Find your 46%."                                                           |
 
 ---
 
 ## Analytics Events
 
-| Event                | Trigger               |
-| -------------------- | --------------------- |
-| `hero_cta_click`     | Primary CTA click     |
-| `demo_click`         | Demo button click     |
-| `use_case_click`     | Use case card click   |
-| `product_card_click` | Product card click    |
-| `pricing_click`      | Pricing preview click |
-| `final_cta_click`    | Final CTA click       |
+| Event                 | Trigger                   |
+| --------------------- | ------------------------- |
+| `hero_cta_click`      | Primary CTA click         |
+| `journey_link_click`  | Journey button click      |
+| `averages_hook_click` | "See what's hiding" click |
+| `mini_journey_cta`    | MiniJourney CTA click     |
+| `pillar_card_click`   | Four Pillars card click   |
+| `use_case_click`      | Use case card click       |
+| `product_card_click`  | Product card click        |
+| `final_cta_click`     | Final CTA click           |
