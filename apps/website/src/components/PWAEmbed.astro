@@ -21,8 +21,9 @@ const {
 
 // Build the PWA URL with embed parameters
 // Use direct PWA URL to avoid redirect issues with iframe query params
-const pwaBaseUrl = import.meta.env.PROD 
-  ? 'https://variscout.com/app' 
+// PUBLIC_PWA_URL can be set in Vercel for preview/staging environments
+const pwaBaseUrl = import.meta.env.PROD
+  ? (import.meta.env.PUBLIC_PWA_URL || 'https://variscout.com/app')
   : 'http://localhost:5173';
 
 const chartParam = chart ? `&chart=${chart}` : '';

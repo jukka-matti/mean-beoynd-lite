@@ -1,7 +1,8 @@
 ---
 // Redirect to the PWA application, preserving query parameters
-const baseUrl = import.meta.env.PROD 
-  ? 'https://variscout.com/app' 
+// PUBLIC_PWA_URL can be set in Vercel for preview/staging environments
+const baseUrl = import.meta.env.PROD
+  ? (import.meta.env.PUBLIC_PWA_URL || 'https://variscout.com/app')
   : 'http://localhost:5173';
 
 // Preserve query string from current request
