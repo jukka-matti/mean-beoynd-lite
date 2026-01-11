@@ -74,7 +74,7 @@ export interface ConformanceResult {
 export interface ProbabilityPlotPoint {
   /** Original data value */
   value: number;
-  /** Expected percentile using Blom's formula */
+  /** Expected percentile using Median Rank (Benard) formula */
   expectedPercentile: number;
   /** Lower bound of 95% CI */
   lowerCI: number;

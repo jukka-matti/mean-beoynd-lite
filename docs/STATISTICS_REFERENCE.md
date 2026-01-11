@@ -383,12 +383,12 @@ Percent
                  Value
 ```
 
-### Expected Percentile (Blom's Formula)
+### Expected Percentile (Median Rank)
 
-For sorted data, the expected percentile for the i-th value is:
+For sorted data, the expected percentile for the i-th value uses the Median Rank (Benard) formula:
 
 ```
-p = (i - 0.375) / (n + 0.25)
+p = (i - 0.3) / (n + 0.4)
 ```
 
 Where:
@@ -396,7 +396,7 @@ Where:
 - `i` = rank position (1, 2, 3, ...)
 - `n` = total number of data points
 
-This formula provides the most accurate unbiased estimate of percentile positions.
+This is the same formula used by Minitab as its default plotting position method.
 
 ### 95% Confidence Interval Bands
 

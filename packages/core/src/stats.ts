@@ -177,7 +177,7 @@ export function getEtaSquared(data: any[], factor: string, outcome: string): num
 /**
  * Calculate probability plot data with 95% confidence interval bands
  *
- * Uses Blom's formula for expected percentiles: p = (i - 0.375) / (n + 0.25)
+ * Uses Median Rank (Benard) formula for expected percentiles: p = (i - 0.3) / (n + 0.4)
  * CI bands are calculated using the standard error of the percentile
  *
  * @param data - Array of numeric values
@@ -195,8 +195,8 @@ export function calculateProbabilityPlotData(data: number[]): ProbabilityPlotPoi
   const stdDev = d3.deviation(sorted) || 1;
 
   return sorted.map((value, i) => {
-    // Blom's formula for expected percentile
-    const p = (i + 1 - 0.375) / (n + 0.25);
+    // Median Rank (Benard) formula - Minitab default
+    const p = (i + 1 - 0.3) / (n + 0.4);
     const expectedPercentile = p * 100;
 
     // Z-score for this percentile

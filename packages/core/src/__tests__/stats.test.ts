@@ -936,17 +936,17 @@ describe('Probability Plot', () => {
       expect(result.map(d => d.value)).toEqual([1, 2, 3, 4, 5]);
     });
 
-    it('should calculate expected percentiles using Blom formula', () => {
+    it('should calculate expected percentiles using Median Rank (Benard) formula', () => {
       const data = [10, 20, 30, 40, 50];
       const result = calculateProbabilityPlotData(data);
 
-      // Blom's formula: p = (i + 1 - 0.375) / (n + 0.25)
-      // For i=0, n=5: p = (1 - 0.375) / 5.25 = 0.119 → 11.9%
-      expect(result[0].expectedPercentile).toBeCloseTo(11.9, 1);
-      // For i=2 (median): p = (3 - 0.375) / 5.25 = 0.5 → 50%
+      // Median Rank (Benard) formula: p = (i + 1 - 0.3) / (n + 0.4)
+      // For i=0, n=5: p = (1 - 0.3) / 5.4 = 0.1296 → 13.0%
+      expect(result[0].expectedPercentile).toBeCloseTo(13.0, 1);
+      // For i=2 (median): p = (3 - 0.3) / 5.4 = 0.5 → 50%
       expect(result[2].expectedPercentile).toBeCloseTo(50, 1);
-      // For i=4: p = (5 - 0.375) / 5.25 = 0.881 → 88.1%
-      expect(result[4].expectedPercentile).toBeCloseTo(88.1, 1);
+      // For i=4: p = (5 - 0.3) / 5.4 = 0.8704 → 87.0%
+      expect(result[4].expectedPercentile).toBeCloseTo(87.0, 1);
     });
 
     it('should calculate 95% CI bounds', () => {
