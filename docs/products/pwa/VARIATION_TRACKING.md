@@ -228,6 +228,83 @@ When `variationPct` is provided:
 - X-axis label shows `Factor (X%)`
 - If ≥ threshold: red color + "↓ drill here" indicator
 
+### Auto-Switch on Drill (packages/core/src/variation.ts)
+
+When drilling down, charts automatically switch to show the factor with highest remaining variation:
+
+```typescript
+// Get the next recommended factor after drilling
+export function getNextDrillFactor(
+  factorVariations: Map<string, number>,
+  currentFactor: string,
+  minThreshold: number = 5 // Minimum 5% variation to recommend
+): string | null;
+```
+
+**How it works:**
+
+1. User clicks "Machine A" in Boxplot
+2. Data filters to Machine A (existing behavior)
+3. System calculates η² for remaining factors in filtered data
+4. Boxplot and Pareto automatically switch to factor with highest η²
+
+**Example flow:**
+
+```
+Step 1: Viewing by Machine → Click "Machine A"
+        → Data filters to Machine A
+        → Highest η² in filtered data: Shift (67%)
+        → Both charts switch to show Shift distribution
+
+Step 2: Now viewing by Shift → Click "Night"
+        → Data filters to Machine A + Night Shift
+        → Highest η² in filtered data: Operator (45%)
+        → Both charts switch to show Operator distribution
+```
+
+This creates a "variation funnel" that guides users through the analysis.
+
+### Pareto Comparison View (Ghost Bars)
+
+When filters are active, Pareto can show how the filtered distribution compares to the full population:
+
+```
+PARETO: Shift (filtered to Machine A)
+┌──────────────────────────────────────┐
+│  ░░░░    Night causes 60% of         │
+│  ████    Machine A problems          │
+│  ████                                │
+│  ████    But only 30% overall        │
+│  ████    (ghost bar shows 30%)       │
+│  ████    → Specific to Machine A!    │
+│  ░░░░ ████                           │
+│  ░░░░ ████ ░░░░ ████                 │
+└──────────────────────────────────────┘
+  ████ = Filtered %    ░░░░ = Overall %
+```
+
+**Toggle UI:**
+
+- Eye icon button appears in Pareto header when filters are active
+- Click to toggle ghost bars on/off
+- Default: OFF (hidden)
+
+**Tooltip comparison:**
+
+When ghost bars are enabled, hovering shows:
+
+```
+Category: Night
+Count: 45
+Cumulative: 60.0%
+─────────────────
+Filtered: 60.0%
+Overall: 30.0%
+↑ 30.0% vs overall  (red = over-represented)
+```
+
+This reveals whether a problem is specific to the filtered context or a general pattern.
+
 ---
 
 ## User Flow Example

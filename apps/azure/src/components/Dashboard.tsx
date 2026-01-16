@@ -16,6 +16,7 @@ import {
   type AnovaResult,
   type BreadcrumbItem,
   getEtaSquared,
+  getNextDrillFactor,
 } from '@variscout/core';
 import {
   Activity,
@@ -62,6 +63,8 @@ const Dashboard = ({ onPointClick }: DashboardProps) => {
   const [boxplotFactor, setBoxplotFactor] = useState<string>('');
   const [paretoFactor, setParetoFactor] = useState<string>('');
   const [focusedChart, setFocusedChart] = useState<'ichart' | 'boxplot' | 'pareto' | null>(null);
+  // Toggle for showing full population comparison (ghost bars) on Pareto
+  const [showParetoComparison, setShowParetoComparison] = useState(false);
 
   // Determine focused chart navigation
   const CHART_ORDER = ['ichart', 'boxplot', 'pareto'] as const;
@@ -253,6 +256,7 @@ const Dashboard = ({ onPointClick }: DashboardProps) => {
     [filters, setFilters]
   );
 
+  // Handle drill-down from chart click - auto-switches to highest variation factor
   const handleDrillDown = useCallback(
     (factor: string, value: string) => {
       if (!filters) return;
@@ -270,10 +274,17 @@ const Dashboard = ({ onPointClick }: DashboardProps) => {
         setFilters({ ...filters, [factor]: newFilterValues });
       }
 
-      setBoxplotFactor(factor);
-      setParetoFactor(factor);
+      // Auto-switch to factor with highest variation in filtered data
+      const nextFactor = getNextDrillFactor(factorVariations, factor);
+      if (nextFactor) {
+        setBoxplotFactor(nextFactor);
+        setParetoFactor(nextFactor);
+      } else {
+        setBoxplotFactor(factor);
+        setParetoFactor(factor);
+      }
     },
-    [filters, setFilters]
+    [filters, setFilters, factorVariations]
   );
 
   if (!outcome) return null;
@@ -566,7 +577,12 @@ const Dashboard = ({ onPointClick }: DashboardProps) => {
                     <div className="flex-1 min-h-[180px]">
                       <ErrorBoundary componentName="Pareto Chart">
                         {paretoFactor && (
-                          <ParetoChart factor={paretoFactor} onDrillDown={handleDrillDown} />
+                          <ParetoChart
+                            factor={paretoFactor}
+                            onDrillDown={handleDrillDown}
+                            showComparison={showParetoComparison}
+                            onToggleComparison={() => setShowParetoComparison(prev => !prev)}
+                          />
                         )}
                       </ErrorBoundary>
                     </div>
@@ -701,7 +717,12 @@ const Dashboard = ({ onPointClick }: DashboardProps) => {
                   <div className="flex-1 min-h-0">
                     <ErrorBoundary componentName="Pareto Chart">
                       {paretoFactor && (
-                        <ParetoChart factor={paretoFactor} onDrillDown={handleDrillDown} />
+                        <ParetoChart
+                          factor={paretoFactor}
+                          onDrillDown={handleDrillDown}
+                          showComparison={showParetoComparison}
+                          onToggleComparison={() => setShowParetoComparison(prev => !prev)}
+                        />
                       )}
                     </ErrorBoundary>
                   </div>

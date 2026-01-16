@@ -140,14 +140,42 @@ See [patterns/navigation.md](./patterns/navigation.md) for complete details.
 | Chart | Action | Result |
 |-------|--------|--------|
 | I-Chart | Point click | Highlight only (no filter) |
-| Boxplot | Box click | Filter to factor level |
-| Pareto | Bar click | Filter to category |
+| Boxplot | Box click | Filter to factor level + auto-switch |
+| Pareto | Bar click | Filter to category + auto-switch |
+
+**Auto-Switch Behavior**:
+
+When drilling down, charts automatically switch to show the factor with highest remaining variation (η²):
+
+```
+Step 1: Viewing by Machine → Click "Machine A"
+        → Data filters to Machine A
+        → System calculates η² for remaining factors
+        → Both Boxplot and Pareto switch to factor with highest η² (e.g., Shift)
+
+Step 2: Viewing by Shift → Click "Night"
+        → Data filters to Machine A + Night Shift
+        → Both charts switch to next highest η² factor (e.g., Operator)
+```
+
+This creates a "variation funnel" that guides users through their analysis, always showing the most impactful factor to investigate next.
+
+**Minimum Threshold**: Factors must have ≥5% η² to be suggested. If no factor meets this threshold, the current factor is retained.
 
 **Breadcrumb Display**:
 
 ```
 [🏠 All Data] > [Machine: A, B] > [Shift: Day]  [✕ Clear All]
 ```
+
+**Pareto Comparison View**:
+
+When filters are active, Pareto can show "ghost bars" comparing filtered distribution to the full population:
+
+- Toggle via eye icon button (appears when filters are active)
+- Ghost bars show full population % as transparent dashed bars behind solid filtered bars
+- Reveals whether a problem is specific to the filtered context or a general pattern
+- Tooltip shows comparison: "Filtered: 60% vs Overall: 30% ↑30%"
 
 ### 4. Mobile Navigation
 
@@ -361,14 +389,16 @@ All navigation patterns follow accessibility guidelines:
 
 ## Key Files
 
-| File                                          | Purpose                   |
-| --------------------------------------------- | ------------------------- |
-| `packages/core/src/navigation.ts`             | Types and utilities       |
-| `apps/pwa/src/hooks/useDrillDown.ts`          | React hook for drill-down |
-| `apps/pwa/src/components/AppHeader.tsx`       | Contextual toolbar        |
-| `apps/pwa/src/components/ToolbarDropdown.tsx` | Reusable dropdown         |
-| `apps/pwa/src/components/MobileMenu.tsx`      | Mobile navigation menu    |
-| `apps/pwa/src/components/DrillBreadcrumb.tsx` | Breadcrumb UI             |
-| `apps/pwa/src/components/Dashboard.tsx`       | PWA main view + tab nav   |
-| `apps/excel-addin/src/content/FilterBar.tsx`  | Excel breadcrumb display  |
-| `apps/azure/src/App.tsx`                      | Azure page navigation     |
+| File                                             | Purpose                       |
+| ------------------------------------------------ | ----------------------------- |
+| `packages/core/src/navigation.ts`                | Types and utilities           |
+| `packages/core/src/variation.ts`                 | Auto-switch logic, η² helpers |
+| `apps/pwa/src/hooks/useDrillDown.ts`             | React hook for drill-down     |
+| `apps/pwa/src/components/AppHeader.tsx`          | Contextual toolbar            |
+| `apps/pwa/src/components/ToolbarDropdown.tsx`    | Reusable dropdown             |
+| `apps/pwa/src/components/MobileMenu.tsx`         | Mobile navigation menu        |
+| `apps/pwa/src/components/DrillBreadcrumb.tsx`    | Breadcrumb UI                 |
+| `apps/pwa/src/components/Dashboard.tsx`          | PWA main view + tab nav       |
+| `apps/pwa/src/components/charts/ParetoChart.tsx` | Pareto with ghost bars        |
+| `apps/excel-addin/src/content/FilterBar.tsx`     | Excel breadcrumb display      |
+| `apps/azure/src/App.tsx`                         | Azure page navigation         |

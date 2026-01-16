@@ -14,17 +14,30 @@ import {
 import AxisEditor from '../AxisEditor';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 import ChartSignature from './ChartSignature';
-import { Edit2, Info } from 'lucide-react';
+import { Edit2, Info, Eye, EyeOff } from 'lucide-react';
+import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 
 interface ParetoChartProps {
   factor: string;
   parentWidth: number;
   parentHeight: number;
   onDrillDown?: (factor: string, value: string) => void;
+  /** Show ghost bars comparing filtered to full population */
+  showComparison?: boolean;
+  /** Callback to toggle comparison view */
+  onToggleComparison?: () => void;
 }
 
-const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoChartProps) => {
+const ParetoChart = ({
+  factor,
+  parentWidth,
+  parentHeight,
+  onDrillDown,
+  showComparison = false,
+  onToggleComparison,
+}: ParetoChartProps) => {
   const {
+    rawData,
     filteredData,
     filters,
     setFilters,
@@ -35,6 +48,8 @@ const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoC
     separateParetoData,
   } = useData();
   const [editingAxis, setEditingAxis] = useState<string | null>(null);
+  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
+    useTooltip<any>();
 
   const sourceBarHeight = getSourceBarHeight();
   const margin = useResponsiveChartMargins(parentWidth, 'pareto', sourceBarHeight);
@@ -43,6 +58,33 @@ const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoC
   // Determine if using separate Pareto data
   const usingSeparateData =
     paretoMode === 'separate' && separateParetoData && separateParetoData.length > 0;
+
+  // Check if any filters are active (for comparison feature)
+  const hasActiveFilters = useMemo(() => {
+    if (!filters) return false;
+    return Object.values(filters).some(values => values && values.length > 0);
+  }, [filters]);
+
+  // Calculate full population percentages for ghost bars comparison
+  const fullPopulationData = useMemo(() => {
+    if (!showComparison || !hasActiveFilters || usingSeparateData || rawData.length === 0) {
+      return new Map<string, number>();
+    }
+
+    const fullCounts = d3.rollup(
+      rawData,
+      (v: any) => v.length,
+      (d: any) => d[factor]
+    );
+    const fullTotal = rawData.length;
+
+    // Convert to percentage map
+    const percentageMap = new Map<string, number>();
+    for (const [key, count] of fullCounts) {
+      percentageMap.set(key as string, ((count as number) / fullTotal) * 100);
+    }
+    return percentageMap;
+  }, [showComparison, hasActiveFilters, usingSeparateData, rawData, factor]);
 
   const { data, totalCount } = useMemo(() => {
     let sorted: { key: string; value: number }[];
@@ -151,9 +193,62 @@ const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoC
             </foreignObject>
           )}
 
-          {/* Bars */}
+          {/* Toggle button for comparison (positioned in top right) */}
+          {hasActiveFilters && !usingSeparateData && onToggleComparison && (
+            <foreignObject x={width - 30} y={-margin.top + 4} width={26} height={26}>
+              <button
+                onClick={onToggleComparison}
+                className={`p-1 rounded transition-colors ${
+                  showComparison
+                    ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                    : 'bg-slate-700/50 text-slate-500 hover:text-slate-300 hover:bg-slate-700'
+                }`}
+                title={
+                  showComparison ? 'Hide overall comparison' : 'Compare to overall distribution'
+                }
+              >
+                {showComparison ? <Eye size={14} /> : <EyeOff size={14} />}
+              </button>
+            </foreignObject>
+          )}
+
+          {/* Ghost bars - full population comparison (render first, behind solid bars) */}
+          {showComparison &&
+            hasActiveFilters &&
+            !usingSeparateData &&
+            data.map((d, i) => {
+              const fullPct = fullPopulationData.get(d.key);
+              if (fullPct === undefined) return null;
+
+              // Calculate "expected" count based on full population distribution
+              const expectedCount = (totalCount * fullPct) / 100;
+
+              return (
+                <Bar
+                  key={`ghost-${i}`}
+                  x={xScale(d.key)}
+                  y={yScale(expectedCount)}
+                  width={xScale.bandwidth()}
+                  height={height - yScale(expectedCount)}
+                  fill="#64748b"
+                  opacity={0.3}
+                  rx={4}
+                  stroke="#94a3b8"
+                  strokeWidth={1}
+                  strokeDasharray="4,2"
+                  pointerEvents="none"
+                />
+              );
+            })}
+
+          {/* Solid bars - filtered data */}
           {data.map((d, i) => {
             const isSelected = (filters[factor] || []).includes(d.key);
+            // Calculate percentages for tooltip comparison
+            const filteredPct = (d.value / totalCount) * 100;
+            const fullPct = fullPopulationData.get(d.key) || 0;
+            const pctDiff = filteredPct - fullPct;
+
             return (
               <Bar
                 key={i}
@@ -164,6 +259,20 @@ const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoC
                 fill={isSelected ? '#0ea5e9' : '#475569'}
                 rx={4}
                 onClick={() => handleBarClick(d.key)}
+                onMouseOver={event => {
+                  showTooltip({
+                    tooltipLeft: (xScale(d.key) || 0) + xScale.bandwidth(),
+                    tooltipTop: yScale(d.value),
+                    tooltipData: {
+                      ...d,
+                      filteredPct,
+                      fullPct,
+                      pctDiff,
+                      showComparison: showComparison && hasActiveFilters,
+                    },
+                  });
+                }}
+                onMouseLeave={hideTooltip}
                 className="cursor-pointer hover:opacity-80 transition-opacity"
               />
             );
@@ -335,6 +444,47 @@ const ParetoChart = ({ factor, parentWidth, parentHeight, onDrillDown }: ParetoC
           />
         </Group>
       </svg>
+
+      {/* Tooltip */}
+      {tooltipOpen && tooltipData && (
+        <TooltipWithBounds
+          left={margin.left + (tooltipLeft ?? 0)}
+          top={margin.top + (tooltipTop ?? 0)}
+          style={{
+            ...defaultStyles,
+            backgroundColor: '#1e293b',
+            color: '#f1f5f9',
+            border: '1px solid #334155',
+            borderRadius: 6,
+            padding: '8px 12px',
+            fontSize: 12,
+          }}
+        >
+          <div className="font-semibold">{tooltipData.key}</div>
+          <div>Count: {tooltipData.value}</div>
+          <div>Cumulative: {tooltipData.cumulativePercentage?.toFixed(1)}%</div>
+          {tooltipData.showComparison && (
+            <>
+              <div className="mt-1 pt-1 border-t border-slate-600">
+                <div>Filtered: {tooltipData.filteredPct?.toFixed(1)}%</div>
+                <div>Overall: {tooltipData.fullPct?.toFixed(1)}%</div>
+                <div
+                  className={
+                    tooltipData.pctDiff > 0
+                      ? 'text-red-400'
+                      : tooltipData.pctDiff < 0
+                        ? 'text-green-400'
+                        : 'text-slate-400'
+                  }
+                >
+                  {tooltipData.pctDiff > 0 ? '↑' : tooltipData.pctDiff < 0 ? '↓' : '→'}{' '}
+                  {Math.abs(tooltipData.pctDiff).toFixed(1)}% vs overall
+                </div>
+              </div>
+            </>
+          )}
+        </TooltipWithBounds>
+      )}
 
       {editingAxis && (
         <AxisEditor

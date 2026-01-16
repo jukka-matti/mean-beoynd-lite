@@ -12,13 +12,9 @@ import DrillBreadcrumb from './DrillBreadcrumb';
 import FactorSelector from './FactorSelector';
 import FilterChips from './FilterChips';
 import { useData } from '../context/DataContext';
-import {
-  calculateAnova,
-  type AnovaResult,
-  type BreadcrumbItem,
-  getEtaSquared,
-} from '@variscout/core';
+import { calculateAnova, type AnovaResult, getNextDrillFactor } from '@variscout/core';
 import useVariationTracking from '../hooks/useVariationTracking';
+import useDrillDown from '../hooks/useDrillDown';
 import {
   Activity,
   Copy,
@@ -75,7 +71,6 @@ const Dashboard = ({
     specs,
     filteredData,
     filters,
-    setFilters,
     columnAliases,
     stageColumn,
     setStageColumn,
@@ -83,6 +78,19 @@ const Dashboard = ({
     setStageOrderMode,
     stagedStats,
   } = useData();
+
+  // Drill-down navigation with browser history and URL sync
+  const { drillStack, drillDown, drillTo, clearDrill } = useDrillDown({
+    enableHistory: true,
+    enableUrlSync: true,
+  });
+
+  // Variation tracking for breadcrumbs and drill suggestions
+  const {
+    breadcrumbsWithVariation: breadcrumbItems,
+    cumulativeVariationPct,
+    factorVariations,
+  } = useVariationTracking(rawData, drillStack, outcome, factors);
   const [isMobile, setIsMobile] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DashboardTab>('analysis');
@@ -100,6 +108,8 @@ const Dashboard = ({
   const [boxplotFactor, setBoxplotFactor] = React.useState<string>('');
   const [paretoFactor, setParetoFactor] = React.useState<string>('');
   const [focusedChart, setFocusedChart] = useState<'ichart' | 'boxplot' | 'pareto' | null>(null);
+  // Toggle for showing full population comparison (ghost bars) on Pareto
+  const [showParetoComparison, setShowParetoComparison] = useState(false);
 
   // Determine focused chart navigation
   const CHART_ORDER = ['ichart', 'boxplot', 'pareto'] as const;
@@ -221,160 +231,56 @@ const Dashboard = ({
     return calculateAnova(filteredData, outcome, boxplotFactor);
   }, [filteredData, outcome, boxplotFactor]);
 
-  // Convert current filters to breadcrumb items for navigation display
-  // Enhanced with variation tracking data
-  const { breadcrumbItems, cumulativeVariationPct, factorVariations } = useMemo(() => {
-    const items: BreadcrumbItem[] = [
-      {
-        id: 'root',
-        label: 'All Data',
-        isActive: false,
-        source: 'ichart' as const,
-        localVariationPct: 100,
-        cumulativeVariationPct: 100,
-      },
-    ];
+  // Handle breadcrumb navigation (delegates to hook)
+  const handleBreadcrumbNavigate = useCallback((id: string) => drillTo(id), [drillTo]);
 
-    // Guard against undefined filters (e.g., in tests)
-    if (!filters || !outcome) {
-      items[0].isActive = true;
-      return { breadcrumbItems: items, cumulativeVariationPct: null, factorVariations: new Map() };
-    }
+  // Clear all filters (delegates to hook)
+  const handleClearAllFilters = useCallback(() => clearDrill(), [clearDrill]);
 
-    const activeFilters = Object.entries(filters).filter(
-      ([_, values]) => Array.isArray(values) && values.length > 0
-    );
-
-    // Calculate cumulative variation through the drill path
-    let cumulative = 100;
-    let currentData = rawData;
-
-    activeFilters.forEach(([factor, values], index) => {
-      const alias = columnAliases[factor] || factor;
-      const displayValues = (values as any[]).slice(0, 2).map(String);
-      const suffix = values.length > 2 ? ` +${values.length - 2}` : '';
-      const label = `${alias}: ${displayValues.join(', ')}${suffix}`;
-
-      // Calculate local η² for this factor on current data
-      let localPct: number | undefined;
-      if (currentData.length >= 2 && outcome) {
-        const etaSq = getEtaSquared(currentData, factor, outcome);
-        localPct = etaSq * 100;
-        cumulative = (cumulative * localPct) / 100;
-
-        // Filter data for next level
-        currentData = currentData.filter(row => values.includes(row[factor]));
-      }
-
-      items.push({
-        id: factor,
-        label,
-        isActive: index === activeFilters.length - 1,
-        source: 'boxplot' as const,
-        localVariationPct: localPct,
-        cumulativeVariationPct: cumulative,
-      });
-    });
-
-    // Mark root as active if no filters
-    if (items.length === 1) {
-      items[0].isActive = true;
-    }
-
-    // Calculate factor variations for drill suggestions (on current filtered data)
-    const variations = new Map<string, number>();
-    if (filteredData.length >= 2 && outcome) {
-      for (const factor of factors) {
-        // Skip factors already in filter
-        const isAlreadyFiltered = activeFilters.some(([f]) => f === factor);
-        if (isAlreadyFiltered) continue;
-
-        const etaSq = getEtaSquared(filteredData, factor, outcome);
-        if (etaSq > 0) {
-          variations.set(factor, etaSq * 100);
-        }
-      }
-    }
-
-    return {
-      breadcrumbItems: items,
-      cumulativeVariationPct: activeFilters.length > 0 ? cumulative : null,
-      factorVariations: variations,
-    };
-  }, [filters, columnAliases, rawData, filteredData, outcome, factors]);
-
-  // Handle breadcrumb navigation
-  const handleBreadcrumbNavigate = useCallback(
-    (id: string) => {
-      if (id === 'root') {
-        // Clear all filters
-        setFilters({});
-        return;
-      }
-
-      // Guard against undefined filters
-      if (!filters) return;
-
-      // Find the filter to navigate to, clear all filters after it
-      const activeFilters = Object.entries(filters).filter(
-        ([_, values]) => Array.isArray(values) && values.length > 0
-      );
-
-      const targetIndex = activeFilters.findIndex(([factor]) => factor === id);
-      if (targetIndex === -1) return;
-
-      // Keep only filters up to and including the target
-      const newFilters: Record<string, any[]> = {};
-      activeFilters.slice(0, targetIndex + 1).forEach(([factor, values]) => {
-        newFilters[factor] = values;
-      });
-      setFilters(newFilters);
-    },
-    [filters, setFilters]
-  );
-
-  // Clear all filters
-  const handleClearAllFilters = useCallback(() => {
-    setFilters({});
-  }, [setFilters]);
-
-  // Remove a specific filter
+  // Remove a specific filter by drilling to root then re-applying remaining filters
   const handleRemoveFilter = useCallback(
     (factor: string) => {
       if (!filters) return;
-      const newFilters = { ...filters };
-      delete newFilters[factor];
-      setFilters(newFilters);
+      // Find all drill actions except the one for this factor, then re-drill
+      // Since drillDown handles toggle, we just drill with same values to toggle off
+      const currentValues = filters[factor];
+      if (currentValues && currentValues.length > 0) {
+        drillDown({
+          type: 'filter',
+          source: 'boxplot',
+          factor,
+          values: currentValues,
+        });
+      }
     },
-    [filters, setFilters]
+    [filters, drillDown]
   );
 
-  // Handle drill-down from chart click - syncs both charts to same factor
+  // Handle drill-down from chart click - auto-switches to highest variation factor
   const handleDrillDown = useCallback(
     (factor: string, value: string) => {
-      // Guard against undefined filters
-      if (!filters) return;
+      // Use the hook's drillDown which handles toggle behavior
+      drillDown({
+        type: 'filter',
+        source: 'boxplot',
+        factor,
+        values: [value],
+      });
 
-      // Toggle the filter value
-      const currentFilters = filters[factor] || [];
-      const newFilterValues = currentFilters.includes(value)
-        ? currentFilters.filter((v: string) => v !== value)
-        : [...currentFilters, value];
-
-      // Update filters
-      if (newFilterValues.length === 0) {
-        const newFilters = { ...filters };
-        delete newFilters[factor];
-        setFilters(newFilters);
+      // Auto-switch to factor with highest variation in filtered data
+      // This guides users through a "variation funnel"
+      const nextFactor = getNextDrillFactor(factorVariations, factor);
+      if (nextFactor) {
+        // Switch both charts to the next most impactful factor
+        setBoxplotFactor(nextFactor);
+        setParetoFactor(nextFactor);
       } else {
-        setFilters({ ...filters, [factor]: newFilterValues });
+        // No significant remaining factors - stay on current
+        setBoxplotFactor(factor);
+        setParetoFactor(factor);
       }
-
-      // Sync both charts to this factor for cohesive analysis
-      setBoxplotFactor(factor);
-      setParetoFactor(factor);
     },
-    [filters, setFilters]
+    [drillDown, factorVariations]
   );
 
   const handleCopyChart = async (containerId: string, chartName: string) => {
@@ -481,7 +387,13 @@ const Dashboard = ({
             </h3>
             <div className="flex-1 min-h-0">
               <ErrorBoundary componentName="Pareto Chart">
-                {paretoFactor && <ParetoChart factor={paretoFactor} />}
+                {paretoFactor && (
+                  <ParetoChart
+                    factor={paretoFactor}
+                    showComparison={showParetoComparison}
+                    onToggleComparison={() => setShowParetoComparison(prev => !prev)}
+                  />
+                )}
               </ErrorBoundary>
             </div>
           </div>
@@ -592,7 +504,12 @@ const Dashboard = ({
             <div className="flex-1 min-h-0">
               <ErrorBoundary componentName="Pareto Chart">
                 {paretoFactor && (
-                  <ParetoChart factor={paretoFactor} onDrillDown={handleDrillDown} />
+                  <ParetoChart
+                    factor={paretoFactor}
+                    onDrillDown={handleDrillDown}
+                    showComparison={showParetoComparison}
+                    onToggleComparison={() => setShowParetoComparison(prev => !prev)}
+                  />
                 )}
               </ErrorBoundary>
             </div>
@@ -972,7 +889,12 @@ const Dashboard = ({
                     <div id="pareto-container" className="flex-1 min-h-[180px]">
                       <ErrorBoundary componentName="Pareto Chart">
                         {paretoFactor && (
-                          <ParetoChart factor={paretoFactor} onDrillDown={handleDrillDown} />
+                          <ParetoChart
+                            factor={paretoFactor}
+                            onDrillDown={handleDrillDown}
+                            showComparison={showParetoComparison}
+                            onToggleComparison={() => setShowParetoComparison(prev => !prev)}
+                          />
                         )}
                       </ErrorBoundary>
                     </div>
@@ -1122,7 +1044,12 @@ const Dashboard = ({
                   <div className="flex-1 min-h-0">
                     <ErrorBoundary componentName="Pareto Chart">
                       {paretoFactor && (
-                        <ParetoChart factor={paretoFactor} onDrillDown={handleDrillDown} />
+                        <ParetoChart
+                          factor={paretoFactor}
+                          onDrillDown={handleDrillDown}
+                          showComparison={showParetoComparison}
+                          onToggleComparison={() => setShowParetoComparison(prev => !prev)}
+                        />
                       )}
                     </ErrorBoundary>
                   </div>

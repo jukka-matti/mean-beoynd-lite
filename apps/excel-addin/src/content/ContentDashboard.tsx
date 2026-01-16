@@ -16,6 +16,7 @@ import {
   groupDataByFactor,
   calculateAnova,
   calculateFactorVariations,
+  getNextDrillFactor,
   type StagedStatsResult,
 } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
@@ -104,8 +105,12 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
   const [showProbabilityPlot, setShowProbabilityPlot] = useState(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
   const [exportStatus, setExportStatus] = useState<ExportStatus>('idle');
+  // Factor selection with auto-switch support
+  const [selectedFactorIndex, setSelectedFactorIndex] = useState(0);
+  const [autoSwitchEnabled, setAutoSwitchEnabled] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const errorCountRef = useRef(0);
+  const prevFiltersRef = useRef<string>('');
 
   // Observe container size for responsive charts
   useEffect(() => {
@@ -235,28 +240,25 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
     }));
   }, [filteredData, sortedData, state.outcomeColumn, state.stageColumn]);
 
-  // Prepare Boxplot data using shared grouping utility
+  // Prepare Boxplot data using shared grouping utility (uses selected factor)
   const boxplotData = useMemo(() => {
-    if (!filteredData.length || !state.factorColumns?.[0]) return [];
+    if (!filteredData.length || !selectedFactor) return [];
 
-    const factor = state.factorColumns[0];
-    const groups = groupDataByFactor(filteredData, factor, state.outcomeColumn);
+    const groups = groupDataByFactor(filteredData, selectedFactor, state.outcomeColumn);
 
     return Array.from(groups.entries()).map(([group, values]) =>
       calculateBoxplotStats({ group, values })
     );
-  }, [filteredData, state.outcomeColumn, state.factorColumns]);
+  }, [filteredData, state.outcomeColumn, selectedFactor]);
 
-  // Prepare Pareto data from first factor column
+  // Prepare Pareto data from selected factor column
   const paretoData = useMemo((): ParetoDataPoint[] => {
-    if (!filteredData.length || !state.factorColumns?.[0]) return [];
-
-    const factor = state.factorColumns[0];
+    if (!filteredData.length || !selectedFactor) return [];
 
     // Count occurrences per category
     const counts = new Map<string, number>();
     filteredData.forEach(row => {
-      const category = String(row[factor] ?? 'Unknown');
+      const category = String(row[selectedFactor] ?? 'Unknown');
       counts.set(category, (counts.get(category) || 0) + 1);
     });
 
@@ -276,7 +278,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
         cumulativePercentage: (cumulative / total) * 100,
       };
     });
-  }, [filteredData, state.factorColumns]);
+  }, [filteredData, selectedFactor]);
 
   // Prepare histogram data (raw numeric values)
   const histogramData = useMemo(() => {
@@ -285,22 +287,65 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
     return filteredData.map(d => Number(d[state.outcomeColumn])).filter(v => !isNaN(v));
   }, [filteredData, state.outcomeColumn]);
 
-  // Calculate factor variation for the active factor (for drill suggestion on boxplot)
-  const factorVariationPct = useMemo(() => {
-    if (!filteredData.length || !state.factorColumns?.[0] || !state.outcomeColumn) {
-      return undefined;
+  // Get the currently selected factor (with bounds checking)
+  const selectedFactor = useMemo(() => {
+    if (!state.factorColumns?.length) return null;
+    const index = Math.min(selectedFactorIndex, state.factorColumns.length - 1);
+    return state.factorColumns[index];
+  }, [state.factorColumns, selectedFactorIndex]);
+
+  // Calculate factor variations for ALL factors (for auto-switch)
+  const factorVariations = useMemo(() => {
+    if (!filteredData.length || !state.factorColumns?.length || !state.outcomeColumn) {
+      return new Map<string, number>();
     }
 
-    const factor = state.factorColumns[0];
-    const variations = calculateFactorVariations(
+    return calculateFactorVariations(
       filteredData,
-      [factor],
+      state.factorColumns,
       state.outcomeColumn,
-      [] // No excluded factors since this is based on current slicer view
+      [] // Include all factors
     );
-
-    return variations.get(factor);
   }, [filteredData, state.outcomeColumn, state.factorColumns]);
+
+  // Calculate factor variation for the SELECTED factor (for drill suggestion on boxplot)
+  const factorVariationPct = useMemo(() => {
+    if (!selectedFactor) return undefined;
+    return factorVariations.get(selectedFactor);
+  }, [factorVariations, selectedFactor]);
+
+  // Auto-switch to highest variation factor when slicer filters change
+  useEffect(() => {
+    if (!autoSwitchEnabled || !state.factorColumns?.length || factorVariations.size === 0) {
+      return;
+    }
+
+    // Serialize current filters for comparison
+    const currentFilters = JSON.stringify(activeFilters);
+
+    // Only auto-switch when filters actually change (not on initial load)
+    if (prevFiltersRef.current && prevFiltersRef.current !== currentFilters) {
+      // Find factor with highest variation using core utility
+      const currentFactor = selectedFactor || state.factorColumns[0];
+      const nextFactor = getNextDrillFactor(factorVariations, currentFactor, 5);
+
+      if (nextFactor) {
+        const nextIndex = state.factorColumns.indexOf(nextFactor);
+        if (nextIndex !== -1 && nextIndex !== selectedFactorIndex) {
+          setSelectedFactorIndex(nextIndex);
+        }
+      }
+    }
+
+    prevFiltersRef.current = currentFilters;
+  }, [
+    activeFilters,
+    autoSwitchEnabled,
+    factorVariations,
+    selectedFactor,
+    selectedFactorIndex,
+    state.factorColumns,
+  ]);
 
   // Calculate ANOVA for factor comparison
   const anovaResult = useMemo(() => {
@@ -567,6 +612,43 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
         </div>
       </div>
 
+      {/* Factor selector (when multiple factors available) */}
+      {state.factorColumns && state.factorColumns.length > 1 && (
+        <div style={styles.factorSelector}>
+          <label style={styles.factorLabel}>Factor:</label>
+          <select
+            value={selectedFactorIndex}
+            onChange={e => {
+              setSelectedFactorIndex(Number(e.target.value));
+              setAutoSwitchEnabled(false); // Disable auto-switch on manual selection
+            }}
+            style={styles.factorSelect}
+          >
+            {state.factorColumns.map((factor, idx) => {
+              const variation = factorVariations.get(factor);
+              return (
+                <option key={factor} value={idx}>
+                  {factor}
+                  {variation !== undefined ? ` (${variation.toFixed(0)}%)` : ''}
+                </option>
+              );
+            })}
+          </select>
+          <label
+            style={styles.autoSwitchLabel}
+            title="Auto-switch to highest variation factor when filters change"
+          >
+            <input
+              type="checkbox"
+              checked={autoSwitchEnabled}
+              onChange={e => setAutoSwitchEnabled(e.target.checked)}
+              style={styles.autoSwitchCheckbox}
+            />
+            Auto
+          </label>
+        </div>
+      )}
+
       {/* Bottom row: Boxplot, Pareto, Histogram/ProbPlot */}
       <div style={styles.bottomChartsRow}>
         {/* Boxplot with variation % indicator */}
@@ -576,7 +658,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
               <BoxplotBase
                 data={boxplotData}
                 specs={state.specs || {}}
-                xAxisLabel={state.factorColumns?.[0] || 'Group'}
+                xAxisLabel={selectedFactor || 'Group'}
                 yDomainOverride={yDomainForCharts}
                 parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
                 parentHeight={Math.max(100, (containerSize.height - 100) * 0.45)}
@@ -594,7 +676,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
               <ParetoChartBase
                 data={paretoData}
                 totalCount={filteredData.length}
-                xAxisLabel={state.factorColumns?.[0] || 'Category'}
+                xAxisLabel={selectedFactor || 'Category'}
                 parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
                 parentHeight={Math.max(100, (containerSize.height - 100) * 0.45)}
                 showBranding={false}
@@ -743,6 +825,40 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: darkTheme.spacingM,
     minHeight: 0,
+  },
+  factorSelector: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: darkTheme.spacingS,
+    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
+    backgroundColor: darkTheme.colorNeutralBackground2,
+    borderRadius: darkTheme.borderRadiusS,
+    marginBottom: darkTheme.spacingS,
+  },
+  factorLabel: {
+    fontSize: darkTheme.fontSizeSmall,
+    color: darkTheme.colorNeutralForeground2,
+  },
+  factorSelect: {
+    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
+    backgroundColor: darkTheme.colorNeutralBackground3,
+    border: `1px solid ${darkTheme.colorNeutralStroke1}`,
+    borderRadius: darkTheme.borderRadiusS,
+    color: darkTheme.colorNeutralForeground1,
+    fontSize: darkTheme.fontSizeSmall,
+    cursor: 'pointer',
+  },
+  autoSwitchLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    fontSize: darkTheme.fontSizeCaption,
+    color: darkTheme.colorNeutralForeground3,
+    cursor: 'pointer',
+    marginLeft: darkTheme.spacingS,
+  },
+  autoSwitchCheckbox: {
+    cursor: 'pointer',
   },
   bottomChartsRow: {
     flex: '0 0 45%',

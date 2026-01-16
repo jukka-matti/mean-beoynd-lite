@@ -208,3 +208,54 @@ export function applyFilters(data: any[], filters: Record<string, (string | numb
     });
   });
 }
+
+/**
+ * Default minimum threshold for auto-switch (5%)
+ * Factors with variation below this won't be suggested as next drill targets
+ */
+export const DRILL_SWITCH_THRESHOLD = 5;
+
+/**
+ * Get the next recommended factor for drill-down based on eta-squared
+ *
+ * After drilling into a factor (e.g., filtering to Machine A), this function
+ * finds the remaining factor with highest variation in the filtered data.
+ * This guides users through a "variation funnel" by automatically suggesting
+ * the next most impactful analysis direction.
+ *
+ * @param factorVariations - Map of factor name to variation percentage (0-100)
+ * @param currentFactor - The factor that was just drilled (will be excluded)
+ * @param minThreshold - Minimum variation % to recommend (default: 5)
+ * @returns The factor with highest variation above threshold, or null if none qualify
+ *
+ * @example
+ * // After drilling into Machine A, find next best factor to show
+ * const variations = new Map([['Shift', 67], ['Operator', 23], ['Machine', 45]]);
+ * const next = getNextDrillFactor(variations, 'Machine'); // Returns 'Shift'
+ *
+ * @example
+ * // When all remaining factors have low variation
+ * const variations = new Map([['Shift', 3], ['Operator', 2]]);
+ * const next = getNextDrillFactor(variations, 'Machine'); // Returns null
+ */
+export function getNextDrillFactor(
+  factorVariations: Map<string, number>,
+  currentFactor: string,
+  minThreshold: number = DRILL_SWITCH_THRESHOLD
+): string | null {
+  let bestFactor: string | null = null;
+  let bestVariation = minThreshold;
+
+  for (const [factor, variation] of factorVariations) {
+    // Skip the current factor (already drilled)
+    if (factor === currentFactor) continue;
+
+    // Find the factor with highest variation above threshold
+    if (variation > bestVariation) {
+      bestFactor = factor;
+      bestVariation = variation;
+    }
+  }
+
+  return bestFactor;
+}

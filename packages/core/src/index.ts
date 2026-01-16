@@ -116,4 +116,16 @@ export {
   calculateFactorVariations,
   shouldHighlightDrill,
   applyFilters,
+  getNextDrillFactor,
+  DRILL_SWITCH_THRESHOLD,
 } from './variation';
+
+// URL parameter utilities
+export {
+  filtersToSearchParams,
+  searchParamsToFilters,
+  buildShareableUrl,
+  updateUrlWithFilters,
+  getFiltersFromUrl,
+  isEmbedMode,
+} from './urlParams';

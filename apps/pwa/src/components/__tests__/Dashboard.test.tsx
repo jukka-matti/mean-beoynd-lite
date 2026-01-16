@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import Dashboard from '../Dashboard';
 import * as DataContextModule from '../../context/DataContext';
 import * as CoreModule from '@variscout/core';
+import * as UseDrillDownModule from '../../hooks/useDrillDown';
+import * as UseVariationTrackingModule from '../../hooks/useVariationTracking';
 
 // Mock components
 vi.mock('../charts/IChart', () => ({ default: () => <div data-testid="i-chart">I-Chart</div> }));
@@ -44,9 +46,54 @@ vi.mock('@variscout/core', async () => {
   };
 });
 
+// Mock useDrillDown hook
+vi.mock('../../hooks/useDrillDown', () => ({
+  default: vi.fn(),
+  useDrillDown: vi.fn(),
+}));
+
+// Mock useVariationTracking hook
+vi.mock('../../hooks/useVariationTracking', () => ({
+  default: vi.fn(),
+  useVariationTracking: vi.fn(),
+}));
+
 describe('Dashboard', () => {
+  const mockDrillDown = vi.fn();
+  const mockDrillTo = vi.fn();
+  const mockClearDrill = vi.fn();
+
+  const mockDrillDownReturn = {
+    drillStack: [],
+    drillDown: mockDrillDown,
+    drillTo: mockDrillTo,
+    clearDrill: mockClearDrill,
+    hasDrills: false,
+    breadcrumbs: [{ id: 'root', label: 'All Data', isActive: true, source: 'ichart' }],
+    currentHighlight: null,
+    drillUp: vi.fn(),
+    setHighlight: vi.fn(),
+    clearHighlight: vi.fn(),
+  };
+
+  const mockVariationTrackingReturn = {
+    breadcrumbsWithVariation: [{ id: 'root', label: 'All Data', isActive: true, source: 'ichart' }],
+    cumulativeVariationPct: null,
+    factorVariations: new Map(),
+    impactLevel: null,
+    insightText: null,
+  };
+
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(UseDrillDownModule, 'useDrillDown').mockReturnValue(mockDrillDownReturn as any);
+    vi.spyOn(UseDrillDownModule, 'default').mockReturnValue(mockDrillDownReturn as any);
+    vi.spyOn(UseVariationTrackingModule, 'useVariationTracking').mockReturnValue(
+      mockVariationTrackingReturn as any
+    );
+    vi.spyOn(UseVariationTrackingModule, 'default').mockReturnValue(
+      mockVariationTrackingReturn as any
+    );
   });
 
   const mockDataCtx = {
@@ -57,6 +104,8 @@ describe('Dashboard', () => {
     stats: { mean: 10, ucl: 12, lcl: 8 },
     specs: {},
     setOutcome: vi.fn(),
+    filters: {},
+    columnAliases: {},
   };
 
   it('renders Analysis tab by default', () => {

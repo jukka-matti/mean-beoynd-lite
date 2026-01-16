@@ -150,34 +150,42 @@ User clicks "Open Saved Projects"
 
 ## Linked Filtering (Core Interaction)
 
-All charts share the same filter state. Clicking any chart element filters all others.
+All charts share the same filter state. Clicking any chart element filters all others and triggers auto-switch.
 
 ```
 User clicks "Farm A" in Boxplot
          │
          ▼
 ┌────────────────────────────┐
-│ useDrillDown.drillDown({   │
-│   source: 'boxplot',       │
+│ handleDrillDown({          │
 │   factor: 'Farm',          │
-│   values: ['Farm A']       │
+│   value: 'Farm A'          │
 │ })                         │
 └────────────┬───────────────┘
+             │
+             ▼
+┌────────────────────────────────────────────┐
+│ 1. Toggle filter (existing behavior)       │
+│ 2. Calculate η² for remaining factors      │
+│ 3. Auto-switch to highest variation factor │
+└────────────┬───────────────────────────────┘
              │
              ▼
 ┌────────────────────────────┐
 │ drillStack updated         │
 │ → syncs to DataContext     │
 │ → filteredData recalculates│
+│ → Boxplot/Pareto switch to │
+│   factor with highest η²   │
 └────────────┬───────────────┘
              │
     ┌────────┼────────┬───────────────┐
     ▼        ▼        ▼               ▼
 ┌───────┐ ┌───────┐ ┌───────┐ ┌─────────────────┐
 │I-Chart│ │Boxplot│ │Pareto │ │ DrillBreadcrumb │
-│updates│ │updates│ │updates│ │ shows filter    │
-└───────┘ └───────┘ └───────┘ │ path: All Data  │
-                              │ > Farm: Farm A  │
+│updates│ │switches│ │switches│ │ shows filter    │
+│       │ │to Shift│ │to Shift│ │ path: All Data  │
+└───────┘ └───────┘ └───────┘ │ > Farm: Farm A  │
                               └─────────────────┘
              │
              ▼
@@ -185,7 +193,28 @@ User clicks "Farm A" in Boxplot
     • ESC key → clears all filters
     • Click breadcrumb → navigates to that point
     • Click same element → toggles filter off
+    • Eye icon (Pareto) → toggle population comparison
 ```
+
+**Auto-Switch Behavior:**
+
+When drilling down, charts switch to the next factor with highest variation (η²):
+
+```
+Step 1: Click Farm A → Charts switch to Shift (if highest η²)
+Step 2: Click Night → Charts switch to Operator (if highest η²)
+Step 3: Click New Ops → Charts show remaining factor
+```
+
+This creates a "variation funnel" guiding users to root causes.
+
+**Pareto Comparison (Ghost Bars):**
+
+When filters are active, click the eye icon in Pareto to see:
+
+- Ghost bars showing full population distribution behind filtered bars
+- Tooltip comparison: "Filtered: 60% vs Overall: 30%"
+- Reveals if a problem is specific to the filtered context or general
 
 **Filter Behavior:**
 
@@ -194,6 +223,7 @@ User clicks "Farm A" in Boxplot
 - ESC key clears all filters
 - Clicking same element toggles filter off
 - Breadcrumb provides visual navigation trail
+- Minimum 5% η² threshold for auto-switch suggestions
 
 ---
 

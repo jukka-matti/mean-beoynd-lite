@@ -12,11 +12,11 @@ VariScout uses a consistent navigation model across all products:
 
 ## Drill-Down Behavior by Chart
 
-| Chart   | Click Action | Effect                                  |
-| ------- | ------------ | --------------------------------------- |
-| I-Chart | Point click  | Highlight row in data table (no filter) |
-| Boxplot | Box click    | Filter to that factor level             |
-| Pareto  | Bar click    | Filter to that category                 |
+| Chart   | Click Action | Effect                                           |
+| ------- | ------------ | ------------------------------------------------ |
+| I-Chart | Point click  | Highlight row in data table (no filter)          |
+| Boxplot | Box click    | Filter + auto-switch to highest variation factor |
+| Pareto  | Bar click    | Filter + auto-switch to highest variation factor |
 
 ### I-Chart (Highlight Only)
 
@@ -26,14 +26,73 @@ Click point → Opens data table with row highlighted
 
 The I-Chart highlights individual data points without filtering. This preserves context while allowing inspection.
 
-### Boxplot & Pareto (Filter Drill-down)
+### Boxplot & Pareto (Filter Drill-down with Auto-Switch)
 
 ```
-Click element → Adds filter → Breadcrumb updates
+Click element → Adds filter → Charts switch to next best factor → Breadcrumb updates
 Click same element → Removes filter (toggle behavior)
 ```
 
 Multi-select is supported: clicking multiple elements adds all to the filter.
+
+**Auto-Switch Logic**:
+
+When a user drills down, the system:
+
+1. Applies the filter (existing behavior)
+2. Calculates η² (eta-squared) for all remaining factors in the filtered data
+3. Switches both Boxplot and Pareto to show the factor with highest variation
+4. If no factor has ≥5% variation, stays on current factor
+
+This creates a guided "variation funnel" that leads users to the root cause:
+
+```
+Machine A (clicked) → Charts switch to Shift (67% η²)
+Night Shift (clicked) → Charts switch to Operator (45% η²)
+New Ops (clicked) → Charts show remaining factor (if any)
+```
+
+**Implementation**: `getNextDrillFactor()` in `@variscout/core/variation.ts`
+
+### Pareto Comparison View (Ghost Bars)
+
+When filters are active, Pareto can show a comparison between filtered and full population distributions:
+
+```
+PARETO: Shift (filtered to Machine A)
+┌──────────────────────────────────────┐
+│  ░░░░    Night causes 60% of         │
+│  ████    Machine A problems          │
+│  ████                                │
+│  ████    But only 30% overall        │
+│  ████    (ghost bar shows 30%)       │
+│  ████    → Specific to Machine A!    │
+│  ░░░░ ████                           │
+│  ░░░░ ████ ░░░░ ████                 │
+└──────────────────────────────────────┘
+  ████ = Filtered %    ░░░░ = Overall %
+```
+
+**Toggle UI**: Eye icon button in Pareto header
+
+- Only visible when filters are active
+- `Eye` icon when comparison is visible
+- `EyeOff` icon when hidden
+- Default: OFF (hidden)
+
+**Tooltip with Comparison**:
+
+```
+Category: Night
+Count: 45
+Cumulative: 60.0%
+─────────────────
+Filtered: 60.0%
+Overall: 30.0%
+↑ 30.0% vs overall  (red = over-represented)
+```
+
+**Use Case**: Reveals whether a category is over-represented (specific to filtered context) or under-represented (general pattern) compared to the full population.
 
 ## Breadcrumb Component
 
@@ -232,11 +291,13 @@ Use Fluent UI Breadcrumb component with dark theme tokens when in Content Add-in
 
 ## Related Files
 
-| File                                          | Purpose                   |
-| --------------------------------------------- | ------------------------- |
-| `packages/core/src/navigation.ts`             | Types and utilities       |
-| `apps/pwa/src/hooks/useDrillDown.ts`          | React hook                |
-| `apps/pwa/src/components/DrillBreadcrumb.tsx` | Breadcrumb UI component   |
-| `apps/pwa/src/components/FilterChips.tsx`     | Filter chips UI component |
-| `apps/pwa/src/components/FactorSelector.tsx`  | Segmented factor control  |
-| `apps/pwa/src/components/Dashboard.tsx`       | Integration               |
+| File                                             | Purpose                   |
+| ------------------------------------------------ | ------------------------- |
+| `packages/core/src/navigation.ts`                | Types and utilities       |
+| `packages/core/src/variation.ts`                 | Auto-switch logic (η²)    |
+| `apps/pwa/src/hooks/useDrillDown.ts`             | React hook                |
+| `apps/pwa/src/components/DrillBreadcrumb.tsx`    | Breadcrumb UI component   |
+| `apps/pwa/src/components/FilterChips.tsx`        | Filter chips UI component |
+| `apps/pwa/src/components/FactorSelector.tsx`     | Segmented factor control  |
+| `apps/pwa/src/components/Dashboard.tsx`          | Integration               |
+| `apps/pwa/src/components/charts/ParetoChart.tsx` | Pareto with ghost bars    |

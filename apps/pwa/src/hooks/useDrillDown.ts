@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import {
   type DrillAction,
@@ -13,7 +13,20 @@ import {
   drillStackToFilters,
   drillStackToBreadcrumbs,
   shouldToggleDrill,
+  searchParamsToFilters,
+  updateUrlWithFilters,
+  isEmbedMode,
 } from '@variscout/core';
+
+/**
+ * Options for useDrillDown hook
+ */
+export interface UseDrillDownOptions {
+  /** Push/pop browser history on drill changes (enables back button) */
+  enableHistory?: boolean;
+  /** Sync filters to URL parameters (enables shareable URLs) */
+  enableUrlSync?: boolean;
+}
 
 export interface UseDrillDownReturn {
   /** Current drill stack */
@@ -72,6 +85,13 @@ export interface UseDrillDownReturn {
 }
 
 /**
+ * History state stored in browser history
+ */
+interface HistoryState {
+  drillFilters: Record<string, (string | number)[]>;
+}
+
+/**
  * Hook for managing drill-down navigation state
  *
  * Provides:
@@ -79,10 +99,19 @@ export interface UseDrillDownReturn {
  * - Breadcrumb generation for UI
  * - Automatic filter sync with DataContext
  * - Toggle behavior (clicking same filter removes it)
+ * - Browser history integration (back button support)
+ * - URL parameter sync (shareable URLs)
+ *
+ * @param options - Configuration options
+ * @param options.enableHistory - Push/pop browser history on drill changes
+ * @param options.enableUrlSync - Sync filters to URL parameters
  *
  * @example
  * ```tsx
- * const { drillDown, breadcrumbs, clearDrill } = useDrillDown();
+ * const { drillDown, breadcrumbs, clearDrill } = useDrillDown({
+ *   enableHistory: true,
+ *   enableUrlSync: true,
+ * });
  *
  * // Drill into Pareto category
  * drillDown({
@@ -98,20 +127,128 @@ export interface UseDrillDownReturn {
  * ));
  * ```
  */
-export function useDrillDown(): UseDrillDownReturn {
+export function useDrillDown(options: UseDrillDownOptions = {}): UseDrillDownReturn {
+  const { enableHistory = false, enableUrlSync = false } = options;
   const { filters, setFilters, columnAliases } = useData();
 
   // Drill navigation state
   const [drillStack, setDrillStack] = useState<DrillAction[]>([]);
   const [currentHighlight, setCurrentHighlight] = useState<HighlightState | null>(null);
 
-  // Sync drill stack to DataContext filters
+  // Track if we're handling a popstate event (to avoid pushing history)
+  const isPopstateRef = useRef(false);
+  // Track if we've initialized from URL
+  const hasInitializedRef = useRef(false);
+
+  // Check if we should sync to URL (not in embed mode)
+  const shouldSyncUrl = enableUrlSync && !isEmbedMode();
+  const shouldUseHistory = enableHistory && !isEmbedMode();
+
+  // Initialize from URL parameters on mount
+  useEffect(() => {
+    if (!shouldSyncUrl || hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
+    const urlFilters = searchParamsToFilters(new URLSearchParams(window.location.search));
+    if (Object.keys(urlFilters).length > 0) {
+      // Create drill actions from URL filters
+      const initialStack: DrillAction[] = [];
+      for (const [factor, values] of Object.entries(urlFilters)) {
+        const action = createDrillAction({
+          type: 'filter',
+          source: 'boxplot', // Default source for URL-loaded filters
+          factor,
+          values,
+        });
+        // Update label with alias if available
+        if (columnAliases[factor]) {
+          action.label = action.label.replace(factor, columnAliases[factor]);
+        }
+        initialStack.push(action);
+      }
+      setDrillStack(initialStack);
+      setFilters(urlFilters);
+
+      // Replace current history state to include initial filters
+      if (shouldUseHistory) {
+        const state: HistoryState = { drillFilters: urlFilters };
+        window.history.replaceState(state, '');
+      }
+    } else if (shouldUseHistory) {
+      // No URL filters - set empty state
+      const state: HistoryState = { drillFilters: {} };
+      window.history.replaceState(state, '');
+    }
+  }, [shouldSyncUrl, shouldUseHistory, columnAliases, setFilters]);
+
+  // Handle browser back/forward button
+  useEffect(() => {
+    if (!shouldUseHistory) return;
+
+    const handlePopstate = (event: PopStateEvent) => {
+      isPopstateRef.current = true;
+
+      const state = event.state as HistoryState | null;
+      const restoredFilters = state?.drillFilters || {};
+
+      // Rebuild drill stack from restored filters
+      const restoredStack: DrillAction[] = [];
+      for (const [factor, values] of Object.entries(restoredFilters)) {
+        const action = createDrillAction({
+          type: 'filter',
+          source: 'boxplot',
+          factor,
+          values,
+        });
+        if (columnAliases[factor]) {
+          action.label = action.label.replace(factor, columnAliases[factor]);
+        }
+        restoredStack.push(action);
+      }
+
+      setDrillStack(restoredStack);
+      setFilters(restoredFilters);
+
+      // Update URL to match restored state (if URL sync enabled)
+      if (shouldSyncUrl) {
+        const newUrl = updateUrlWithFilters(restoredFilters);
+        window.history.replaceState(event.state, '', newUrl);
+      }
+
+      // Reset flag after state update
+      setTimeout(() => {
+        isPopstateRef.current = false;
+      }, 0);
+    };
+
+    window.addEventListener('popstate', handlePopstate);
+    return () => window.removeEventListener('popstate', handlePopstate);
+  }, [shouldUseHistory, shouldSyncUrl, columnAliases, setFilters]);
+
+  // Sync drill stack to DataContext filters and optionally update URL/history
   const syncFiltersFromStack = useCallback(
-    (stack: DrillAction[]) => {
+    (stack: DrillAction[], pushHistory = true) => {
       const newFilters = drillStackToFilters(stack);
       setFilters(newFilters);
+
+      // Update URL parameters
+      if (shouldSyncUrl) {
+        const newUrl = updateUrlWithFilters(newFilters);
+        if (shouldUseHistory && pushHistory && !isPopstateRef.current) {
+          // Push new history entry
+          const state: HistoryState = { drillFilters: newFilters };
+          window.history.pushState(state, '', newUrl);
+        } else {
+          // Just update URL without adding history entry
+          window.history.replaceState(window.history.state, '', newUrl);
+        }
+      } else if (shouldUseHistory && pushHistory && !isPopstateRef.current) {
+        // No URL sync but history enabled
+        const state: HistoryState = { drillFilters: newFilters };
+        window.history.pushState(state, '');
+      }
     },
-    [setFilters]
+    [setFilters, shouldSyncUrl, shouldUseHistory]
   );
 
   // Drill down into data
@@ -180,7 +317,7 @@ export function useDrillDown(): UseDrillDownReturn {
     (actionId: string) => {
       if (actionId === 'root') {
         setDrillStack([]);
-        setFilters({});
+        syncFiltersFromStack([]);
         return;
       }
 
@@ -188,15 +325,15 @@ export function useDrillDown(): UseDrillDownReturn {
       setDrillStack(newStack);
       syncFiltersFromStack(newStack);
     },
-    [drillStack, setFilters, syncFiltersFromStack]
+    [drillStack, syncFiltersFromStack]
   );
 
   // Clear all drills
   const clearDrill = useCallback(() => {
     setDrillStack([]);
-    setFilters({});
+    syncFiltersFromStack([]);
     setCurrentHighlight(null);
-  }, [setFilters]);
+  }, [syncFiltersFromStack]);
 
   // Set highlight (I-Chart)
   const setHighlight = useCallback((rowIndex: number, value: number, originalIndex?: number) => {
