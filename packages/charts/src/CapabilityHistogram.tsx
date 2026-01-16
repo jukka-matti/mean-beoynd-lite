@@ -18,6 +18,7 @@ const CapabilityHistogramBase: React.FC<CapabilityHistogramProps> = ({
   data,
   specs,
   mean,
+  xDomainOverride,
   parentWidth,
   parentHeight,
   showBranding = true,
@@ -36,14 +37,15 @@ const CapabilityHistogramBase: React.FC<CapabilityHistogramProps> = ({
     const minVal = Math.min(...data);
     const maxVal = Math.max(...data);
 
-    // Extend range to include spec limits if outside data range
-    const rangeMin = Math.min(minVal, specs.lsl ?? minVal);
-    const rangeMax = Math.max(maxVal, specs.usl ?? maxVal);
+    // Use xDomainOverride if provided (for Y-axis lock feature)
+    // Otherwise extend range to include spec limits if outside data range
+    const rangeMin = xDomainOverride ? xDomainOverride.min : Math.min(minVal, specs.lsl ?? minVal);
+    const rangeMax = xDomainOverride ? xDomainOverride.max : Math.max(maxVal, specs.usl ?? maxVal);
 
     const binGenerator = bin<number, number>().domain([rangeMin, rangeMax]).thresholds(15);
 
     return binGenerator(data);
-  }, [data, specs.lsl, specs.usl]);
+  }, [data, specs.lsl, specs.usl, xDomainOverride]);
 
   const xScale = useMemo(() => {
     if (bins.length === 0) return null;

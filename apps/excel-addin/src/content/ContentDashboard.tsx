@@ -188,6 +188,20 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
     return calculateStats(values, state.specs?.usl, state.specs?.lsl);
   }, [filteredData, state.outcomeColumn, state.specs]);
 
+  // Y-axis domain for charts (uses full data domain when locked, otherwise undefined)
+  // For Excel add-in, we use filteredData as "full data" since slicer filtering is external
+  const yDomainForCharts = useMemo(() => {
+    // Default to locked (true) if displayOptions not set
+    const lockYAxis = state.displayOptions?.lockYAxisToFullData !== false;
+
+    // If we have a stored full data domain, use it
+    if (lockYAxis && state.fullDataDomain) {
+      return state.fullDataDomain;
+    }
+
+    return undefined; // Let charts auto-calculate
+  }, [state.displayOptions?.lockYAxisToFullData, state.fullDataDomain]);
+
   // Calculate staged statistics (when stage column is configured)
   const stagedStats = useMemo((): StagedStatsResult | null => {
     if (!state.stageColumn || !filteredData.length || !state.outcomeColumn) return null;
@@ -544,6 +558,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
               stats={stats ?? null}
               stagedStats={stagedStats || undefined}
               specs={state.specs || {}}
+              yDomainOverride={yDomainForCharts}
               parentWidth={Math.max(200, containerSize.width - 36)}
               parentHeight={Math.max(120, (containerSize.height - 100) * 0.45)}
               showBranding={false}
@@ -562,6 +577,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
                 data={boxplotData}
                 specs={state.specs || {}}
                 xAxisLabel={state.factorColumns?.[0] || 'Group'}
+                yDomainOverride={yDomainForCharts}
                 parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
                 parentHeight={Math.max(100, (containerSize.height - 100) * 0.45)}
                 showBranding={false}

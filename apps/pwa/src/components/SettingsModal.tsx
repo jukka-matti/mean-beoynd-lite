@@ -36,7 +36,8 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     showCp: boolean;
     showCpk: boolean;
     showSpecs?: boolean;
-  }>({ showCp: false, showCpk: true, showSpecs: true });
+    lockYAxisToFullData?: boolean;
+  }>({ showCp: false, showCpk: true, showSpecs: true, lockYAxisToFullData: true });
 
   // License state
   const [licenseKey, setLicenseKey] = useState('');
@@ -223,6 +224,33 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                     Show Spec Limits (USL/LSL/Target)
                   </span>
                 </label>
+              </div>
+            </div>
+
+            {/* Y-Axis Lock */}
+            <div className="mb-6">
+              <h4 className="text-xs font-semibold text-slate-300 mb-2">Filtering Behavior</h4>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={localDisplayOptions.lockYAxisToFullData !== false}
+                    onChange={e =>
+                      setLocalDisplayOptions({
+                        ...localDisplayOptions,
+                        lockYAxisToFullData: e.target.checked,
+                      })
+                    }
+                    className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500 focus:ring-offset-slate-800"
+                  />
+                  <span className="text-sm text-slate-300 group-hover:text-white transition-colors">
+                    Lock Y-axis to full data range when filtering
+                  </span>
+                </label>
+                <p className="text-[10px] text-slate-500 ml-7">
+                  Keeps chart scale consistent for visual comparison. Control limits still
+                  recalculate.
+                </p>
               </div>
             </div>
 

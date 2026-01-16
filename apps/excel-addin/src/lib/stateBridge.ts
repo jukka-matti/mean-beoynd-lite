@@ -31,6 +31,12 @@ export interface AddInState {
   stageColumn?: string | null;
   /** Stage order mode: auto-detect, first-occurrence, or alphabetical */
   stageOrderMode?: 'auto' | 'first-occurrence' | 'alphabetical';
+  /** Display options */
+  displayOptions?: {
+    lockYAxisToFullData?: boolean;
+  };
+  /** Full data Y-axis domain (stored when first calculated) */
+  fullDataDomain?: { min: number; max: number } | null;
   /** ISO timestamp of last update */
   lastUpdated: string;
 }

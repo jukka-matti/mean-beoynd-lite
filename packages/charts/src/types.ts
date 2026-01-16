@@ -218,6 +218,8 @@ export interface CapabilityHistogramProps extends BaseChartProps {
   specs: SpecLimits;
   /** Mean value for reference line */
   mean: number;
+  /** Override X-axis domain (for locking scale to full dataset) - data values axis */
+  xDomainOverride?: YAxisDomain;
 }
 
 /**
