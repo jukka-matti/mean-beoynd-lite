@@ -15,6 +15,14 @@ import type {
 export type { SpecLimits, GradeTier, StagedStatsResult, StageBoundary };
 
 /**
+ * Y-axis domain override for locking scale to full dataset
+ */
+export interface YAxisDomain {
+  min: number;
+  max: number;
+}
+
+/**
  * Common props shared by all chart components
  */
 export interface BaseChartProps {
@@ -60,6 +68,8 @@ export interface IChartProps extends BaseChartProps {
   yAxisLabel?: string;
   /** Axis settings for manual scaling */
   axisSettings?: { min?: number; max?: number };
+  /** Override Y-axis domain (for locking scale to full dataset) */
+  yDomainOverride?: YAxisDomain;
   /** Callback when a point is clicked */
   onPointClick?: (index: number, originalIndex?: number) => void;
   /** Callback when brush selection changes */
@@ -156,6 +166,8 @@ export interface BoxplotProps extends BaseChartProps {
   yAxisLabel?: string;
   /** X-axis label (factor name) */
   xAxisLabel?: string;
+  /** Override Y-axis domain (for locking scale to full dataset) */
+  yDomainOverride?: YAxisDomain;
   /** Currently selected groups */
   selectedGroups?: string[];
   /** Callback when a box is clicked */

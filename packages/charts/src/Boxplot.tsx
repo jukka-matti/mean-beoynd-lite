@@ -21,6 +21,7 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
   specs,
   yAxisLabel = 'Value',
   xAxisLabel = 'Group',
+  yDomainOverride,
   selectedGroups = [],
   parentWidth,
   parentHeight,
@@ -45,6 +46,12 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
 
   // Calculate Y domain from data
   const yDomain = useMemo(() => {
+    // Priority 1: yDomainOverride (for Y-axis lock feature)
+    if (yDomainOverride) {
+      return [yDomainOverride.min, yDomainOverride.max] as [number, number];
+    }
+
+    // Priority 2: Auto-calculate from data
     if (data.length === 0) return [0, 1] as [number, number];
 
     let minVal = Math.min(...data.flatMap(d => [d.min, ...d.outliers]));
@@ -56,7 +63,7 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
 
     const padding = (maxVal - minVal) * 0.1;
     return [minVal - padding, maxVal + padding] as [number, number];
-  }, [data, specs]);
+  }, [data, specs, yDomainOverride]);
 
   const xScale = useMemo(
     () =>

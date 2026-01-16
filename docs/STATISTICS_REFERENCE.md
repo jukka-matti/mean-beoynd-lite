@@ -6,6 +6,7 @@ This document explains the statistical calculations used in VariScout Lite. Unde
 
 - [Basic Statistics](#basic-statistics)
 - [Control Limits (I-Chart)](#control-limits-i-chart)
+- [Y-Axis Scale Lock](#y-axis-scale-lock)
 - [Staged Control Limits](#staged-control-limits)
 - [Process Capability (Cp & Cpk)](#process-capability-cp--cpk)
 - [Conformance Metrics](#conformance-metrics)
@@ -67,6 +68,35 @@ LCL = Mean - (3 × StdDev)
 - Control limits are calculated from your **data**, not specifications
 - They show what your process **is doing**, not what it **should do**
 - Specification limits (USL/LSL) are separate—they define what is acceptable
+
+---
+
+## Y-Axis Scale Lock
+
+When filtering data (e.g., drilling down to a specific machine or batch), the Y-axis can either:
+
+- **Lock** to the full dataset range (default) — for easy visual comparison
+- **Auto-adjust** to the filtered data range — to see more detail
+
+### Behavior
+
+| Setting    | Y-Axis Range                   | Use Case                          |
+| ---------- | ------------------------------ | --------------------------------- |
+| **Locked** | Uses min/max from full dataset | Compare filtered subsets visually |
+| **Auto**   | Adjusts to visible data only   | Zoom in for detailed analysis     |
+
+### Important Note
+
+**Control limits always recalculate** from the filtered data, regardless of the Y-axis setting. This answers "Is this subset stable?" based on the subset's own behavior.
+
+The Y-axis lock is purely for visual comparison — it does not affect statistical calculations.
+
+### Setting Location
+
+Settings → Display Options → Y-Axis Scale:
+
+- Lock to full data range (default)
+- Auto-adjust to visible data
 
 ---
 

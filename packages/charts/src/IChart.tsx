@@ -24,6 +24,7 @@ const IChartBase: React.FC<IChartProps> = ({
   grades,
   yAxisLabel = 'Value',
   axisSettings,
+  yDomainOverride,
   parentWidth,
   parentHeight,
   showBranding = true,
@@ -51,10 +52,17 @@ const IChartBase: React.FC<IChartProps> = ({
 
   // Determine Y domain
   const yDomain = useMemo(() => {
+    // Priority 1: yDomainOverride (for Y-axis lock feature)
+    if (yDomainOverride) {
+      return [yDomainOverride.min, yDomainOverride.max] as [number, number];
+    }
+
+    // Priority 2: Manual axis settings
     if (axisSettings?.min !== undefined && axisSettings?.max !== undefined) {
       return [axisSettings.min, axisSettings.max] as [number, number];
     }
 
+    // Priority 3: Auto-calculate from data
     const values = data.map(d => d.y);
     let minVal = Math.min(...values);
     let maxVal = Math.max(...values);
@@ -84,7 +92,7 @@ const IChartBase: React.FC<IChartProps> = ({
     // Add padding
     const padding = (maxVal - minVal) * 0.1;
     return [minVal - padding, maxVal + padding] as [number, number];
-  }, [data, stats, isStaged, stageBoundaries, specs, grades, axisSettings]);
+  }, [data, stats, isStaged, stageBoundaries, specs, grades, axisSettings, yDomainOverride]);
 
   const xScale = useMemo(
     () =>
