@@ -131,6 +131,8 @@ interface DrillBreadcrumbProps {
   onNavigate: (id: string) => void;
   onClearAll?: () => void;
   onRemove?: (id: string) => void; // Remove individual filter
+  cumulativeVariationPct?: number | null; // Show variation % badge
+  compact?: boolean; // Mobile mode: chips without chevrons
   showClearAll?: boolean; // Default: true
 }
 
@@ -139,48 +141,32 @@ interface BreadcrumbItem {
   label: string; // Display text
   isActive: boolean; // Is this the current position?
   source: DrillSource; // Chart that initiated this drill
+  variationPct?: number | null; // Individual step variation %
 }
 ```
 
-## Filter Chips Component
+### Compact Mode (Mobile)
 
-Location: `apps/pwa/src/components/FilterChips.tsx`
-
-Displays active filters as removable chips below the breadcrumb.
-
-### Usage
+For mobile displays, DrillBreadcrumb supports a compact mode that shows filter chips without breadcrumb arrows:
 
 ```tsx
-import FilterChips from './FilterChips';
-
-<FilterChips
-  filters={filters}
-  columnAliases={columnAliases}
-  onRemoveFilter={factor => handleRemoveFilter(factor)}
-  onClearAll={() => clearAllFilters()}
-/>;
+<DrillBreadcrumb
+  items={breadcrumbs}
+  onNavigate={handleNavigate}
+  onClearAll={clearAll}
+  compact={true}
+/>
 ```
 
-### Visual Design
+Visual design in compact mode:
 
 ```
 [Machine: A, B ✕] [Shift: Day ✕]  Clear all
 ```
 
+- Chips are displayed inline with horizontal scroll
 - Each chip shows factor:values with × remove button
 - "Clear all" appears when multiple filters active
-- Chips are styled with blue-tinted background
-
-### Props
-
-```typescript
-interface FilterChipsProps {
-  filters: Record<string, string[]>;
-  columnAliases?: Record<string, string>;
-  onRemoveFilter: (factor: string) => void;
-  onClearAll: () => void;
-}
-```
 
 ## Layout Integration
 
@@ -190,15 +176,13 @@ interface FilterChipsProps {
 ├─────────────────────────────────────────┤
 │ DrillBreadcrumb (when filters active)   │
 ├─────────────────────────────────────────┤
-│ FilterChips (when filters active)       │
-├─────────────────────────────────────────┤
 │ Tab Navigation                          │
 ├─────────────────────────────────────────┤
 │ Main Content                            │
 └─────────────────────────────────────────┘
 ```
 
-The breadcrumb and filter chips appear in sticky navigation when any filters are active.
+The DrillBreadcrumb is the unified filter display component. It appears in sticky navigation when any filters are active.
 
 ## Core Types
 
@@ -291,13 +275,12 @@ Use Fluent UI Breadcrumb component with dark theme tokens when in Content Add-in
 
 ## Related Files
 
-| File                                             | Purpose                   |
-| ------------------------------------------------ | ------------------------- |
-| `packages/core/src/navigation.ts`                | Types and utilities       |
-| `packages/core/src/variation.ts`                 | Auto-switch logic (η²)    |
-| `apps/pwa/src/hooks/useDrillDown.ts`             | React hook                |
-| `apps/pwa/src/components/DrillBreadcrumb.tsx`    | Breadcrumb UI component   |
-| `apps/pwa/src/components/FilterChips.tsx`        | Filter chips UI component |
-| `apps/pwa/src/components/FactorSelector.tsx`     | Segmented factor control  |
-| `apps/pwa/src/components/Dashboard.tsx`          | Integration               |
-| `apps/pwa/src/components/charts/ParetoChart.tsx` | Pareto with ghost bars    |
+| File                                             | Purpose                                       |
+| ------------------------------------------------ | --------------------------------------------- |
+| `packages/core/src/navigation.ts`                | Types and utilities                           |
+| `packages/core/src/variation.ts`                 | Auto-switch logic (η²)                        |
+| `apps/pwa/src/hooks/useDrillDown.ts`             | React hook                                    |
+| `apps/pwa/src/components/DrillBreadcrumb.tsx`    | Unified filter display (breadcrumb + compact) |
+| `apps/pwa/src/components/FactorSelector.tsx`     | Segmented factor control                      |
+| `apps/pwa/src/components/Dashboard.tsx`          | Integration                                   |
+| `apps/pwa/src/components/charts/ParetoChart.tsx` | Pareto with ghost bars                        |

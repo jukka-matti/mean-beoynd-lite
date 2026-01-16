@@ -9,6 +9,7 @@ import {
   Plus,
   X,
   Table,
+  Target,
 } from 'lucide-react';
 
 interface MobileMenuProps {
@@ -22,6 +23,7 @@ interface MobileMenuProps {
   onOpenSettings: () => void;
   onReset: () => void;
   onOpenDataTable: () => void;
+  onOpenSpecEditor?: () => void;
 }
 
 /**
@@ -38,6 +40,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   onOpenSettings,
   onReset,
   onOpenDataTable,
+  onOpenSpecEditor,
 }) => {
   const menuRef = useRef<React.ElementRef<'div'>>(null);
 
@@ -152,6 +155,18 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             label="Presentation Mode"
             onClick={onEnterPresentationMode}
           />
+
+          <div className="h-px bg-slate-700 my-2" />
+
+          {/* Analysis Section */}
+          <SectionHeader title="Analysis" />
+          {onOpenSpecEditor && (
+            <MenuItem
+              icon={<Target size={18} />}
+              label="Edit Specification Limits"
+              onClick={onOpenSpecEditor}
+            />
+          )}
 
           <div className="h-px bg-slate-700 my-2" />
 

@@ -19,8 +19,9 @@ export function getResponsiveMargins(
   const isTablet = containerWidth >= 400 && containerWidth < 768;
 
   // Base margins per chart type (desktop defaults)
+  // I-Chart has larger right margin to accommodate Minitab-style limit labels
   const baseMargins: Record<ChartType, ChartMargins> = {
-    ichart: { top: 40, right: 60, bottom: 60, left: 70 },
+    ichart: { top: 40, right: 85, bottom: 60, left: 70 },
     boxplot: { top: 20, right: 20, bottom: 60, left: 70 },
     pareto: { top: 20, right: 20, bottom: 60, left: 70 },
     histogram: { top: 20, right: 20, bottom: 40, left: 40 },

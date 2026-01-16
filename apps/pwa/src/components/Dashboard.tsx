@@ -53,6 +53,9 @@ interface DashboardProps {
   embedStatsTab?: 'summary' | 'histogram' | 'normality' | null;
   // Callback to open column mapping dialog (for Pareto upload)
   onOpenColumnMapping?: () => void;
+  // External trigger to open spec editor (from MobileMenu)
+  openSpecEditorRequested?: boolean;
+  onSpecEditorOpened?: () => void;
 }
 
 const Dashboard = ({
@@ -65,6 +68,8 @@ const Dashboard = ({
   embedFocusChart,
   embedStatsTab,
   onOpenColumnMapping,
+  openSpecEditorRequested,
+  onSpecEditorOpened,
 }: DashboardProps) => {
   const {
     outcome,
@@ -123,6 +128,14 @@ const Dashboard = ({
   const [showParetoPanel, setShowParetoPanel] = useState(true);
   // Ref for Pareto factor selector to allow focusing from empty state
   const paretoFactorSelectorRef = React.useRef<HTMLSelectElement>(null);
+
+  // Open spec editor when requested from MobileMenu
+  useEffect(() => {
+    if (openSpecEditorRequested) {
+      setShowSpecEditor(true);
+      onSpecEditorOpened?.();
+    }
+  }, [openSpecEditorRequested, onSpecEditorOpened]);
 
   // Callback to focus Pareto factor selector (used by ParetoEmptyState)
   const handleParetoSelectFactor = useCallback(() => {

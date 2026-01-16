@@ -31,6 +31,8 @@ const IChartBase: React.FC<IChartProps> = ({
   brandingText,
   onPointClick,
   sampleSize,
+  showLimitLabels = true,
+  onSpecClick,
 }) => {
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
     useTooltip<{ x: number; y: number; index: number; stage?: string }>();
@@ -243,6 +245,19 @@ const IChartBase: React.FC<IChartProps> = ({
                 strokeWidth={1}
                 strokeDasharray="4,4"
               />
+              {/* UCL label */}
+              {showLimitLabels && (
+                <text
+                  x={width + 4}
+                  y={yScale(stats.ucl)}
+                  fill={chartColors.control}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                >
+                  UCL: {stats.ucl.toFixed(1)}
+                </text>
+              )}
               {/* Mean */}
               <Line
                 from={{ x: 0, y: yScale(stats.mean) }}
@@ -250,6 +265,19 @@ const IChartBase: React.FC<IChartProps> = ({
                 stroke={chartColors.mean}
                 strokeWidth={1.5}
               />
+              {/* Mean label */}
+              {showLimitLabels && (
+                <text
+                  x={width + 4}
+                  y={yScale(stats.mean)}
+                  fill={chartColors.mean}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                >
+                  Mean: {stats.mean.toFixed(1)}
+                </text>
+              )}
               {/* LCL */}
               <Line
                 from={{ x: 0, y: yScale(stats.lcl) }}
@@ -258,36 +286,103 @@ const IChartBase: React.FC<IChartProps> = ({
                 strokeWidth={1}
                 strokeDasharray="4,4"
               />
+              {/* LCL label */}
+              {showLimitLabels && (
+                <text
+                  x={width + 4}
+                  y={yScale(stats.lcl)}
+                  fill={chartColors.control}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                >
+                  LCL: {stats.lcl.toFixed(1)}
+                </text>
+              )}
             </>
           )}
 
           {/* Spec limits */}
           {specs.usl !== undefined && (
-            <Line
-              from={{ x: 0, y: yScale(specs.usl) }}
-              to={{ x: width, y: yScale(specs.usl) }}
-              stroke={chartColors.spec}
-              strokeWidth={2}
-              strokeDasharray="6,3"
-            />
+            <>
+              <Line
+                from={{ x: 0, y: yScale(specs.usl) }}
+                to={{ x: width, y: yScale(specs.usl) }}
+                stroke={chartColors.spec}
+                strokeWidth={2}
+                strokeDasharray="6,3"
+              />
+              {/* USL label - clickable for editing */}
+              {showLimitLabels && (
+                <text
+                  x={width + 4}
+                  y={yScale(specs.usl)}
+                  fill={chartColors.spec}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                  style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                  onClick={() => onSpecClick?.('usl')}
+                  className={onSpecClick ? 'hover:opacity-70' : ''}
+                >
+                  USL: {specs.usl.toFixed(1)}
+                </text>
+              )}
+            </>
           )}
           {specs.lsl !== undefined && (
-            <Line
-              from={{ x: 0, y: yScale(specs.lsl) }}
-              to={{ x: width, y: yScale(specs.lsl) }}
-              stroke={chartColors.spec}
-              strokeWidth={2}
-              strokeDasharray="6,3"
-            />
+            <>
+              <Line
+                from={{ x: 0, y: yScale(specs.lsl) }}
+                to={{ x: width, y: yScale(specs.lsl) }}
+                stroke={chartColors.spec}
+                strokeWidth={2}
+                strokeDasharray="6,3"
+              />
+              {/* LSL label - clickable for editing */}
+              {showLimitLabels && (
+                <text
+                  x={width + 4}
+                  y={yScale(specs.lsl)}
+                  fill={chartColors.spec}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                  style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                  onClick={() => onSpecClick?.('lsl')}
+                  className={onSpecClick ? 'hover:opacity-70' : ''}
+                >
+                  LSL: {specs.lsl.toFixed(1)}
+                </text>
+              )}
+            </>
           )}
           {specs.target !== undefined && (
-            <Line
-              from={{ x: 0, y: yScale(specs.target) }}
-              to={{ x: width, y: yScale(specs.target) }}
-              stroke={chartColors.target}
-              strokeWidth={1}
-              strokeDasharray="2,2"
-            />
+            <>
+              <Line
+                from={{ x: 0, y: yScale(specs.target) }}
+                to={{ x: width, y: yScale(specs.target) }}
+                stroke={chartColors.target}
+                strokeWidth={1}
+                strokeDasharray="2,2"
+              />
+              {/* Target label - clickable for editing */}
+              {showLimitLabels && (
+                <text
+                  x={width + 4}
+                  y={yScale(specs.target)}
+                  fill={chartColors.target}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                  style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                  onClick={() => onSpecClick?.('target')}
+                  className={onSpecClick ? 'hover:opacity-70' : ''}
+                >
+                  Tgt: {specs.target.toFixed(1)}
+                </text>
+              )}
+            </>
           )}
 
           {/* Data line */}

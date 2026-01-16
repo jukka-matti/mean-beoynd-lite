@@ -34,6 +34,7 @@ interface AppHeaderProps {
   onEnterPresentationMode: () => void;
   onOpenSettings: () => void;
   onReset: () => void;
+  onOpenSpecEditor?: () => void;
 }
 
 /**
@@ -60,6 +61,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onEnterPresentationMode,
   onOpenSettings,
   onReset,
+  onOpenSpecEditor,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
@@ -247,6 +249,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               onOpenSettings={onOpenSettings}
               onReset={onReset}
               onOpenDataTable={onOpenDataTable}
+              onOpenSpecEditor={onOpenSpecEditor}
             />
           </>
         ) : (

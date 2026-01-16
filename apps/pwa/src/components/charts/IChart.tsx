@@ -23,9 +23,10 @@ interface IChartProps {
   parentWidth: number;
   parentHeight: number;
   onPointClick?: (index: number) => void;
+  onSpecClick?: (spec: 'usl' | 'lsl' | 'target') => void;
 }
 
-const IChart = ({ parentWidth, parentHeight, onPointClick }: IChartProps) => {
+const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChartProps) => {
   const sourceBarHeight = getSourceBarHeight();
   const margin = useResponsiveChartMargins(parentWidth, 'ichart', sourceBarHeight);
   const fonts = useResponsiveChartFonts(parentWidth);
@@ -203,45 +204,93 @@ const IChart = ({ parentWidth, parentHeight, onPointClick }: IChartProps) => {
           <GridRows scale={yScale} width={width} stroke="#1e293b" />
           <GridColumns scale={xScale} height={height} stroke="#1e293b" />
 
-          {/* Spec Lines */}
+          {/* Spec Lines with Clickable Annotations */}
           {displayOptions.showSpecs !== false &&
             (!grades || grades.length === 0) &&
             specs.usl !== undefined && (
-              <line
-                x1={0}
-                x2={width}
-                y1={yScale(specs.usl)}
-                y2={yScale(specs.usl)}
-                stroke={chartColors.spec}
-                strokeWidth={2}
-                strokeDasharray="4,4"
-              />
+              <g
+                onClick={() => onSpecClick?.('usl')}
+                style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                className="hover:opacity-80"
+              >
+                <line
+                  x1={0}
+                  x2={width}
+                  y1={yScale(specs.usl)}
+                  y2={yScale(specs.usl)}
+                  stroke={chartColors.spec}
+                  strokeWidth={2}
+                  strokeDasharray="4,4"
+                />
+                <text
+                  x={width + 4}
+                  y={yScale(specs.usl)}
+                  fill={chartColors.spec}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                >
+                  USL: {specs.usl.toFixed(1)}
+                </text>
+              </g>
             )}
           {displayOptions.showSpecs !== false &&
             (!grades || grades.length === 0) &&
             specs.lsl !== undefined && (
-              <line
-                x1={0}
-                x2={width}
-                y1={yScale(specs.lsl)}
-                y2={yScale(specs.lsl)}
-                stroke={chartColors.spec}
-                strokeWidth={2}
-                strokeDasharray="4,4"
-              />
+              <g
+                onClick={() => onSpecClick?.('lsl')}
+                style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                className="hover:opacity-80"
+              >
+                <line
+                  x1={0}
+                  x2={width}
+                  y1={yScale(specs.lsl)}
+                  y2={yScale(specs.lsl)}
+                  stroke={chartColors.spec}
+                  strokeWidth={2}
+                  strokeDasharray="4,4"
+                />
+                <text
+                  x={width + 4}
+                  y={yScale(specs.lsl)}
+                  fill={chartColors.spec}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                >
+                  LSL: {specs.lsl.toFixed(1)}
+                </text>
+              </g>
             )}
           {displayOptions.showSpecs !== false &&
             (!grades || grades.length === 0) &&
             specs.target !== undefined && (
-              <line
-                x1={0}
-                x2={width}
-                y1={yScale(specs.target)}
-                y2={yScale(specs.target)}
-                stroke={chartColors.target}
-                strokeWidth={1}
-                strokeDasharray="4,4"
-              />
+              <g
+                onClick={() => onSpecClick?.('target')}
+                style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                className="hover:opacity-80"
+              >
+                <line
+                  x1={0}
+                  x2={width}
+                  y1={yScale(specs.target)}
+                  y2={yScale(specs.target)}
+                  stroke={chartColors.target}
+                  strokeWidth={1}
+                  strokeDasharray="4,4"
+                />
+                <text
+                  x={width + 4}
+                  y={yScale(specs.target)}
+                  fill={chartColors.target}
+                  fontSize={fonts.statLabel}
+                  textAnchor="start"
+                  dominantBaseline="middle"
+                >
+                  Tgt: {specs.target.toFixed(1)}
+                </text>
+              </g>
             )}
 
           {/* Control Limits - Staged Mode */}
@@ -314,6 +363,7 @@ const IChart = ({ parentWidth, parentHeight, onPointClick }: IChartProps) => {
           {/* Control Limits - Non-staged Mode */}
           {!isStaged && stats && (
             <>
+              {/* UCL */}
               <line
                 x1={0}
                 x2={width}
@@ -323,6 +373,18 @@ const IChart = ({ parentWidth, parentHeight, onPointClick }: IChartProps) => {
                 strokeWidth={1}
                 strokeDasharray="4,4"
               />
+              <text
+                x={width + 4}
+                y={yScale(stats.ucl)}
+                fill="#64748b"
+                fontSize={fonts.statLabel}
+                textAnchor="start"
+                dominantBaseline="middle"
+              >
+                UCL: {stats.ucl.toFixed(1)}
+              </text>
+
+              {/* LCL */}
               <line
                 x1={0}
                 x2={width}
@@ -332,14 +394,36 @@ const IChart = ({ parentWidth, parentHeight, onPointClick }: IChartProps) => {
                 strokeWidth={1}
                 strokeDasharray="4,4"
               />
+              <text
+                x={width + 4}
+                y={yScale(stats.lcl)}
+                fill="#64748b"
+                fontSize={fonts.statLabel}
+                textAnchor="start"
+                dominantBaseline="middle"
+              >
+                LCL: {stats.lcl.toFixed(1)}
+              </text>
+
+              {/* Mean */}
               <line
                 x1={0}
                 x2={width}
                 y1={yScale(stats.mean)}
                 y2={yScale(stats.mean)}
-                stroke="#64748b"
+                stroke={chartColors.mean}
                 strokeWidth={1}
               />
+              <text
+                x={width + 4}
+                y={yScale(stats.mean)}
+                fill={chartColors.mean}
+                fontSize={fonts.statLabel}
+                textAnchor="start"
+                dominantBaseline="middle"
+              >
+                Mean: {stats.mean.toFixed(1)}
+              </text>
             </>
           )}
 

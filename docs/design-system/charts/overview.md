@@ -80,6 +80,73 @@ All charts use a dark theme matching the application:
 <line stroke="#64748b" />
 ```
 
+### Limit Annotations (Minitab-style)
+
+I-Chart displays numeric values next to limit lines for at-a-glance reading:
+
+```tsx
+// Text annotation positioned right of chart
+<text
+  x={width + 4}
+  y={yScale(value)}
+  fill={lineColor}
+  fontSize={fonts.statLabel}
+  textAnchor="start"
+  dominantBaseline="middle"
+>
+  UCL: {value.toFixed(1)}
+</text>
+```
+
+**Annotation Types:**
+
+| Line   | Color     | Format       | Clickable |
+| ------ | --------- | ------------ | --------- |
+| UCL    | `#64748b` | "UCL: 47.3"  | No        |
+| Mean   | `#3b82f6` | "Mean: 42.1" | No        |
+| LCL    | `#64748b` | "LCL: 36.9"  | No        |
+| USL    | `#ef4444` | "USL: 50.0"  | Yes       |
+| LSL    | `#ef4444` | "LSL: 35.0"  | Yes       |
+| Target | `#22c55e` | "Tgt: 42.0"  | Yes       |
+
+**Responsive Margin:**
+
+The I-Chart right margin is increased to accommodate annotations:
+
+```tsx
+// In responsive.ts
+ichart: { top: 40, right: 85, bottom: 60, left: 70 }
+```
+
+**Clickable Spec Editing:**
+
+Spec limit annotations (USL/LSL/Target) are clickable to open the spec editor:
+
+```tsx
+<g
+  onClick={() => onSpecClick?.('usl')}
+  style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+  className="hover:opacity-80"
+>
+  <line ... />
+  <text>USL: {specs.usl.toFixed(1)}</text>
+</g>
+```
+
+**Accessing Spec Editor:**
+
+Users can open the SpecEditor from multiple entry points:
+
+| Entry Point         | Location                        | When Visible                     |
+| ------------------- | ------------------------------- | -------------------------------- |
+| "+ Specs" button    | I-Chart header                  | When no specs defined            |
+| "+ Target" button   | I-Chart header                  | When specs defined but no target |
+| Click annotation    | I-Chart (USL/LSL/Target labels) | When specs are defined           |
+| Click specs display | StatsPanel bottom section       | Always (secondary access)        |
+| Menu item           | MobileMenu → Analysis section   | Mobile only                      |
+
+The MobileMenu "Edit Specification Limits" option ensures mobile users have clear access to spec editing since the I-Chart header buttons may be less discoverable on small screens.
+
 ### Tooltips
 
 Use Visx `useTooltip` with consistent styling:

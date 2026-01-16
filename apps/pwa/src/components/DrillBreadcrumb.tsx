@@ -16,13 +16,15 @@ interface DrillBreadcrumbProps {
   showClearAll?: boolean;
   /** Final cumulative variation percentage (for badge display) */
   cumulativeVariationPct?: number | null;
+  /** Compact mode for mobile - shows chips without breadcrumb arrows */
+  compact?: boolean;
 }
 
 /**
  * Breadcrumb navigation bar for drill-down state
  *
  * Shows the current drill path with clickable items to navigate back.
- * Styled to match FilterBar for visual consistency.
+ * Also supports compact mode for mobile displays.
  *
  * @example
  * ```tsx
@@ -84,6 +86,7 @@ const DrillBreadcrumb: React.FC<DrillBreadcrumbProps> = ({
   onRemove,
   showClearAll = true,
   cumulativeVariationPct,
+  compact = false,
 }) => {
   // Don't render if only root item (no drills active)
   if (items.length <= 1) return null;
@@ -95,6 +98,56 @@ const DrillBreadcrumb: React.FC<DrillBreadcrumbProps> = ({
   const badgeColors = impactLevel ? getVariationBadgeColors(impactLevel) : null;
   const insightText = showCumulativeBadge ? getVariationInsight(cumulativeVariationPct!) : null;
 
+  // Compact mode: show chips without breadcrumb trail (for mobile)
+  if (compact) {
+    // Filter out root item for compact display
+    const filterItems = items.filter(item => item.id !== 'root');
+    if (filterItems.length === 0) return null;
+
+    return (
+      <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border-b border-slate-800 overflow-x-auto scrollbar-hide">
+        {/* Filter chips */}
+        <div className="flex items-center gap-2 flex-nowrap min-w-0">
+          {filterItems.map(item => (
+            <div
+              key={item.id}
+              className="flex items-center gap-1 px-2.5 py-1 bg-slate-700/50 rounded-full text-xs flex-shrink-0"
+            >
+              <span className="text-white truncate max-w-[150px]">
+                {formatLabelWithVariation(item.label, item.localVariationPct)}
+              </span>
+              {onRemove && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    onRemove(item.id);
+                  }}
+                  className="p-0.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                  aria-label={`Remove ${item.label} filter`}
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Clear All button */}
+        {showClearAll && onClearAll && filterItems.length > 1 && (
+          <button
+            onClick={onClearAll}
+            className="flex-shrink-0 flex items-center gap-1 px-2 py-1 text-xs text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded transition-colors whitespace-nowrap"
+            aria-label="Clear all filters"
+          >
+            <X size={14} />
+            Clear
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // Standard breadcrumb mode
   return (
     <div className="flex items-center gap-1 px-4 sm:px-6 py-2 bg-slate-900/50 border-b border-slate-800 overflow-x-auto scrollbar-hide">
       {/* Breadcrumb trail */}

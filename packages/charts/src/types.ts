@@ -76,6 +76,10 @@ export interface IChartProps extends BaseChartProps {
   onBrushChange?: (range: [number, number] | null) => void;
   /** Sample size for branding bar */
   sampleSize?: number;
+  /** Show Minitab-style labels next to limit lines (default: true) */
+  showLimitLabels?: boolean;
+  /** Callback when a spec limit label is clicked (for editing) */
+  onSpecClick?: (spec: 'usl' | 'lsl' | 'target') => void;
 }
 
 /**

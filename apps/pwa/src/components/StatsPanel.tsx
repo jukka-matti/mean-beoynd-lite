@@ -1,14 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { twMerge } from 'tailwind-merge';
-import {
-  AlertCircle,
-  CheckCircle2,
-  TrendingUp,
-  BarChart3,
-  Settings2,
-  Plus,
-  HelpCircle,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle2, TrendingUp, BarChart3, Plus, HelpCircle } from 'lucide-react';
 import type { StatsResult } from '@variscout/core';
 import { useData } from '../context/DataContext';
 import CapabilityHistogram from './charts/CapabilityHistogram';
@@ -98,19 +90,6 @@ const StatsPanel: React.FC<StatsPanelProps> = ({
             Prob Plot
           </button>
         </div>
-
-        {/* Edit Specs Trigger */}
-        <button
-          onClick={() => setIsEditingSpecs(!isEditingSpecs)}
-          className={`p-2 rounded-lg transition-colors border border-transparent ${
-            isEditingSpecs
-              ? 'bg-blue-600/10 text-blue-400 border-blue-600/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-700'
-          }`}
-          title="Edit Specifications"
-        >
-          <Settings2 size={16} />
-        </button>
       </div>
 
       {/* Spec Editor Popover */}

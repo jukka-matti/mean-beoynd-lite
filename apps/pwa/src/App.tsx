@@ -52,6 +52,8 @@ function App() {
   const [saveInputName, setSaveInputName] = useState('');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+  // Trigger for opening spec editor from MobileMenu
+  const [openSpecEditorRequested, setOpenSpecEditorRequested] = useState(false);
 
   // Embed mode - hides header/footer for iframe embedding
   const [isEmbedMode, setIsEmbedMode] = useState(false);
@@ -320,6 +322,7 @@ function App() {
           onEnterPresentationMode={() => setIsPresentationMode(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onReset={handleResetRequest}
+          onOpenSpecEditor={() => setOpenSpecEditorRequested(true)}
         />
       )}
 
@@ -428,6 +431,8 @@ function App() {
             embedFocusChart={embedFocusChart}
             embedStatsTab={embedStatsTab}
             onOpenColumnMapping={() => setIsMapping(true)}
+            openSpecEditorRequested={openSpecEditorRequested}
+            onSpecEditorOpened={() => setOpenSpecEditorRequested(false)}
           />
         )}
       </main>
