@@ -17,16 +17,16 @@ const { icon, title, description } = Astro.props;
 
 <div class="p-8 bg-white border border-neutral-200 rounded-xl hover:shadow-lg transition-shadow">
 	<div class="inline-flex p-3 bg-brand-primary/10 rounded-lg text-brand-primary mb-6">
-		{icon === 'line-chart' && <Lucide.LineChart size={24} />}
-		{icon === 'filter' && <Lucide.Filter size={24} />}
-		{icon === 'copy' && <Lucide.Copy size={24} />}
-		{icon === 'globe' && <Lucide.Globe size={24} />}
-		{icon === 'zap' && <Lucide.Zap size={24} />}
-		{icon === 'message-circle' && <Lucide.MessageCircle size={24} />}
-		{icon === 'shield-check' && <Lucide.ShieldCheck size={24} />}
+		{icon === 'line-chart' && <Lucide.LineChart size={24} aria-hidden="true" />}
+		{icon === 'filter' && <Lucide.Filter size={24} aria-hidden="true" />}
+		{icon === 'copy' && <Lucide.Copy size={24} aria-hidden="true" />}
+		{icon === 'globe' && <Lucide.Globe size={24} aria-hidden="true" />}
+		{icon === 'zap' && <Lucide.Zap size={24} aria-hidden="true" />}
+		{icon === 'message-circle' && <Lucide.MessageCircle size={24} aria-hidden="true" />}
+		{icon === 'shield-check' && <Lucide.ShieldCheck size={24} aria-hidden="true" />}
 	</div>
 	<h3 class="text-xl font-bold mb-3">{title}</h3>
-	<p class="text-neutral-600 leading-relaxed italic_text_shorthand">
+	<p class="text-neutral-600 leading-relaxed italic">
 		{description}
 	</p>
 </div>
