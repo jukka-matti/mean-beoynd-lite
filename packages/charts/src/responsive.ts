@@ -67,6 +67,8 @@ export function getResponsiveFonts(containerWidth: number): ChartFonts {
       tickLabel: 8,
       axisLabel: 9,
       statLabel: 10,
+      tooltipText: 10,
+      brandingText: 8,
     };
   }
 
@@ -75,6 +77,8 @@ export function getResponsiveFonts(containerWidth: number): ChartFonts {
       tickLabel: 9,
       axisLabel: 10,
       statLabel: 11,
+      tooltipText: 11,
+      brandingText: 9,
     };
   }
 
@@ -82,6 +86,27 @@ export function getResponsiveFonts(containerWidth: number): ChartFonts {
     tickLabel: 11,
     axisLabel: 13,
     statLabel: 12,
+    tooltipText: 12,
+    brandingText: 10,
+  };
+}
+
+/**
+ * Get scaled font sizes based on a multiplier
+ */
+export function getScaledFonts(containerWidth: number, scale: number = 1): ChartFonts {
+  const baseFonts = getResponsiveFonts(containerWidth);
+
+  if (scale === 1) {
+    return baseFonts;
+  }
+
+  return {
+    tickLabel: Math.round(baseFonts.tickLabel * scale),
+    axisLabel: Math.round(baseFonts.axisLabel * scale),
+    statLabel: Math.round(baseFonts.statLabel * scale),
+    tooltipText: Math.round(baseFonts.tooltipText * scale),
+    brandingText: Math.round(baseFonts.brandingText * scale),
   };
 }
 

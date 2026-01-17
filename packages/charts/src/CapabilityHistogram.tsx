@@ -125,7 +125,7 @@ const CapabilityHistogramBase: React.FC<CapabilityHistogramProps> = ({
               y={-5}
               textAnchor="middle"
               fill={chartColors.spec}
-              fontSize={10}
+              fontSize={fonts.statLabel}
               fontWeight="bold"
             >
               LSL
@@ -148,7 +148,7 @@ const CapabilityHistogramBase: React.FC<CapabilityHistogramProps> = ({
               y={-5}
               textAnchor="middle"
               fill={chartColors.spec}
-              fontSize={10}
+              fontSize={fonts.statLabel}
               fontWeight="bold"
             >
               USL
@@ -171,7 +171,7 @@ const CapabilityHistogramBase: React.FC<CapabilityHistogramProps> = ({
               y={-5}
               textAnchor="middle"
               fill={chartColors.target}
-              fontSize={10}
+              fontSize={fonts.statLabel}
               fontWeight="bold"
             >
               Target
@@ -191,7 +191,7 @@ const CapabilityHistogramBase: React.FC<CapabilityHistogramProps> = ({
           y={height + 25}
           textAnchor="middle"
           fill={chartColors.meanAlt}
-          fontSize={10}
+          fontSize={fonts.statLabel}
           fontWeight="bold"
         >
           Mean
@@ -234,6 +234,7 @@ const CapabilityHistogramBase: React.FC<CapabilityHistogramProps> = ({
             top={height + margin.bottom - sourceBarHeight}
             n={data.length}
             brandingText={brandingText}
+            fontSize={fonts.brandingText}
           />
         )}
       </Group>

@@ -330,6 +330,7 @@ const ScatterPlotBase: React.FC<ScatterPlotProps> = ({
               top={height + margin.bottom - sourceBarHeight}
               n={points.length}
               brandingText={brandingText}
+              fontSize={fonts.brandingText}
             />
           )}
         </Group>
@@ -345,7 +346,7 @@ const ScatterPlotBase: React.FC<ScatterPlotProps> = ({
             background: chromeColors.tooltipBg,
             border: `1px solid ${chromeColors.tooltipBorder}`,
             color: chromeColors.tooltipText,
-            fontSize: 12,
+            fontSize: fonts.tooltipText,
             padding: '8px 12px',
           }}
         >

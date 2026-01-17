@@ -23,7 +23,7 @@ The Azure app includes all PWA analysis features:
 
 - **I-Chart with Staged Analysis**: Divide I-Chart into phases with separate control limits per stage
   - Select any categorical column with 2-10 unique values as a stage column
-  - Stage order modes: Auto-detect, First occurrence, Alphabetical
+  - Stage order modes: Auto, Data order
   - See [Staged Analysis User Guide](../pwa/STAGED_ANALYSIS.md) for detailed usage
 - **Boxplot** with factor comparison and ANOVA
 - **Pareto Chart** for defect categorization

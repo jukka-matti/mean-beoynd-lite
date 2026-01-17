@@ -18,6 +18,7 @@ const ChartSourceBar: React.FC<ChartSourceBarProps> = ({
   brandingText = 'VariScout Lite',
   accentColor = '#3b82f6',
   forceShow = false,
+  fontSize = 10,
 }) => {
   // If no branding text and not forced, don't render
   if (!brandingText && !forceShow) {
@@ -46,7 +47,7 @@ const ChartSourceBar: React.FC<ChartSourceBarProps> = ({
           x={ACCENT_WIDTH + 8}
           y={BAR_HEIGHT / 2}
           fill={chromeColors.labelSecondary}
-          fontSize={10}
+          fontSize={fontSize}
           fontWeight={500}
           dominantBaseline="central"
           fontFamily="system-ui, -apple-system, sans-serif"
@@ -61,7 +62,7 @@ const ChartSourceBar: React.FC<ChartSourceBarProps> = ({
           x={width - 8}
           y={BAR_HEIGHT / 2}
           fill={chromeColors.labelMuted}
-          fontSize={10}
+          fontSize={fontSize}
           textAnchor="end"
           dominantBaseline="central"
           fontFamily="system-ui, -apple-system, sans-serif"

@@ -480,6 +480,7 @@ const IChartBase: React.FC<IChartProps> = ({
               top={height + margin.bottom - sourceBarHeight}
               n={sampleSize ?? data.length}
               brandingText={brandingText}
+              fontSize={fonts.brandingText}
             />
           )}
         </Group>
@@ -497,7 +498,7 @@ const IChartBase: React.FC<IChartProps> = ({
             border: `1px solid ${chromeColors.tooltipBorder}`,
             borderRadius: 6,
             padding: '8px 12px',
-            fontSize: 12,
+            fontSize: fonts.tooltipText,
           }}
         >
           <div>

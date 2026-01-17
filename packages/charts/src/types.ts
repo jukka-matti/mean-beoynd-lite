@@ -80,6 +80,8 @@ export interface IChartProps extends BaseChartProps {
   showLimitLabels?: boolean;
   /** Callback when a spec limit label is clicked (for editing) */
   onSpecClick?: (spec: 'usl' | 'lsl' | 'target') => void;
+  /** Callback when Y-axis area is clicked (for editing scale) */
+  onYAxisClick?: (event?: React.MouseEvent) => void;
 }
 
 /**
@@ -262,6 +264,8 @@ export interface ChartSourceBarProps {
   accentColor?: string;
   /** Force show branding (overrides edition check) */
   forceShow?: boolean;
+  /** Font size for branding text (from responsive fonts) */
+  fontSize?: number;
 }
 
 /**
@@ -281,4 +285,6 @@ export interface ChartFonts {
   tickLabel: number;
   axisLabel: number;
   statLabel: number;
+  tooltipText: number;
+  brandingText: number;
 }

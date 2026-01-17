@@ -301,6 +301,7 @@ const ProbabilityPlotBase: React.FC<ProbabilityPlotProps> = ({
             top={height + margin.bottom - sourceBarHeight}
             n={data.length}
             brandingText={brandingText}
+            fontSize={fonts.brandingText}
           />
         )}
       </Group>

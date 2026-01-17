@@ -281,7 +281,7 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
               y={height + (parentWidth < 400 ? 35 : 50) + 14}
               textAnchor="middle"
               fill="#f87171"
-              fontSize={10}
+              fontSize={fonts.statLabel}
             >
               ↓ drill here
             </text>
@@ -294,6 +294,7 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
               top={height + margin.bottom - sourceBarHeight}
               n={totalSampleSize}
               brandingText={brandingText}
+              fontSize={fonts.brandingText}
             />
           )}
         </Group>
@@ -311,7 +312,7 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
             border: `1px solid ${chromeColors.tooltipBorder}`,
             borderRadius: 6,
             padding: '8px 12px',
-            fontSize: 12,
+            fontSize: fonts.tooltipText,
           }}
         >
           <div>

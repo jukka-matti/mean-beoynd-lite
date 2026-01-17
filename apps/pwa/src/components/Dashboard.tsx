@@ -367,46 +367,6 @@ const Dashboard = ({
               <Activity className="text-blue-400" size={20} />
               I-Chart: {outcome}
             </h2>
-            {stats && (
-              <div className="flex gap-4 text-sm text-content-secondary ml-auto">
-                <span className="flex items-center gap-1">
-                  UCL: <span className="text-white font-mono">{stats.ucl.toFixed(2)}</span>
-                  <span className="tooltip-wrapper">
-                    <HelpCircle
-                      size={12}
-                      className="text-content-muted hover:text-content cursor-help"
-                    />
-                    <span className="tooltip">
-                      Upper Control Limit. Points above this indicate special cause variation.
-                    </span>
-                  </span>
-                </span>
-                <span className="flex items-center gap-1">
-                  Mean: <span className="text-white font-mono">{stats.mean.toFixed(2)}</span>
-                  <span className="tooltip-wrapper">
-                    <HelpCircle
-                      size={12}
-                      className="text-content-muted hover:text-content cursor-help"
-                    />
-                    <span className="tooltip">
-                      Process average. The center line on the I-Chart.
-                    </span>
-                  </span>
-                </span>
-                <span className="flex items-center gap-1">
-                  LCL: <span className="text-white font-mono">{stats.lcl.toFixed(2)}</span>
-                  <span className="tooltip-wrapper">
-                    <HelpCircle
-                      size={12}
-                      className="text-content-muted hover:text-content cursor-help"
-                    />
-                    <span className="tooltip">
-                      Lower Control Limit. Points below this indicate special cause variation.
-                    </span>
-                  </span>
-                </span>
-              </div>
-            )}
           </div>
           <div className="flex-1 min-h-0">
             <ErrorBoundary componentName="I-Chart">
@@ -471,19 +431,6 @@ const Dashboard = ({
             <div className="flex items-center gap-3 mb-3">
               <Activity className="text-blue-400" size={20} />
               <span className="text-lg font-bold text-white">I-Chart: {outcome}</span>
-              {stats && (
-                <div className="flex gap-4 text-xs text-content-secondary ml-auto">
-                  <span>
-                    UCL: <span className="text-white font-mono">{stats.ucl.toFixed(2)}</span>
-                  </span>
-                  <span>
-                    Mean: <span className="text-white font-mono">{stats.mean.toFixed(2)}</span>
-                  </span>
-                  <span>
-                    LCL: <span className="text-white font-mono">{stats.lcl.toFixed(2)}</span>
-                  </span>
-                </div>
-              )}
             </div>
             <div className="flex-1 min-h-0">
               <ErrorBoundary componentName="I-Chart">
@@ -768,49 +715,7 @@ const Dashboard = ({
                       </span>
                     </div>
                   ) : (
-                    stats && (
-                      <div className="flex gap-4 text-sm bg-surface/50 px-3 py-1.5 rounded-lg border border-edge/50">
-                        <span className="text-content-secondary flex items-center gap-1">
-                          UCL: <span className="text-white font-mono">{stats.ucl.toFixed(2)}</span>
-                          <span className="tooltip-wrapper">
-                            <HelpCircle
-                              size={12}
-                              className="text-content-muted hover:text-content cursor-help"
-                            />
-                            <span className="tooltip">
-                              Upper Control Limit. Points above this indicate special cause
-                              variation.
-                            </span>
-                          </span>
-                        </span>
-                        <span className="text-content-secondary flex items-center gap-1">
-                          Mean:{' '}
-                          <span className="text-white font-mono">{stats.mean.toFixed(2)}</span>
-                          <span className="tooltip-wrapper">
-                            <HelpCircle
-                              size={12}
-                              className="text-content-muted hover:text-content cursor-help"
-                            />
-                            <span className="tooltip">
-                              Process average. The center line on the I-Chart.
-                            </span>
-                          </span>
-                        </span>
-                        <span className="text-content-secondary flex items-center gap-1">
-                          LCL: <span className="text-white font-mono">{stats.lcl.toFixed(2)}</span>
-                          <span className="tooltip-wrapper">
-                            <HelpCircle
-                              size={12}
-                              className="text-content-muted hover:text-content cursor-help"
-                            />
-                            <span className="tooltip">
-                              Lower Control Limit. Points below this indicate special cause
-                              variation.
-                            </span>
-                          </span>
-                        </span>
-                      </div>
-                    )
+                    stats && null
                   )}
                 </div>
                 <div id="ichart-container" className="flex-1 min-h-[300px] w-full">

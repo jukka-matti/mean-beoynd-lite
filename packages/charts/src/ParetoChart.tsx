@@ -106,7 +106,7 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
             x={width - 5}
             y={yPercScale(80) - 5}
             fill={chartColors.threshold80}
-            fontSize={10}
+            fontSize={fonts.statLabel}
             textAnchor="end"
           >
             80%
@@ -215,6 +215,7 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
               top={height + margin.bottom - sourceBarHeight}
               n={totalCount}
               brandingText={brandingText}
+              fontSize={fonts.brandingText}
             />
           )}
         </Group>
@@ -232,7 +233,7 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
             border: `1px solid ${chromeColors.tooltipBorder}`,
             borderRadius: 6,
             padding: '8px 12px',
-            fontSize: 12,
+            fontSize: fonts.tooltipText,
           }}
         >
           <div>

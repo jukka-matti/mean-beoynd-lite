@@ -12,6 +12,7 @@ import {
   Target,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { useTheme, type ChartFontScale } from '../context/ThemeContext';
 import { getEdition } from '../lib/edition';
 import ThemeToggle from './ThemeToggle';
 import CompanyColorPicker from './CompanyColorPicker';
@@ -48,6 +49,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   hasUnsavedChanges = false,
 }) => {
   const { displayOptions, setDisplayOptions } = useData();
+  const { theme, setTheme } = useTheme();
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Local state for display options

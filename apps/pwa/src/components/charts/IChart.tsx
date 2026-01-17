@@ -173,7 +173,13 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
 
   // Resolve Label Collisions
   const resolvedLabels = useMemo(() => {
-    const labels: { y: number; text: string; fill: string; onClick?: () => void }[] = [];
+    const labels: {
+      y: number;
+      text: string;
+      fill: string;
+      tooltip?: string;
+      onClick?: () => void;
+    }[] = [];
     const showSpecs = displayOptions.showSpecs !== false && (!grades || grades.length === 0);
 
     // Collect Spec Labels
@@ -183,6 +189,7 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
           y: yScale(specs.usl),
           text: `USL: ${specs.usl.toFixed(1)}`,
           fill: chartColors.spec,
+          tooltip: 'Upper Specification Limit – Maximum acceptable value per requirements.',
           onClick: () => onSpecClick?.('usl'),
         });
       }
@@ -191,6 +198,7 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
           y: yScale(specs.lsl),
           text: `LSL: ${specs.lsl.toFixed(1)}`,
           fill: chartColors.spec,
+          tooltip: 'Lower Specification Limit – Minimum acceptable value per requirements.',
           onClick: () => onSpecClick?.('lsl'),
         });
       }
@@ -199,6 +207,7 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
           y: yScale(specs.target),
           text: `Tgt: ${specs.target.toFixed(1)}`,
           fill: chartColors.target,
+          tooltip: 'Target – Ideal value for this process.',
           onClick: () => onSpecClick?.('target'),
         });
       }
@@ -210,16 +219,21 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
         y: yScale(stats.mean),
         text: `Mean: ${stats.mean.toFixed(1)}`,
         fill: chartColors.mean,
+        tooltip: 'Process average. The center line on the I-Chart.',
       });
       labels.push({
         y: yScale(stats.ucl),
         text: `UCL: ${stats.ucl.toFixed(1)}`,
         fill: '#64748b',
+        tooltip:
+          'Upper Control Limit – 3σ above the mean. Points above indicate special cause variation.',
       });
       labels.push({
         y: yScale(stats.lcl),
         text: `LCL: ${stats.lcl.toFixed(1)}`,
         fill: '#64748b',
+        tooltip:
+          'Lower Control Limit – 3σ below the mean. Points below indicate special cause variation.',
       });
     }
 
@@ -570,6 +584,7 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
               style={{ cursor: label.onClick ? 'pointer' : 'default' }}
               className={label.onClick ? 'hover:opacity-80' : ''}
             >
+              {label.tooltip && <title>{label.tooltip}</title>}
               {label.text}
             </text>
           ))}

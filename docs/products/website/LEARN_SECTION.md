@@ -362,7 +362,7 @@ When your process changes, single control limits hide the story:
 ## How It Works
 
 1. Select your stage column (e.g., "Phase", "Batch", "Period")
-2. Choose stage ordering (auto-detect, alphabetical, first occurrence)
+2. Choose stage ordering (Auto or Data order)
 3. See separate UCL/Mean/LCL for each stage
 
 [PWA embed showing staged I-Chart]

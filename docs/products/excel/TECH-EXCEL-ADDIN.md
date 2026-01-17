@@ -930,7 +930,7 @@ The Excel Add-in supports staged I-Chart analysis for comparing process phases:
 
 - **Step 3 (Stage Analysis)**: Select a categorical column to divide the I-Chart into stages
 - Stage columns must have 2-10 unique values
-- Choose stage order mode: Auto-detect, First occurrence, or Alphabetical
+- Choose stage order mode: Auto or Data order
 
 **How It Works**
 

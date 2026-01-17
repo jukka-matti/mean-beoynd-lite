@@ -11,9 +11,20 @@ import { isThemingEnabled } from '@variscout/core';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
+/** Chart font scale presets */
+export type ChartFontScale = 'compact' | 'normal' | 'large';
+
+/** Scale values for each preset */
+export const CHART_FONT_SCALES: Record<ChartFontScale, number> = {
+  compact: 0.85,
+  normal: 1.0,
+  large: 1.15,
+};
+
 export interface ThemeConfig {
   mode: ThemeMode;
   companyAccent?: string; // hex color for company branding
+  chartFontScale?: ChartFontScale; // chart text size preset
 }
 
 interface ThemeContextType {
@@ -23,6 +34,8 @@ interface ThemeContextType {
   resolvedTheme: 'light' | 'dark';
   /** Whether theming features are enabled (Licensed edition only) */
   isThemingEnabled: boolean;
+  /** Current chart font scale multiplier */
+  chartFontScaleValue: number;
   /** Update theme configuration */
   setTheme: (config: Partial<ThemeConfig>) => void;
 }
@@ -109,12 +122,21 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     return theme.mode;
   }, [theme.mode, systemPreference, themingEnabled]);
 
+  // Calculate chart font scale value
+  const chartFontScaleValue = useMemo(() => {
+    const preset = theme.chartFontScale ?? 'normal';
+    return CHART_FONT_SCALES[preset];
+  }, [theme.chartFontScale]);
+
   // Apply theme to document
   useEffect(() => {
     const root = document.documentElement;
 
     // Set data-theme attribute for CSS variables
     root.setAttribute('data-theme', resolvedTheme);
+
+    // Set data-chart-scale attribute for chart font scaling
+    root.setAttribute('data-chart-scale', String(chartFontScaleValue));
 
     // Apply company accent color if set
     if (themingEnabled && theme.companyAccent) {
@@ -128,7 +150,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       // Reset to default accent
       root.style.removeProperty('--accent');
     }
-  }, [resolvedTheme, theme.companyAccent, themingEnabled]);
+  }, [resolvedTheme, theme.companyAccent, themingEnabled, chartFontScaleValue]);
 
   // Update theme configuration
   const setTheme = useCallback((config: Partial<ThemeConfig>) => {
@@ -144,9 +166,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       theme,
       resolvedTheme,
       isThemingEnabled: themingEnabled,
+      chartFontScaleValue,
       setTheme,
     }),
-    [theme, resolvedTheme, themingEnabled, setTheme]
+    [theme, resolvedTheme, themingEnabled, chartFontScaleValue, setTheme]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

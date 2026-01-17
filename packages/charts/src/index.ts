@@ -53,6 +53,7 @@ export { useChartTheme, type ChartThemeColors } from './useChartTheme';
 export {
   getResponsiveMargins,
   getResponsiveFonts,
+  getScaledFonts,
   getResponsiveTickCount,
   getBreakpoints,
   type ChartType,

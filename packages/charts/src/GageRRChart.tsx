@@ -227,6 +227,7 @@ const GageRRChartBase: React.FC<GageRRChartProps> = ({
             top={parentHeight - sourceBarHeight}
             width={parentWidth}
             brandingText={brandingText}
+            fontSize={fonts.brandingText}
           />
         )}
       </svg>
@@ -241,7 +242,7 @@ const GageRRChartBase: React.FC<GageRRChartProps> = ({
             background: chromeColors.tooltipBg,
             border: `1px solid ${chromeColors.tooltipBorder}`,
             color: chromeColors.tooltipText,
-            fontSize: 12,
+            fontSize: fonts.tooltipText,
             padding: '8px 12px',
             maxWidth: 200,
           }}
@@ -252,7 +253,7 @@ const GageRRChartBase: React.FC<GageRRChartProps> = ({
           <div style={{ marginBottom: 4 }}>
             <strong>{tooltipData.value.toFixed(1)}%</strong> of total variation
           </div>
-          <div style={{ fontSize: 11, color: chromeColors.labelSecondary }}>
+          <div style={{ fontSize: fonts.tooltipText - 1, color: chromeColors.labelSecondary }}>
             {tooltipData.description}
           </div>
         </TooltipWithBounds>

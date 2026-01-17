@@ -235,6 +235,7 @@ const InteractionPlotBase: React.FC<InteractionPlotProps> = ({
             top={parentHeight - sourceBarHeight}
             width={parentWidth}
             brandingText={brandingText}
+            fontSize={fonts.brandingText}
           />
         )}
       </svg>
@@ -249,7 +250,7 @@ const InteractionPlotBase: React.FC<InteractionPlotProps> = ({
             background: chromeColors.tooltipBg,
             border: `1px solid ${chromeColors.tooltipBorder}`,
             color: chromeColors.tooltipText,
-            fontSize: 12,
+            fontSize: fonts.tooltipText,
             padding: '8px 12px',
           }}
         >

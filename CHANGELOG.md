@@ -12,9 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Staged I-Chart**: Divide I-Chart into distinct phases with separate control limits per stage
   - Available in PWA, Azure Team App, and Excel Add-in
   - Column-based stage definition (select any categorical column with 2-10 unique values)
-  - Auto-detect stage ordering (numeric patterns sorted numerically, else first occurrence)
-  - Manual override: Sort stages by "Auto-detect", "First occurrence", or "Alphabetical"
+  - Auto-detect stage ordering (numeric patterns sorted numerically, else data order)
+  - Manual override: Sort stages by "Auto" or "Data order"
   - Visual: Vertical dividers, per-stage UCL/Mean/LCL lines, stage labels
+  - Points colored based on their stage's control limits
+  - Excel Add-in: New "Stage Analysis" step in Setup Wizard for stage configuration
   - Points colored based on their stage's control limits
   - Excel Add-in: New "Stage Analysis" step in Setup Wizard for stage configuration
 
@@ -53,6 +55,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PWA Embed Mode**: Configuration guide for embedded PWA (`docs/products/pwa/EMBED-MODE.md`)
 - **Case Study Components**: Component API reference (`docs/products/website/components/CASE-COMPONENTS.md`)
 - **Animation System**: Design system tokens and keyframes (`docs/design-system/ANIMATIONS.md`)
+
+### Fixed
+
+- **I-Chart UI Cleanup**: Removed redundant header stats bar (UCL/Mean/LCL was shown twice)
+  - Now displayed only as chart-side labels with hover tooltips
+  - Tooltips explain each metric (UCL, LCL, Mean, USL, LSL, Target)
+- **I-Chart Data Point Visibility**: First and last data points no longer clipped by axes
+  - Added X-axis padding `[-0.5, +0.5]` to domain
+- **I-Chart Label Overlap**: Adjacent labels (e.g., Mean/USL) now auto-spaced to avoid collision
+- **Website Italic Styling**: Fixed broken italic classes in PricingCard and FourPillars
+- **Embed Mode Logic**: Fixed focus chart rendering on small/mobile screens
 
 ## [1.6.0] - 2026-01-05
 
