@@ -310,6 +310,29 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             <div className="space-y-4">
               <ThemeToggle />
               <CompanyColorPicker />
+
+              {/* Chart Size */}
+              <div>
+                <label className="text-sm text-content block mb-2">Chart Text Size</label>
+                <div className="flex gap-1">
+                  {(['compact', 'normal', 'large'] as ChartFontScale[]).map(size => {
+                    const isActive = (theme.chartFontScale ?? 'normal') === size;
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => setTheme({ chartFontScale: size })}
+                        className={`flex-1 px-3 py-1.5 rounded text-xs font-medium transition-colors capitalize ${
+                          isActive
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-surface-tertiary text-content-secondary hover:text-white hover:bg-surface-elevated'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 
