@@ -590,11 +590,14 @@ const Dashboard = ({
                     </div>
                   </div>
                 </div>
-              </div>
-              <div id="ichart-container" className="flex-1 min-h-[300px] w-full">
-                <ErrorBoundary componentName="I-Chart">
-                  <IChart onPointClick={onPointClick} onSpecClick={() => setShowSpecEditor(true)} />
-                </ErrorBoundary>
+                <div id="ichart-container" className="flex-1 min-h-[300px] w-full">
+                  <ErrorBoundary componentName="I-Chart">
+                    <IChart
+                      onPointClick={onPointClick}
+                      onSpecClick={() => setShowSpecEditor(true)}
+                    />
+                  </ErrorBoundary>
+                </div>
               </div>
 
               {/* Bottom Section: Boxplot, Pareto, Stats */}
