@@ -11,7 +11,10 @@ variscout-lite/
 ├── packages/
 │   ├── core/              # @variscout/core - Pure logic (stats, parser, license)
 │   ├── charts/            # @variscout/charts - Props-based Visx chart components
-│   └── data/              # @variscout/data - Sample datasets with pre-computed chart data
+│   ├── data/              # @variscout/data - Sample datasets with pre-computed chart data
+│   ├── hooks/             # @variscout/hooks - Shared React hooks (drill-down, scale, tracking)
+│   ├── analysis/          # @variscout/analysis - Analysis algorithms (deferred integration)
+│   └── ui/                # @variscout/ui - Shared UI utilities, colors, and hooks
 ├── apps/
 │   ├── pwa/               # PWA website (React + Vite + PWA)
 │   ├── azure/             # Azure Team App (React + MSAL + Azure Functions)
@@ -75,10 +78,16 @@ variscout-lite/
 │  IChart │ Boxplot │ ParetoChart     │  stats.ts │ parser.ts │ license.ts   │
 │  CapabilityHistogram │ responsive   │  edition.ts │ export.ts │ types.ts   │
 ├─────────────────────────────────────┼───────────────────────────────────────┤
-│          @variscout/ui              │                                       │
-│         (packages/ui/)              │                                       │
-│      (Shared UI Components)         │                                       │
-│   Button │ Input │ Theme │ Utils    │                                       │
+│          @variscout/hooks           │         @variscout/analysis           │
+│         (packages/hooks/)           │        (packages/analysis/)           │
+│                                     │                                       │
+│  useChartScale │ useDrillDown       │  (Deferred integration)               │
+│  useVariationTracking │ useKeyboard │  Analysis algorithms                  │
+├─────────────────────────────────────┼───────────────────────────────────────┤
+│          @variscout/ui              │          @variscout/data              │
+│         (packages/ui/)              │         (packages/data/)              │
+│      (Shared UI Components)         │      (Sample Datasets)                │
+│   Button │ useMediaQuery │ colors   │  coffee │ journey │ bottleneck       │
 └─────────────────────────────────────┴───────────────────────────────────────┘
 
 ```
@@ -147,7 +156,29 @@ Shared UI component library for Web and Azure apps (not Excel Add-in).
 
 - **Stack**: React + Tailwind CSS + Radix UI + Lucide React.
 - **Goal**: Ensure consistent design system implementation across web properties.
-- **Exports**: `Button`, `Input`, `cn` (utility), shared Tailwind preset.
+- **Exports**: `Button`, `Input`, `cn` (utility), `useMediaQuery`, `useIsMobile`, shared Tailwind preset.
+
+### @variscout/hooks
+
+Shared React hooks for cross-platform functionality:
+
+| Hook                        | Purpose                                             |
+| --------------------------- | --------------------------------------------------- |
+| `useChartScale`             | Calculate Y-axis range from data, specs, and grades |
+| `useDrillDown`              | Drill-down navigation with breadcrumb trail         |
+| `useVariationTracking`      | Cumulative η² variation tracking through drill path |
+| `useKeyboardNavigation`     | Arrow key navigation and focus management           |
+| `useResponsiveChartMargins` | Dynamic chart margins based on container width      |
+
+**Usage:**
+
+```typescript
+import { useDrillDown, useChartScale } from '@variscout/hooks';
+```
+
+### @variscout/analysis
+
+Analysis algorithms package (deferred integration). Contains pure TypeScript analysis functions that may be integrated into apps in future iterations.
 
 ### Internationalization (i18n)
 
@@ -275,17 +306,44 @@ variscout-lite/
 │   │   ├── package.json
 │   │   └── tsconfig.json
 │   │
-│   └── charts/                  # @variscout/charts
+│   ├── charts/                  # @variscout/charts
+│   │   ├── src/
+│   │   │   ├── index.ts         # Barrel export
+│   │   │   ├── IChart.tsx       # I-Chart component
+│   │   │   ├── Boxplot.tsx      # Boxplot component
+│   │   │   ├── ParetoChart.tsx  # Pareto chart component
+│   │   │   ├── CapabilityHistogram.tsx
+│   │   │   ├── ProbabilityPlot.tsx
+│   │   │   ├── ChartSourceBar.tsx
+│   │   │   ├── responsive.ts    # Responsive utilities
+│   │   │   └── types.ts         # Chart interfaces
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   ├── hooks/                   # @variscout/hooks
+│   │   ├── src/
+│   │   │   ├── index.ts         # Barrel export
+│   │   │   ├── useChartScale.ts # Y-axis scale calculation
+│   │   │   ├── useDrillDown.ts  # Drill-down navigation
+│   │   │   ├── useVariationTracking.ts  # Cumulative η² tracking
+│   │   │   ├── useKeyboardNavigation.ts # Keyboard navigation
+│   │   │   └── useResponsiveChartMargins.ts # Responsive margins
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   ├── analysis/                # @variscout/analysis (deferred)
+│   │   ├── src/
+│   │   │   └── index.ts         # Barrel export
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   └── ui/                      # @variscout/ui
 │       ├── src/
 │       │   ├── index.ts         # Barrel export
-│       │   ├── IChart.tsx       # I-Chart component
-│       │   ├── Boxplot.tsx      # Boxplot component
-│       │   ├── ParetoChart.tsx  # Pareto chart component
-│       │   ├── CapabilityHistogram.tsx
-│       │   ├── ProbabilityPlot.tsx
-│       │   ├── ChartSourceBar.tsx
-│       │   ├── responsive.ts    # Responsive utilities
-│       │   └── types.ts         # Chart interfaces
+│       │   ├── colors.ts        # UI color constants
+│       │   ├── hooks/           # Responsive hooks
+│       │   │   └── useMediaQuery.ts
+│       │   └── lib/utils.ts     # Utility functions (cn)
 │       ├── package.json
 │       └── tsconfig.json
 │
@@ -298,6 +356,7 @@ variscout-lite/
 │   │   │   │   ├── MobileDashboard.tsx
 │   │   │   │   ├── MobileStatsPanel.tsx
 │   │   │   │   ├── MobileMenu.tsx
+│   │   │   │   ├── views/       # Extracted view components
 │   │   │   │   └── charts/      # Chart wrappers (use @variscout/charts)
 │   │   │   ├── context/         # DataContext
 │   │   │   ├── lib/             # PWA utilities (persistence)
@@ -363,11 +422,13 @@ The app supports screens from 320px to desktop with a comprehensive responsive s
 
 ### Responsive Hooks
 
-| Hook                        | File                                              | Purpose                                        |
-| --------------------------- | ------------------------------------------------- | ---------------------------------------------- |
-| `useResponsiveChartMargins` | `apps/pwa/src/hooks/useResponsiveChartMargins.ts` | Dynamic chart margins based on container width |
-| `useResponsiveChartFonts`   | `apps/pwa/src/hooks/useResponsiveChartMargins.ts` | Scaled font sizes for chart labels             |
-| `useResponsiveTickCount`    | `apps/pwa/src/hooks/useResponsiveChartMargins.ts` | Optimal tick count for axis length             |
+| Hook                        | Package / Location | Purpose                                        |
+| --------------------------- | ------------------ | ---------------------------------------------- |
+| `useResponsiveChartMargins` | `@variscout/hooks` | Dynamic chart margins based on container width |
+| `useResponsiveChartFonts`   | `@variscout/hooks` | Scaled font sizes for chart labels             |
+| `useResponsiveTickCount`    | `@variscout/hooks` | Optimal tick count for axis length             |
+| `useMediaQuery`             | `@variscout/ui`    | Generic media query hook                       |
+| `useIsMobile`               | `@variscout/ui`    | Mobile breakpoint detection (< 640px)          |
 
 ### Layout Detection
 

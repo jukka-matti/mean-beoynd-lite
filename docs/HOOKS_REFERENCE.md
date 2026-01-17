@@ -2,12 +2,21 @@
 
 This document describes the custom React hooks and context used in VariScout Lite.
 
+> **Note:** Many hooks have been extracted to shared packages for cross-platform reuse:
+>
+> - `@variscout/hooks` - Drill-down, scale, variation tracking, keyboard navigation
+> - `@variscout/ui` - Media query and responsive hooks
+> - `apps/pwa/src/hooks/` - PWA-specific hooks (data ingestion)
+
 ## Table of Contents
 
 - [useData (DataContext)](#usedata-datacontext)
 - [useDataIngestion](#usedataingestion)
 - [useChartScale](#usechartscale)
 - [useDrillDown](#usedrilldown)
+- [useVariationTracking](#usevariationtracking)
+- [useKeyboardNavigation](#usekeyboardnavigation)
+- [useMediaQuery / useIsMobile](#usemediaquery--useismobile)
 
 ---
 
@@ -197,12 +206,13 @@ const handleNewProject = () => {
 
 Calculates Y-axis range for charts based on data, specs, and manual overrides.
 
-**Location:** `src/hooks/useChartScale.ts`
+**Package:** `@variscout/hooks`
+**Location:** `packages/hooks/src/useChartScale.ts`
 
 ### Usage
 
 ```typescript
-import { useChartScale } from '../hooks/useChartScale';
+import { useChartScale } from '@variscout/hooks';
 
 const Chart = () => {
   const { min, max } = useChartScale();
@@ -248,12 +258,13 @@ setAxisSettings({ min: 0 });
 
 Manages drill-down navigation state with breadcrumb trail and filter synchronization.
 
-**Location:** `src/hooks/useDrillDown.ts`
+**Package:** `@variscout/hooks`
+**Location:** `packages/hooks/src/useDrillDown.ts`
 
 ### Usage
 
 ```typescript
-import { useDrillDown } from '../hooks/useDrillDown';
+import { useDrillDown } from '@variscout/hooks';
 
 const Dashboard = () => {
   const { drillStack, breadcrumbs, drillDown, drillUp, drillTo, clearDrill, hasDrills } =
@@ -460,3 +471,124 @@ interface SavedProject {
 ```
 
 See `src/lib/persistence.ts` for complete type definitions.
+
+---
+
+## useVariationTracking
+
+Tracks cumulative variation (η²) through the drill-down path and provides drill suggestions.
+
+**Package:** `@variscout/hooks`
+**Location:** `packages/hooks/src/useVariationTracking.ts`
+
+### Usage
+
+```typescript
+import { useVariationTracking } from '@variscout/hooks';
+
+const Dashboard = () => {
+  const { cumulativeVariation, currentSuggestions, highlightedFactors } = useVariationTracking();
+
+  // cumulativeVariation: cumulative η² percentage through drill path
+  // currentSuggestions: factors with high η² to suggest drilling into
+  // highlightedFactors: factors meeting the highlight threshold (≥50%)
+};
+```
+
+### Returns
+
+| Property              | Type                 | Description                                   |
+| --------------------- | -------------------- | --------------------------------------------- |
+| `cumulativeVariation` | `number`             | Cumulative η² as percentage (0-100)           |
+| `currentSuggestions`  | `FactorSuggestion[]` | Factors sorted by variation impact            |
+| `highlightedFactors`  | `string[]`           | Factors meeting highlight threshold (≥50% η²) |
+
+---
+
+## useKeyboardNavigation
+
+Enables keyboard navigation for chart interactions (arrow keys, Enter, Escape).
+
+**Package:** `@variscout/hooks`
+**Location:** `packages/hooks/src/useKeyboardNavigation.ts`
+
+### Usage
+
+```typescript
+import { useKeyboardNavigation } from '@variscout/hooks';
+
+const ChartContainer = () => {
+  const { focusIndex, setFocusIndex, handleKeyDown } = useKeyboardNavigation({
+    itemCount: data.length,
+    onSelect: (index) => handleDrillDown(data[index]),
+    onEscape: () => clearSelection(),
+  });
+
+  return (
+    <div onKeyDown={handleKeyDown} tabIndex={0}>
+      {/* Chart content */}
+    </div>
+  );
+};
+```
+
+### Parameters
+
+| Parameter   | Type                      | Description                     |
+| ----------- | ------------------------- | ------------------------------- |
+| `itemCount` | `number`                  | Total number of navigable items |
+| `onSelect`  | `(index: number) => void` | Callback when Enter is pressed  |
+| `onEscape`  | `() => void`              | Callback when Escape is pressed |
+
+### Returns
+
+| Property        | Type                         | Description                  |
+| --------------- | ---------------------------- | ---------------------------- |
+| `focusIndex`    | `number`                     | Currently focused item index |
+| `setFocusIndex` | `(index: number) => void`    | Set focus to specific index  |
+| `handleKeyDown` | `(e: KeyboardEvent) => void` | Keyboard event handler       |
+
+---
+
+## useMediaQuery / useIsMobile
+
+Responsive hooks for detecting screen size and breakpoints.
+
+**Package:** `@variscout/ui`
+**Location:** `packages/ui/src/hooks/useMediaQuery.ts`
+
+### useMediaQuery
+
+Generic hook for any CSS media query.
+
+```typescript
+import { useMediaQuery } from '@variscout/ui';
+
+const Component = () => {
+  const isLargeScreen = useMediaQuery('(min-width: 1024px)');
+  const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
+
+  return isLargeScreen ? <DesktopView /> : <MobileView />;
+};
+```
+
+### useIsMobile
+
+Convenience hook for mobile breakpoint detection (< 640px).
+
+```typescript
+import { useIsMobile } from '@variscout/ui';
+
+const Component = () => {
+  const isMobile = useIsMobile();
+
+  return isMobile ? <MobileDashboard /> : <Dashboard />;
+};
+```
+
+### Returns
+
+| Hook            | Returns   | Description                  |
+| --------------- | --------- | ---------------------------- |
+| `useMediaQuery` | `boolean` | True if media query matches  |
+| `useIsMobile`   | `boolean` | True if screen width < 640px |

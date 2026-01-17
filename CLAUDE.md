@@ -26,7 +26,9 @@ variscout-lite/
 │   ├── core/          # @variscout/core - Stats, parser, license, types
 │   ├── charts/        # @variscout/charts - Visx chart components
 │   ├── data/          # @variscout/data - Sample datasets with pre-computed chart data
-│   └── ui/            # @variscout/ui - Shared UI utilities and colors
+│   ├── hooks/         # @variscout/hooks - Shared React hooks (drill-down, scale, tracking)
+│   ├── analysis/      # @variscout/analysis - Analysis algorithms (deferred integration)
+│   └── ui/            # @variscout/ui - Shared UI utilities, colors, and hooks
 ├── apps/
 │   ├── pwa/           # PWA website (React + Vite)
 │   ├── azure/         # Azure Team App (MSAL + OneDrive sync)
@@ -78,6 +80,12 @@ variscout-lite/
 | `packages/data/src/`                                | Sample datasets with pre-computed stats and chart data    |
 | `packages/data/src/samples/`                        | Individual sample files (coffee, journey, bottleneck)     |
 | `packages/ui/src/colors.ts`                         | Shared UI colors (statusColors, gradeColors)              |
+| `packages/ui/src/hooks/useMediaQuery.ts`            | Responsive hooks (useMediaQuery, useIsMobile)             |
+| `packages/hooks/src/useChartScale.ts`               | Chart Y-axis scale calculation                            |
+| `packages/hooks/src/useDrillDown.ts`                | Drill-down navigation with breadcrumb trail               |
+| `packages/hooks/src/useVariationTracking.ts`        | Cumulative variation tracking (η²)                        |
+| `packages/hooks/src/useKeyboardNavigation.ts`       | Keyboard navigation (arrow keys, focus management)        |
+| `packages/hooks/src/useResponsiveChartMargins.ts`   | Dynamic chart margins based on container width            |
 | `apps/pwa/src/context/DataContext.tsx`              | Central state management                                  |
 | `apps/pwa/src/context/ThemeContext.tsx`             | Theme state (light/dark/system, company accent)           |
 | `packages/core/src/edition.ts`                      | Edition detection, `isThemingEnabled()` feature gate      |
@@ -86,8 +94,8 @@ variscout-lite/
 | `packages/core/src/parser.ts`                       | CSV/Excel parsing, validation, keyword detection (shared) |
 | `apps/pwa/src/hooks/useDataIngestion.ts`            | File upload handlers, validation integration              |
 | `apps/pwa/src/components/DataQualityBanner.tsx`     | Validation summary UI component                           |
-| `apps/pwa/src/hooks/useDrillDown.ts`                | Drill-down navigation hook                                |
 | `apps/pwa/src/components/DrillBreadcrumb.tsx`       | Breadcrumb UI component                                   |
+| `apps/pwa/src/components/views/`                    | Extracted view components (chart containers)              |
 | `apps/azure/src/context/DataContext.tsx`            | Azure app central state (mirrors PWA)                     |
 | `apps/azure/src/services/storage.ts`                | Offline-first storage + OneDrive sync                     |
 | `apps/azure/src/components/__tests__/`              | Azure app component tests                                 |

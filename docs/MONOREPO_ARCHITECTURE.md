@@ -12,7 +12,9 @@ variscout-lite/
 │   ├── core/          # @variscout/core - Pure logic (stats, parser, license)
 │   ├── charts/        # @variscout/charts - Props-based Visx chart components
 │   ├── data/          # @variscout/data - Sample datasets with pre-computed chart data
-│   └── ui/            # @variscout/ui - Shared UI utilities and colors
+│   ├── hooks/         # @variscout/hooks - Shared React hooks (drill-down, scale, tracking)
+│   ├── analysis/      # @variscout/analysis - Analysis algorithms (deferred integration)
+│   └── ui/            # @variscout/ui - Shared UI utilities, colors, and hooks
 ├── apps/
 │   ├── pwa/           # PWA website (React + Vite + PWA)
 │   ├── excel-addin/   # Excel Add-in (Office.js + React + Fluent UI)
@@ -145,6 +147,7 @@ Shared UI utilities and color constants for consistent styling across apps.
 - `colors.ts` - Semantic color constants (statusColors, gradeColors)
 - `lib/utils.ts` - Utility functions (`cn` for className merging)
 - `components/ui/button.tsx` - Shared Button component
+- `hooks/useMediaQuery.ts` - Responsive hooks (`useMediaQuery`, `useIsMobile`)
 
 **Color Exports:**
 
@@ -164,6 +167,45 @@ gradeColors.offGrade; // #ef4444
 gradeColors.default; // #cccccc
 ```
 
+**Hook Exports:**
+
+```typescript
+import { useMediaQuery, useIsMobile } from '@variscout/ui';
+
+const isMobile = useIsMobile(); // true when < 640px
+const isTablet = useMediaQuery('(max-width: 1024px)');
+```
+
+### @variscout/hooks (`packages/hooks/`)
+
+Shared React hooks for cross-platform functionality. Extracted from PWA for reuse in Azure app.
+
+**Contents:**
+
+| Hook                        | Purpose                                             |
+| --------------------------- | --------------------------------------------------- |
+| `useChartScale`             | Calculate Y-axis range from data, specs, and grades |
+| `useDrillDown`              | Drill-down navigation with breadcrumb trail         |
+| `useVariationTracking`      | Cumulative η² variation tracking through drill path |
+| `useKeyboardNavigation`     | Arrow key navigation and focus management           |
+| `useResponsiveChartMargins` | Dynamic chart margins based on container width      |
+
+**Usage:**
+
+```typescript
+import { useDrillDown, useChartScale, useVariationTracking } from '@variscout/hooks';
+
+const { drillStack, breadcrumbs, drillDown, drillUp } = useDrillDown();
+const { min, max } = useChartScale();
+const { cumulativeVariation, currentSuggestions } = useVariationTracking();
+```
+
+### @variscout/analysis (`packages/analysis/`)
+
+Analysis algorithms package (deferred integration). Contains pure TypeScript analysis functions that may be integrated into apps in future iterations.
+
+**Status:** Created but not yet integrated into apps.
+
 ### @variscout/pwa (`apps/pwa/`)
 
 The Progressive Web App - mobile-first website with offline capability.
@@ -179,10 +221,13 @@ The Progressive Web App - mobile-first website with offline capability.
 **PWA-Specific Code (not shared):**
 
 - `context/DataContext.tsx` - React context for state management
+- `components/Dashboard.tsx` - Main chart dashboard (refactored, 777 lines)
+- `components/views/` - Extracted view components (chart containers)
 - `components/MobileDashboard.tsx` - Tab-based mobile chart navigation
 - `components/MobileStatsPanel.tsx` - Mobile stats display
 - `components/MobileMenu.tsx` - Mobile overflow menu
 - `lib/persistence.ts` - IndexedDB + localStorage operations
+- `hooks/useDataIngestion.ts` - File upload and parsing
 
 ### @variscout/excel-addin (`apps/excel-addin/`)
 
