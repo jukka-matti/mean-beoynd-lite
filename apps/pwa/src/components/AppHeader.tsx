@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Activity, Settings, MoreVertical, Maximize, Table2, Share2 } from 'lucide-react';
+import { Activity, Settings, MoreVertical, Maximize, Table2, Share2, Filter } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import SharePopover from './SharePopover';
 
@@ -11,9 +11,11 @@ interface AppHeaderProps {
   rowCount: number;
   isSaving: boolean;
   isDataPanelOpen?: boolean;
+  isFunnelPanelOpen?: boolean;
   onSaveToBrowser: () => void;
   onOpenProjects: () => void;
   onToggleDataPanel?: () => void;
+  onToggleFunnelPanel?: () => void;
   onOpenDataTable: () => void;
   onDownloadFile: () => void;
   onExportCSV: () => void;
@@ -41,9 +43,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   rowCount,
   isSaving,
   isDataPanelOpen = false,
+  isFunnelPanelOpen = false,
   onSaveToBrowser,
   onOpenProjects,
   onToggleDataPanel,
+  onToggleFunnelPanel,
   onOpenDataTable,
   onDownloadFile,
   onExportCSV,
@@ -150,6 +154,16 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   title={isDataPanelOpen ? 'Hide Data Table' : 'Show Data Table'}
                   onClick={onToggleDataPanel}
                   isActive={isDataPanelOpen}
+                />
+              )}
+
+              {/* Variation Funnel Toggle */}
+              {onToggleFunnelPanel && (
+                <IconButton
+                  icon={<Filter size={18} />}
+                  title={isFunnelPanelOpen ? 'Hide Variation Funnel' : 'Show Variation Funnel'}
+                  onClick={onToggleFunnelPanel}
+                  isActive={isFunnelPanelOpen}
                 />
               )}
 

@@ -110,7 +110,7 @@ export {
 } from './navigation';
 
 // Variation tracking
-export type { DrillVariationResult, DrillLevelVariation } from './variation';
+export type { DrillVariationResult, DrillLevelVariation, OptimalFactorResult } from './variation';
 
 export {
   calculateDrillVariation,
@@ -118,6 +118,7 @@ export {
   shouldHighlightDrill,
   applyFilters,
   getNextDrillFactor,
+  findOptimalFactors,
   DRILL_SWITCH_THRESHOLD,
 } from './variation';
 

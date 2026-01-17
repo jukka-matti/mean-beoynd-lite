@@ -462,37 +462,6 @@ const Dashboard = ({
     );
   }
 
-  // Mobile Layout
-  if (isMobile) {
-    return (
-      <div id="dashboard-export-container" className="h-full">
-        <MobileDashboard
-          outcome={outcome}
-          factors={factors}
-          stats={stats}
-          specs={specs}
-          boxplotFactor={boxplotFactor}
-          paretoFactor={paretoFactor}
-          filteredData={filteredData}
-          anovaResult={anovaResult}
-          filters={filters}
-          columnAliases={columnAliases}
-          onSetBoxplotFactor={setBoxplotFactor}
-          onSetParetoFactor={setParetoFactor}
-          onPointClick={onPointClick}
-          onDrillDown={handleDrillDown}
-          onRemoveFilter={handleRemoveFilter}
-          onClearAllFilters={handleClearAllFilters}
-          breadcrumbItems={breadcrumbItems}
-          cumulativeVariationPct={cumulativeVariationPct}
-          onBreadcrumbNavigate={handleBreadcrumbNavigate}
-          onHideParetoPanel={() => setShowParetoPanel(false)}
-          onUploadPareto={onOpenColumnMapping}
-        />
-      </div>
-    );
-  }
-
   // Embed Focus Mode - render only the specified chart (for iframe embeds)
   if (embedFocusChart) {
     return (
@@ -590,6 +559,37 @@ const Dashboard = ({
             />
           </div>
         )}
+      </div>
+    );
+  }
+
+  // Mobile Layout
+  if (isMobile) {
+    return (
+      <div id="dashboard-export-container" className="h-full">
+        <MobileDashboard
+          outcome={outcome}
+          factors={factors}
+          stats={stats}
+          specs={specs}
+          boxplotFactor={boxplotFactor}
+          paretoFactor={paretoFactor}
+          filteredData={filteredData}
+          anovaResult={anovaResult}
+          filters={filters}
+          columnAliases={columnAliases}
+          onSetBoxplotFactor={setBoxplotFactor}
+          onSetParetoFactor={setParetoFactor}
+          onPointClick={onPointClick}
+          onDrillDown={handleDrillDown}
+          onRemoveFilter={handleRemoveFilter}
+          onClearAllFilters={handleClearAllFilters}
+          breadcrumbItems={breadcrumbItems}
+          cumulativeVariationPct={cumulativeVariationPct}
+          onBreadcrumbNavigate={handleBreadcrumbNavigate}
+          onHideParetoPanel={() => setShowParetoPanel(false)}
+          onUploadPareto={onOpenColumnMapping}
+        />
       </div>
     );
   }

@@ -259,3 +259,144 @@ export function getNextDrillFactor(
 
   return bestFactor;
 }
+
+/**
+ * Result item for optimal factor selection
+ */
+export interface OptimalFactorResult {
+  /** Factor name */
+  factor: string;
+  /** Variation percentage explained by this factor (η² * 100) */
+  variationPct: number;
+  /** Best value for this factor (highest variation category) */
+  bestValue?: string | number;
+  /** Cumulative variation isolated after applying this and all previous factors */
+  cumulativePct: number;
+}
+
+/**
+ * Find the optimal combination of factors that explain a target percentage of variation
+ *
+ * Uses a greedy algorithm to select factors by highest η² contribution.
+ * This enables the "variation funnel" feature by identifying the 1-3 factors
+ * that explain ~70% of total variation.
+ *
+ * @param data - Raw data array
+ * @param factors - Available factor columns to analyze
+ * @param outcome - The outcome column name
+ * @param targetPct - Target percentage of variation to explain (default: 70)
+ * @param maxFactors - Maximum number of factors to select (default: 3)
+ * @returns Array of optimal factors sorted by contribution, with cumulative percentages
+ *
+ * @example
+ * const optimal = findOptimalFactors(data, ['Shift', 'Machine', 'Operator'], 'Weight');
+ * // [
+ * //   { factor: 'Shift', variationPct: 67, cumulativePct: 67 },
+ * //   { factor: 'Machine', variationPct: 45, cumulativePct: 82 }
+ * // ]
+ * // -> Two factors explain 82% of variation, exceeding 70% target
+ */
+export function findOptimalFactors(
+  data: any[],
+  factors: string[],
+  outcome: string,
+  targetPct: number = 70,
+  maxFactors: number = 3
+): OptimalFactorResult[] {
+  if (!outcome || data.length < 2 || factors.length === 0) {
+    return [];
+  }
+
+  // Calculate η² for each factor
+  const factorStats: { factor: string; variationPct: number; bestValue?: string | number }[] = [];
+
+  for (const factor of factors) {
+    const etaSquared = getEtaSquared(data, factor, outcome);
+    if (etaSquared > 0) {
+      // Find the best value (category with most variation contribution)
+      const bestValue = findBestValueForFactor(data, factor, outcome);
+      factorStats.push({
+        factor,
+        variationPct: etaSquared * 100,
+        bestValue,
+      });
+    }
+  }
+
+  // Sort by variation percentage descending
+  factorStats.sort((a, b) => b.variationPct - a.variationPct);
+
+  // Greedy selection until we hit target or max factors
+  const selected: OptimalFactorResult[] = [];
+  let cumulativeRemaining = 100;
+
+  for (const stat of factorStats) {
+    if (selected.length >= maxFactors) break;
+
+    // Calculate cumulative as product of remaining variation
+    // E.g., if factor explains 67%, remaining is 33%, cumulative isolated is 67%
+    const contribution = (cumulativeRemaining * stat.variationPct) / 100;
+    cumulativeRemaining = cumulativeRemaining - contribution;
+    const cumulativeIsolated = 100 - cumulativeRemaining;
+
+    selected.push({
+      factor: stat.factor,
+      variationPct: stat.variationPct,
+      bestValue: stat.bestValue,
+      cumulativePct: cumulativeIsolated,
+    });
+
+    // Stop if we've reached the target
+    if (cumulativeIsolated >= targetPct) break;
+  }
+
+  return selected;
+}
+
+/**
+ * Find the best value (category) for a factor based on deviation from overall mean
+ * This identifies which category of the factor contributes most to variation
+ */
+function findBestValueForFactor(
+  data: any[],
+  factor: string,
+  outcome: string
+): string | number | undefined {
+  // Group data by factor
+  const groups = new Map<string | number, number[]>();
+
+  for (const row of data) {
+    const value = row[factor];
+    const outcomeValue = row[outcome];
+
+    if (value !== undefined && value !== null && typeof outcomeValue === 'number') {
+      const key = value;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(outcomeValue);
+    }
+  }
+
+  if (groups.size === 0) return undefined;
+
+  // Calculate overall mean
+  const allValues = data.map(r => r[outcome]).filter((v): v is number => typeof v === 'number');
+  const overallMean = allValues.reduce((a, b) => a + b, 0) / allValues.length;
+
+  // Find group with highest deviation from mean
+  let bestValue: string | number | undefined;
+  let maxDeviation = 0;
+
+  for (const [value, outcomes] of groups) {
+    const groupMean = outcomes.reduce((a, b) => a + b, 0) / outcomes.length;
+    const deviation = Math.abs(groupMean - overallMean) * outcomes.length;
+
+    if (deviation > maxDeviation) {
+      maxDeviation = deviation;
+      bestValue = value;
+    }
+  }
+
+  return bestValue;
+}

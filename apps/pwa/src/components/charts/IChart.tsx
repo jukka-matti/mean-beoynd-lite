@@ -93,7 +93,7 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
     }
     return scaleLinear({
       range: [0, width],
-      domain: [0, Math.max(data.length - 1, 1)],
+      domain: [-0.5, Math.max(data.length - 1, 1) + 0.5],
     });
   }, [data, width, timeColumn, isStaged]);
 
@@ -171,6 +171,85 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
     rotation: -90,
   };
 
+  // Resolve Label Collisions
+  const resolvedLabels = useMemo(() => {
+    const labels: { y: number; text: string; fill: string; onClick?: () => void }[] = [];
+    const showSpecs = displayOptions.showSpecs !== false && (!grades || grades.length === 0);
+
+    // Collect Spec Labels
+    if (showSpecs) {
+      if (specs.usl !== undefined) {
+        labels.push({
+          y: yScale(specs.usl),
+          text: `USL: ${specs.usl.toFixed(1)}`,
+          fill: chartColors.spec,
+          onClick: () => onSpecClick?.('usl'),
+        });
+      }
+      if (specs.lsl !== undefined) {
+        labels.push({
+          y: yScale(specs.lsl),
+          text: `LSL: ${specs.lsl.toFixed(1)}`,
+          fill: chartColors.spec,
+          onClick: () => onSpecClick?.('lsl'),
+        });
+      }
+      if (specs.target !== undefined) {
+        labels.push({
+          y: yScale(specs.target),
+          text: `Tgt: ${specs.target.toFixed(1)}`,
+          fill: chartColors.target,
+          onClick: () => onSpecClick?.('target'),
+        });
+      }
+    }
+
+    // Collect Stat Labels (only if not staged)
+    if (!isStaged && stats) {
+      labels.push({
+        y: yScale(stats.mean),
+        text: `Mean: ${stats.mean.toFixed(1)}`,
+        fill: chartColors.mean,
+      });
+      labels.push({
+        y: yScale(stats.ucl),
+        text: `UCL: ${stats.ucl.toFixed(1)}`,
+        fill: '#64748b',
+      });
+      labels.push({
+        y: yScale(stats.lcl),
+        text: `LCL: ${stats.lcl.toFixed(1)}`,
+        fill: '#64748b',
+      });
+    }
+
+    // Sort by Y (top to bottom)
+    labels.sort((a, b) => a.y - b.y);
+
+    // Apply strict collision resolution
+    // Text height approximation: fonts.statLabel (approx 10-12px) + padding
+    const minSpacing = (fonts.statLabel || 10) + 2;
+
+    for (let i = 1; i < labels.length; i++) {
+      const prev = labels[i - 1];
+      const curr = labels[i];
+      if (curr.y < prev.y + minSpacing) {
+        curr.y = prev.y + minSpacing;
+      }
+    }
+
+    return labels;
+  }, [
+    specs,
+    stats,
+    isStaged,
+    displayOptions.showSpecs,
+    grades,
+    yScale,
+    fonts.statLabel,
+    onSpecClick,
+  ]);
+
   return (
     <div className="relative w-full h-full group">
       <svg width={parentWidth} height={parentHeight}>
@@ -222,16 +301,6 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
                   strokeWidth={2}
                   strokeDasharray="4,4"
                 />
-                <text
-                  x={width + 4}
-                  y={yScale(specs.usl)}
-                  fill={chartColors.spec}
-                  fontSize={fonts.statLabel}
-                  textAnchor="start"
-                  dominantBaseline="middle"
-                >
-                  USL: {specs.usl.toFixed(1)}
-                </text>
               </g>
             )}
           {displayOptions.showSpecs !== false &&
@@ -251,16 +320,6 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
                   strokeWidth={2}
                   strokeDasharray="4,4"
                 />
-                <text
-                  x={width + 4}
-                  y={yScale(specs.lsl)}
-                  fill={chartColors.spec}
-                  fontSize={fonts.statLabel}
-                  textAnchor="start"
-                  dominantBaseline="middle"
-                >
-                  LSL: {specs.lsl.toFixed(1)}
-                </text>
               </g>
             )}
           {displayOptions.showSpecs !== false &&
@@ -280,16 +339,6 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
                   strokeWidth={1}
                   strokeDasharray="4,4"
                 />
-                <text
-                  x={width + 4}
-                  y={yScale(specs.target)}
-                  fill={chartColors.target}
-                  fontSize={fonts.statLabel}
-                  textAnchor="start"
-                  dominantBaseline="middle"
-                >
-                  Tgt: {specs.target.toFixed(1)}
-                </text>
               </g>
             )}
 
@@ -373,16 +422,6 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
                 strokeWidth={1}
                 strokeDasharray="4,4"
               />
-              <text
-                x={width + 4}
-                y={yScale(stats.ucl)}
-                fill="#64748b"
-                fontSize={fonts.statLabel}
-                textAnchor="start"
-                dominantBaseline="middle"
-              >
-                UCL: {stats.ucl.toFixed(1)}
-              </text>
 
               {/* LCL */}
               <line
@@ -394,16 +433,6 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
                 strokeWidth={1}
                 strokeDasharray="4,4"
               />
-              <text
-                x={width + 4}
-                y={yScale(stats.lcl)}
-                fill="#64748b"
-                fontSize={fonts.statLabel}
-                textAnchor="start"
-                dominantBaseline="middle"
-              >
-                LCL: {stats.lcl.toFixed(1)}
-              </text>
 
               {/* Mean */}
               <line
@@ -414,16 +443,6 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
                 stroke={chartColors.mean}
                 strokeWidth={1}
               />
-              <text
-                x={width + 4}
-                y={yScale(stats.mean)}
-                fill={chartColors.mean}
-                fontSize={fonts.statLabel}
-                textAnchor="start"
-                dominantBaseline="middle"
-              >
-                Mean: {stats.mean.toFixed(1)}
-              </text>
             </>
           )}
 
@@ -536,6 +555,24 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
             top={height + margin.bottom - sourceBarHeight}
             n={data.length}
           />
+
+          {/* Render Resolved Labels */}
+          {resolvedLabels.map((label, i) => (
+            <text
+              key={i}
+              x={width + 4}
+              y={label.y}
+              fill={label.fill}
+              fontSize={fonts.statLabel}
+              textAnchor="start"
+              dominantBaseline="middle"
+              onClick={label.onClick}
+              style={{ cursor: label.onClick ? 'pointer' : 'default' }}
+              className={label.onClick ? 'hover:opacity-80' : ''}
+            >
+              {label.text}
+            </text>
+          ))}
         </Group>
       </svg>
 

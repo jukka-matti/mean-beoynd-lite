@@ -6,6 +6,8 @@ import SettingsPanel from './components/SettingsPanel';
 import SavedProjectsModal from './components/SavedProjectsModal';
 import DataTableModal from './components/DataTableModal';
 import DataPanel from './components/DataPanel';
+import FunnelPanel from './components/FunnelPanel';
+import FunnelWindow, { openFunnelPopout } from './components/FunnelWindow';
 import ColumnMapping from './components/ColumnMapping';
 import Dashboard from './components/Dashboard';
 import HomeScreen from './components/HomeScreen';
@@ -39,7 +41,9 @@ function App() {
     importProject,
     setOutcome,
     setFactors,
+    setFilters,
     factors,
+    columnAliases,
   } = useData();
   const {
     handleFileUpload: ingestFile,
@@ -53,6 +57,7 @@ function App() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
   const [isDataPanelOpen, setIsDataPanelOpen] = useState(false);
+  const [isFunnelPanelOpen, setIsFunnelPanelOpen] = useState(false);
   const [highlightRowIndex, setHighlightRowIndex] = useState<number | null>(null);
   const [showExcludedOnly, setShowExcludedOnly] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -72,6 +77,8 @@ function App() {
 
   // Embed mode - hides header/footer for iframe embedding
   const [isEmbedMode, setIsEmbedMode] = useState(false);
+  // Funnel popout mode - renders only the FunnelWindow component
+  const [isFunnelPopoutMode, setIsFunnelPopoutMode] = useState(false);
   // Embed focus chart - when set, Dashboard shows only this chart
   const [embedFocusChart, setEmbedFocusChart] = useState<
     'ichart' | 'boxplot' | 'pareto' | 'stats' | null
@@ -107,13 +114,20 @@ function App() {
     return () => window.removeEventListener('resize', checkDesktop);
   }, []);
 
-  // Handle URL parameters on mount (?sample=xxx&embed=true&chart=ichart&tab=histogram)
+  // Handle URL parameters on mount (?sample=xxx&embed=true&chart=ichart&tab=histogram&view=funnel)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sampleKey = params.get('sample');
     const embedParam = params.get('embed');
     const chartParam = params.get('chart');
     const tabParam = params.get('tab');
+    const viewParam = params.get('view');
+
+    // Set funnel popout mode if specified
+    if (viewParam === 'funnel') {
+      setIsFunnelPopoutMode(true);
+      return; // Don't process other params in funnel mode
+    }
 
     // Set embed mode if specified
     if (embedParam === 'true') {
@@ -326,6 +340,47 @@ function App() {
     }
   }, [isDesktop]);
 
+  // Toggle funnel panel
+  const handleToggleFunnelPanel = useCallback(() => {
+    setIsFunnelPanelOpen(prev => !prev);
+  }, []);
+
+  // Close funnel panel
+  const handleCloseFunnelPanel = useCallback(() => {
+    setIsFunnelPanelOpen(false);
+  }, []);
+
+  // Apply filters from funnel panel
+  const handleApplyFunnelFilters = useCallback(
+    (filters: Record<string, (string | number)[]>) => {
+      setFilters(filters);
+      setIsFunnelPanelOpen(false);
+    },
+    [setFilters]
+  );
+
+  // Open funnel in popout window
+  const handleOpenFunnelPopout = useCallback(() => {
+    if (outcome) {
+      openFunnelPopout(rawData, factors, outcome, columnAliases);
+      setIsFunnelPanelOpen(false);
+    }
+  }, [rawData, factors, outcome, columnAliases]);
+
+  // Listen for messages from funnel popout window
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data?.type === 'FUNNEL_APPLY_FILTERS') {
+        setFilters(event.data.filters);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [setFilters]);
+
   // Close data table and clear highlight
   const handleCloseDataTable = useCallback(() => {
     setIsDataTableOpen(false);
@@ -368,6 +423,11 @@ function App() {
     setActiveView(view);
   }, []);
 
+  // Render only FunnelWindow in popout mode
+  if (isFunnelPopoutMode) {
+    return <FunnelWindow />;
+  }
+
   return (
     <div className="flex flex-col h-screen bg-surface text-content font-sans selection:bg-blue-500/30">
       {/* Hide header in embed mode */}
@@ -380,9 +440,11 @@ function App() {
           rowCount={rawData.length}
           isSaving={isSavingAny}
           isDataPanelOpen={isDataPanelOpen}
+          isFunnelPanelOpen={isFunnelPanelOpen}
           onSaveToBrowser={handleSaveToBrowser}
           onOpenProjects={() => setIsProjectsOpen(true)}
           onToggleDataPanel={handleToggleDataPanel}
+          onToggleFunnelPanel={handleToggleFunnelPanel}
           onOpenDataTable={() => {
             setHighlightRowIndex(null);
             setIsDataTableOpen(true);
@@ -543,6 +605,20 @@ function App() {
         isSaving={isSavingAny}
         hasUnsavedChanges={hasUnsavedChanges}
       />
+
+      {/* Funnel Panel (slide-in from right) */}
+      {outcome && (
+        <FunnelPanel
+          isOpen={isFunnelPanelOpen}
+          onClose={handleCloseFunnelPanel}
+          data={rawData}
+          factors={factors}
+          outcome={outcome}
+          columnAliases={columnAliases}
+          onApplyFilters={handleApplyFunnelFilters}
+          onOpenPopout={handleOpenFunnelPopout}
+        />
+      )}
 
       <SavedProjectsModal isOpen={isProjectsOpen} onClose={() => setIsProjectsOpen(false)} />
       <DataTableModal
