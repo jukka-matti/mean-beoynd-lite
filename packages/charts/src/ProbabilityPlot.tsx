@@ -19,13 +19,6 @@ const PROB_TICK_PERCENTILES = [1, 5, 10, 25, 50, 75, 90, 95, 99];
 const PROB_TICK_PERCENTILES_COMPACT = [5, 25, 50, 75, 95];
 
 /**
- * Normal PDF for standard normal distribution
- */
-function normalPDF(z: number): number {
-  return Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
-}
-
-/**
  * Calculate CI width at a given percentile for the fitted distribution
  * Uses asymptotic formula for percentile CI based on sample statistics
  *

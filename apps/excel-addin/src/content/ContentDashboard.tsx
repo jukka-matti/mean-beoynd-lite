@@ -240,6 +240,14 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
     }));
   }, [filteredData, sortedData, state.outcomeColumn, state.stageColumn]);
 
+  // Get the currently selected factor (with bounds checking)
+  // IMPORTANT: This must be declared before boxplotData and paretoData which depend on it
+  const selectedFactor = useMemo(() => {
+    if (!state.factorColumns?.length) return null;
+    const index = Math.min(selectedFactorIndex, state.factorColumns.length - 1);
+    return state.factorColumns[index];
+  }, [state.factorColumns, selectedFactorIndex]);
+
   // Prepare Boxplot data using shared grouping utility (uses selected factor)
   const boxplotData = useMemo(() => {
     if (!filteredData.length || !selectedFactor) return [];
@@ -286,13 +294,6 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
 
     return filteredData.map(d => Number(d[state.outcomeColumn])).filter(v => !isNaN(v));
   }, [filteredData, state.outcomeColumn]);
-
-  // Get the currently selected factor (with bounds checking)
-  const selectedFactor = useMemo(() => {
-    if (!state.factorColumns?.length) return null;
-    const index = Math.min(selectedFactorIndex, state.factorColumns.length - 1);
-    return state.factorColumns[index];
-  }, [state.factorColumns, selectedFactorIndex]);
 
   // Calculate factor variations for ALL factors (for auto-switch)
   const factorVariations = useMemo(() => {
