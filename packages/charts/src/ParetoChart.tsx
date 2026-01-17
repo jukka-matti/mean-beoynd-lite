@@ -5,11 +5,13 @@ import { scaleBand, scaleLinear } from '@visx/scale';
 import { AxisBottom, AxisLeft, AxisRight } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { withParentSize } from '@visx/responsive';
-import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
+import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import type { ParetoChartProps, ParetoDataPoint } from './types';
 import ChartSourceBar from './ChartSourceBar';
 import { chartColors, chromeColors } from './colors';
-import { useChartLayout } from './hooks';
+import { useChartLayout, useChartTooltip, useSelectionState } from './hooks';
+import { interactionStyles } from './styles/interactionStyles';
+import { getBarA11yProps } from './utils/accessibility';
 
 /**
  * Pareto Chart - Props-based version
@@ -34,8 +36,12 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
     showBranding,
   });
 
-  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
-    useTooltip<ParetoDataPoint>();
+  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltipAtCoords, hideTooltip } =
+    useChartTooltip<ParetoDataPoint>();
+
+  const { isSelected, getOpacity } = useSelectionState({
+    selectedKeys: selectedBars,
+  });
 
   const xScale = scaleBand({
     range: [0, width],
@@ -63,33 +69,25 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
           <GridRows scale={yScale} width={width} stroke={chromeColors.gridLine} />
 
           {/* Bars */}
-          {data.map((d, i) => {
-            const isSelected = selectedBars.includes(d.key);
-            const hasSelection = selectedBars.length > 0;
-
-            return (
-              <Bar
-                key={i}
-                x={xScale(d.key)}
-                y={yScale(d.value)}
-                width={xScale.bandwidth()}
-                height={height - yScale(d.value)}
-                fill={isSelected ? chartColors.selected : chromeColors.boxDefault}
-                rx={4}
-                onClick={() => onBarClick?.(d.key)}
-                onMouseOver={() =>
-                  showTooltip({
-                    tooltipLeft: (xScale(d.key) || 0) + xScale.bandwidth(),
-                    tooltipTop: yScale(d.value),
-                    tooltipData: d,
-                  })
-                }
-                onMouseLeave={hideTooltip}
-                className={onBarClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}
-                opacity={hasSelection && !isSelected ? 0.3 : 1}
-              />
-            );
-          })}
+          {data.map((d, i) => (
+            <Bar
+              key={i}
+              x={xScale(d.key)}
+              y={yScale(d.value)}
+              width={xScale.bandwidth()}
+              height={height - yScale(d.value)}
+              fill={isSelected(d.key) ? chartColors.selected : chromeColors.boxDefault}
+              rx={4}
+              onClick={() => onBarClick?.(d.key)}
+              onMouseOver={() =>
+                showTooltipAtCoords((xScale(d.key) || 0) + xScale.bandwidth(), yScale(d.value), d)
+              }
+              onMouseLeave={hideTooltip}
+              className={onBarClick ? interactionStyles.clickable : ''}
+              opacity={getOpacity(d.key)}
+              {...getBarA11yProps(d.key, d.value, onBarClick ? () => onBarClick(d.key) : undefined)}
+            />
+          ))}
 
           {/* 80% Reference Line */}
           <line

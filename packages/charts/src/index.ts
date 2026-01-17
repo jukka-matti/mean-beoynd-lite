@@ -63,6 +63,33 @@ export {
 // Layout hook
 export { useChartLayout, type UseChartLayoutOptions, type ChartLayout } from './hooks';
 
+// Interaction hooks
+export { useChartTooltip, type UseChartTooltipReturn } from './hooks';
+export {
+  useSelectionState,
+  selectionOpacity,
+  type UseSelectionStateOptions,
+  type UseSelectionStateReturn,
+} from './hooks';
+
+// Interaction styles
+export {
+  interactionStyles,
+  getInteractionClass,
+  interactionInlineStyles,
+  hoverOpacity,
+} from './styles/interactionStyles';
+
+// Accessibility utilities
+export {
+  getInteractiveA11yProps,
+  getDataPointA11yProps,
+  getBarA11yProps,
+  getBoxplotA11yProps,
+  getScatterPointA11yProps,
+  type InteractiveA11yProps,
+} from './utils/accessibility';
+
 // Shared components
 export { ChartTooltip, getTooltipStyle, type ChartTooltipProps } from './components/ChartTooltip';
 

@@ -4,11 +4,12 @@ import { scaleBand, scaleLinear } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { Bar } from '@visx/shape';
 import { withParentSize } from '@visx/responsive';
-import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
-import { localPoint } from '@visx/event';
+import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 import { chartColors, chromeColors } from './colors';
-import { useChartLayout } from './hooks';
+import { useChartLayout, useChartTooltip } from './hooks';
+import { interactionStyles } from './styles/interactionStyles';
+import { getBarA11yProps } from './utils/accessibility';
 
 export interface GageRRChartProps {
   /** % contribution from Part-to-Part */
@@ -71,8 +72,8 @@ const GageRRChartBase: React.FC<GageRRChartProps> = ({
     marginOverride: customMargin,
   });
 
-  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
-    useTooltip<BarData>();
+  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltipAtPoint, hideTooltip } =
+    useChartTooltip<BarData>();
 
   // Data for horizontal bars
   const barData: BarData[] = useMemo(
@@ -122,16 +123,6 @@ const GageRRChartBase: React.FC<GageRRChartProps> = ({
 
   if (parentWidth < 100 || parentHeight < 100) return null;
 
-  const handleMouseMove = (event: React.MouseEvent, data: BarData) => {
-    const coords = localPoint(event);
-    if (!coords) return;
-    showTooltip({
-      tooltipData: data,
-      tooltipLeft: coords.x,
-      tooltipTop: coords.y,
-    });
-  };
-
   return (
     <>
       <svg width={parentWidth} height={parentHeight}>
@@ -161,9 +152,10 @@ const GageRRChartBase: React.FC<GageRRChartProps> = ({
                   height={barHeight}
                   fill={d.color}
                   rx={4}
-                  style={{ cursor: 'pointer' }}
-                  onMouseMove={e => handleMouseMove(e, d)}
+                  className={interactionStyles.clickable}
+                  onMouseMove={e => showTooltipAtPoint(e, d)}
                   onMouseLeave={hideTooltip}
+                  {...getBarA11yProps(d.label, d.value)}
                 />
                 {/* Percentage label on right */}
                 <text

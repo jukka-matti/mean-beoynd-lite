@@ -5,12 +5,13 @@ import { AxisBottom, AxisLeft } from '@visx/axis';
 import { LinePath, Circle } from '@visx/shape';
 import { curveLinear } from '@visx/curve';
 import { withParentSize } from '@visx/responsive';
-import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
-import { localPoint } from '@visx/event';
+import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import type { GageRRInteraction } from '@variscout/core';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 import { chromeColors, operatorColors } from './colors';
-import { useChartLayout } from './hooks';
+import { useChartLayout, useChartTooltip } from './hooks';
+import { interactionStyles } from './styles/interactionStyles';
+import { getInteractiveA11yProps } from './utils/accessibility';
 
 export interface InteractionPlotProps {
   /** Interaction data from Gage R&R result */
@@ -56,8 +57,8 @@ const InteractionPlotBase: React.FC<InteractionPlotProps> = ({
     marginOverride: customMargin,
   });
 
-  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
-    useTooltip<GageRRInteraction>();
+  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltipAtPoint, hideTooltip } =
+    useChartTooltip<GageRRInteraction>();
 
   // Extract unique parts and operators
   const parts = useMemo(() => [...new Set(data.map(d => d.part))], [data]);
@@ -118,16 +119,6 @@ const InteractionPlotBase: React.FC<InteractionPlotProps> = ({
 
   if (parentWidth < 100 || parentHeight < 100 || data.length === 0) return null;
 
-  const handleMouseMove = (event: React.MouseEvent, point: GageRRInteraction) => {
-    const coords = localPoint(event);
-    if (!coords) return;
-    showTooltip({
-      tooltipData: point,
-      tooltipLeft: coords.x,
-      tooltipTop: coords.y,
-    });
-  };
-
   return (
     <>
       <svg width={parentWidth} height={parentHeight}>
@@ -158,9 +149,10 @@ const InteractionPlotBase: React.FC<InteractionPlotProps> = ({
               fill={colorScale(d.operator)}
               stroke={chromeColors.pointStroke}
               strokeWidth={1}
-              style={{ cursor: 'pointer' }}
-              onMouseMove={e => handleMouseMove(e, d)}
+              className={interactionStyles.clickable}
+              onMouseMove={e => showTooltipAtPoint(e, d)}
               onMouseLeave={hideTooltip}
+              {...getInteractiveA11yProps(`${d.operator} × ${d.part}: ${d.mean.toFixed(3)}`)}
             />
           ))}
 

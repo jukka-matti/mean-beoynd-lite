@@ -5,13 +5,15 @@ import { scaleLinear } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { withParentSize } from '@visx/responsive';
-import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
+import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { getStageBoundaries, type StatsResult } from '@variscout/core';
 import type { IChartProps, StageBoundary } from './types';
 import { getResponsiveTickCount } from './responsive';
 import ChartSourceBar from './ChartSourceBar';
 import { chartColors, chromeColors } from './colors';
-import { useChartLayout } from './hooks';
+import { useChartLayout, useChartTooltip } from './hooks';
+import { interactionStyles } from './styles/interactionStyles';
+import { getDataPointA11yProps, getInteractiveA11yProps } from './utils/accessibility';
 
 /**
  * I-Chart (Individual Control Chart) - Props-based version
@@ -36,8 +38,8 @@ const IChartBase: React.FC<IChartProps> = ({
   onSpecClick,
   onYAxisClick,
 }) => {
-  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
-    useTooltip<{ x: number; y: number; index: number; stage?: string }>();
+  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltipAtCoords, hideTooltip } =
+    useChartTooltip<{ x: number; y: number; index: number; stage?: string }>();
 
   const { fonts, margin, width, height, sourceBarHeight } = useChartLayout({
     parentWidth,
@@ -323,9 +325,12 @@ const IChartBase: React.FC<IChartProps> = ({
                   fontSize={fonts.statLabel}
                   textAnchor="start"
                   dominantBaseline="middle"
-                  style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                  className={onSpecClick ? interactionStyles.clickableSubtle : ''}
                   onClick={() => onSpecClick?.('usl')}
-                  className={onSpecClick ? 'hover:opacity-70' : ''}
+                  {...getInteractiveA11yProps(
+                    'Edit USL',
+                    onSpecClick ? () => onSpecClick('usl') : undefined
+                  )}
                 >
                   USL: {specs.usl.toFixed(1)}
                 </text>
@@ -350,9 +355,12 @@ const IChartBase: React.FC<IChartProps> = ({
                   fontSize={fonts.statLabel}
                   textAnchor="start"
                   dominantBaseline="middle"
-                  style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                  className={onSpecClick ? interactionStyles.clickableSubtle : ''}
                   onClick={() => onSpecClick?.('lsl')}
-                  className={onSpecClick ? 'hover:opacity-70' : ''}
+                  {...getInteractiveA11yProps(
+                    'Edit LSL',
+                    onSpecClick ? () => onSpecClick('lsl') : undefined
+                  )}
                 >
                   LSL: {specs.lsl.toFixed(1)}
                 </text>
@@ -377,9 +385,12 @@ const IChartBase: React.FC<IChartProps> = ({
                   fontSize={fonts.statLabel}
                   textAnchor="start"
                   dominantBaseline="middle"
-                  style={{ cursor: onSpecClick ? 'pointer' : 'default' }}
+                  className={onSpecClick ? interactionStyles.clickableSubtle : ''}
                   onClick={() => onSpecClick?.('target')}
-                  className={onSpecClick ? 'hover:opacity-70' : ''}
+                  {...getInteractiveA11yProps(
+                    'Edit Target',
+                    onSpecClick ? () => onSpecClick('target') : undefined
+                  )}
                 >
                   Tgt: {specs.target.toFixed(1)}
                 </text>
@@ -407,16 +418,23 @@ const IChartBase: React.FC<IChartProps> = ({
               fill={getPointColor(d.y, d.stage)}
               stroke={chromeColors.pointStroke}
               strokeWidth={1}
-              className={onPointClick ? 'cursor-pointer hover:opacity-80' : ''}
+              className={onPointClick ? interactionStyles.clickable : ''}
               onClick={() => onPointClick?.(i, d.originalIndex)}
               onMouseOver={() =>
-                showTooltip({
-                  tooltipLeft: xScale(d.x),
-                  tooltipTop: yScale(d.y),
-                  tooltipData: { x: d.x, y: d.y, index: i, stage: d.stage },
+                showTooltipAtCoords(xScale(d.x), yScale(d.y), {
+                  x: d.x,
+                  y: d.y,
+                  index: i,
+                  stage: d.stage,
                 })
               }
               onMouseLeave={hideTooltip}
+              {...getDataPointA11yProps(
+                'Observation',
+                d.y,
+                i,
+                onPointClick ? () => onPointClick(i, d.originalIndex) : undefined
+              )}
             />
           ))}
 
@@ -457,9 +475,9 @@ const IChartBase: React.FC<IChartProps> = ({
               width={margin.left - 20}
               height={height}
               fill="transparent"
-              style={{ cursor: 'pointer' }}
-              className="hover:fill-blue-500/10 transition-colors"
+              className={`${interactionStyles.clickable} hover:fill-blue-500/10`}
               onClick={onYAxisClick}
+              {...getInteractiveA11yProps('Edit Y-axis scale', onYAxisClick)}
             >
               <title>Click to edit Y-axis scale</title>
             </rect>

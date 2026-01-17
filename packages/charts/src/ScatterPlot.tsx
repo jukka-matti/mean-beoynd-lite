@@ -5,13 +5,14 @@ import { AxisLeft, AxisBottom } from '@visx/axis';
 import { LinePath, Circle } from '@visx/shape';
 import { withParentSize } from '@visx/responsive';
 import { GridRows, GridColumns } from '@visx/grid';
-import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
-import { localPoint } from '@visx/event';
+import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import type { RegressionResult } from '@variscout/core';
 import type { BaseChartProps, SpecLimits } from './types';
 import ChartSourceBar from './ChartSourceBar';
 import { chartColors, chromeColors } from './colors';
-import { useChartLayout } from './hooks';
+import { useChartLayout, useChartTooltip } from './hooks';
+import { interactionStyles } from './styles/interactionStyles';
+import { getScatterPointA11yProps } from './utils/accessibility';
 
 interface TooltipData {
   x: number;
@@ -89,8 +90,8 @@ const ScatterPlotBase: React.FC<ScatterPlotProps> = ({
     showBranding,
   });
 
-  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
-    useTooltip<TooltipData>();
+  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltipAtPoint, hideTooltip } =
+    useChartTooltip<TooltipData>();
 
   const { points, linear, quadratic, recommendedFit, strengthRating } = regression;
 
@@ -160,20 +161,6 @@ const ScatterPlotBase: React.FC<ScatterPlotProps> = ({
 
   const rSquared =
     recommendedFit === 'quadratic' && quadratic ? quadratic.rSquared : linear.rSquared;
-
-  const handleMouseMove = (
-    event: React.MouseEvent,
-    point: { x: number; y: number },
-    index: number
-  ) => {
-    const coords = localPoint(event);
-    if (!coords) return;
-    showTooltip({
-      tooltipData: { x: point.x, y: point.y, index },
-      tooltipLeft: coords.x,
-      tooltipTop: coords.y,
-    });
-  };
 
   return (
     <>
@@ -257,9 +244,10 @@ const ScatterPlotBase: React.FC<ScatterPlotProps> = ({
               fill={chartColors.pass}
               stroke="#fff"
               strokeWidth={1}
-              style={{ cursor: 'pointer' }}
-              onMouseMove={e => handleMouseMove(e, p, i)}
+              className={interactionStyles.clickable}
+              onMouseMove={e => showTooltipAtPoint(e, { x: p.x, y: p.y, index: i })}
               onMouseLeave={hideTooltip}
+              {...getScatterPointA11yProps(p.x, p.y, i)}
             />
           ))}
 

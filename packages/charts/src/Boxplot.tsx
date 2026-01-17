@@ -3,11 +3,13 @@ import { Group } from '@visx/group';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { withParentSize } from '@visx/responsive';
-import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
+import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import type { BoxplotProps, BoxplotGroupData } from './types';
 import ChartSourceBar from './ChartSourceBar';
 import { chartColors, chromeColors } from './colors';
-import { useChartLayout } from './hooks';
+import { useChartLayout, useChartTooltip, useSelectionState } from './hooks';
+import { interactionStyles } from './styles/interactionStyles';
+import { getBoxplotA11yProps } from './utils/accessibility';
 
 /** Default threshold for high variation highlight (50%) */
 const DEFAULT_VARIATION_THRESHOLD = 50;
@@ -42,8 +44,12 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
     showBranding,
   });
 
-  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
-    useTooltip<BoxplotGroupData>();
+  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltipAtCoords, hideTooltip } =
+    useChartTooltip<BoxplotGroupData>();
+
+  const { isSelected, getOpacity } = useSelectionState({
+    selectedKeys: selectedGroups,
+  });
 
   // Calculate Y domain from data
   const yDomain = useMemo(() => {
@@ -133,24 +139,21 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
           {data.map((d, i) => {
             const x = xScale(d.key) || 0;
             const barWidth = xScale.bandwidth();
-            const isSelected = selectedGroups.includes(d.key);
-            const hasSelection = selectedGroups.length > 0;
-            const opacity = hasSelection && !isSelected ? 0.3 : 1;
 
             return (
               <Group
                 key={i}
                 onClick={() => onBoxClick?.(d.key)}
-                onMouseOver={() =>
-                  showTooltip({
-                    tooltipLeft: x + barWidth,
-                    tooltipTop: yScale(d.median),
-                    tooltipData: d,
-                  })
-                }
+                onMouseOver={() => showTooltipAtCoords(x + barWidth, yScale(d.median), d)}
                 onMouseLeave={hideTooltip}
-                className={onBoxClick ? 'cursor-pointer' : ''}
-                opacity={opacity}
+                className={onBoxClick ? interactionStyles.clickable : ''}
+                opacity={getOpacity(d.key)}
+                {...getBoxplotA11yProps(
+                  d.key,
+                  d.median,
+                  d.values.length,
+                  onBoxClick ? () => onBoxClick(d.key) : undefined
+                )}
               >
                 {/* Transparent capture rect for better clickability */}
                 <rect x={x - 5} y={0} width={barWidth + 10} height={height} fill="transparent" />
@@ -191,8 +194,8 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
                   y={yScale(d.q3)}
                   width={barWidth}
                   height={Math.abs(yScale(d.q1) - yScale(d.q3))}
-                  fill={isSelected ? chartColors.selected : chromeColors.boxDefault}
-                  stroke={isSelected ? chartColors.selectedBorder : chromeColors.boxBorder}
+                  fill={isSelected(d.key) ? chartColors.selected : chromeColors.boxDefault}
+                  stroke={isSelected(d.key) ? chartColors.selectedBorder : chromeColors.boxBorder}
                   rx={2}
                 />
 
