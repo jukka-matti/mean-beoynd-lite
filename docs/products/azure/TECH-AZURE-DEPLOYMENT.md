@@ -13,7 +13,7 @@ Storage:        SharePoint / OneDrive (team file sharing)
 Auth:           Azure AD (SSO with existing accounts)
 Users:          Unlimited
 Branding:       Custom logo, colors, domain
-Price:          €999/year license + ~€10-20/month Azure hosting
+Price:          €999/year per tenant + ~€10-20/month Azure hosting
 Distribution:   Azure Marketplace
 ```
 
@@ -36,7 +36,7 @@ The Azure app includes all PWA analysis features:
 ### Individual vs Azure
 
 ```
-PWA INDIVIDUAL (€49/year)          AZURE DEPLOYMENT (€999/year)
+PWA INDIVIDUAL (€49/year)          AZURE DEPLOYMENT (€999/year per tenant)
 ─────────────────────────────────────────────────────────────────
 
 Storage:    Browser only            SharePoint/OneDrive

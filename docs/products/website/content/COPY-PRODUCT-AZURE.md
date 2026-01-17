@@ -187,7 +187,7 @@ headline: 'Pricing'
 tier:
   name: 'Azure Deployment'
   price: '€999'
-  period: '/year'
+  period: '/year per tenant'
   features:
     - 'Unlimited users'
     - 'Custom domain'
