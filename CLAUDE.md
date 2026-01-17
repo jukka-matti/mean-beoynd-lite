@@ -90,6 +90,7 @@ variscout-lite/
 | `packages/hooks/src/useVariationTracking.ts`        | Cumulative variation tracking (η²)                        |
 | `packages/hooks/src/useKeyboardNavigation.ts`       | Keyboard navigation (arrow keys, focus management)        |
 | `packages/hooks/src/useResponsiveChartMargins.ts`   | Dynamic chart margins based on container width            |
+| `packages/hooks/src/useDataState.ts`                | Shared DataContext state (used by PWA & Azure)            |
 | `apps/pwa/src/context/DataContext.tsx`              | Central state management                                  |
 | `apps/pwa/src/context/ThemeContext.tsx`             | Theme state (light/dark/system, company accent)           |
 | `packages/core/src/edition.ts`                      | Edition detection, `isThemingEnabled()` feature gate      |

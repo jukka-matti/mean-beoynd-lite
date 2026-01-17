@@ -5,9 +5,15 @@
 ```
 packages/
 ├── core/      # @variscout/core - Pure logic, glossary (no React)
-├── charts/    # @variscout/charts - React + Visx components
+├── charts/    # @variscout/charts - React + Visx components, useChartTheme
 ├── data/      # @variscout/data - Sample datasets with pre-computed chart data
-├── hooks/     # @variscout/hooks - Shared React hooks (drill-down, scale, tracking)
+├── hooks/     # @variscout/hooks - Shared React hooks:
+│              #   useChartScale - Y-axis scale calculation
+│              #   useDrillDown - Drill-down navigation with breadcrumbs
+│              #   useVariationTracking - Cumulative η² tracking
+│              #   useDataState - Shared DataContext state management
+│              #   useKeyboardNavigation - Arrow key focus management
+│              #   useResponsiveChartMargins - Dynamic chart margins
 └── ui/        # @variscout/ui - HelpTooltip, useGlossary, colors, hooks
 
 apps/

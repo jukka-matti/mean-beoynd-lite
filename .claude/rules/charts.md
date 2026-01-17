@@ -49,6 +49,44 @@ operatorColors; // 8-color array for operators/categories
 
 **Never hardcode hex values** - always use color constants.
 
+## Theme-Aware Colors
+
+Charts support automatic theme switching via the `useChartTheme` hook:
+
+### useChartTheme Hook
+
+```typescript
+import { useChartTheme } from '@variscout/charts';
+
+const MyChart = () => {
+  const { isDark, chrome, fontScale } = useChartTheme();
+
+  // Use chrome.xxx instead of hardcoded hex colors:
+  // chrome.gridLine, chrome.axisPrimary, chrome.labelPrimary, etc.
+};
+```
+
+Returns:
+
+- `isDark: boolean` - Whether dark theme is active
+- `chrome: ChromeColorValues` - Theme-appropriate chrome colors
+- `fontScale: number` - Font scale from `data-chart-scale` attribute
+
+### Color Functions
+
+- `getChromeColors(isDark)` - Get appropriate chrome colors for theme
+- `getDocumentTheme()` - Detect theme from `data-theme` attribute
+
+### Chrome Color Mapping
+
+| Dark Theme | Light Theme | Property                |
+| ---------- | ----------- | ----------------------- |
+| `#1e293b`  | `#f1f5f9`   | `chrome.gridLine`       |
+| `#94a3b8`  | `#64748b`   | `chrome.axisPrimary`    |
+| `#64748b`  | `#94a3b8`   | `chrome.axisSecondary`  |
+| `#cbd5e1`  | `#334155`   | `chrome.labelPrimary`   |
+| `#94a3b8`  | `#64748b`   | `chrome.labelSecondary` |
+
 ## Branding
 
 - `ChartSourceBar` component for footer branding

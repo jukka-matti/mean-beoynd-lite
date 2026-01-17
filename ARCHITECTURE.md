@@ -438,7 +438,53 @@ Components use `window.innerWidth` with resize listeners to conditionally render
 - `SpecEditor.tsx`: Renders as bottom sheet below 640px
 - `AppHeader.tsx`: Shows mobile menu button below 640px
 
-## 9. Building & Deployment
+## 9. Theme System
+
+VariScout supports light/dark theming for Licensed editions via a coordinated system:
+
+### Theme Detection
+
+Theme is controlled via the `data-theme` attribute on `<html>`:
+
+- `data-theme="dark"` - Dark mode (default for Community/ITC)
+- `data-theme="light"` - Light mode (Licensed edition only)
+
+### Chart Theme Hook
+
+Charts use `useChartTheme` from `@variscout/charts` to get theme-aware colors:
+
+```typescript
+import { useChartTheme } from '@variscout/charts';
+
+const MyChart = () => {
+  const { isDark, chrome, fontScale } = useChartTheme();
+
+  // chrome.gridLine, chrome.axisPrimary, etc. adjust automatically
+};
+```
+
+### Color Architecture
+
+| Layer         | Location                                | Purpose                    |
+| ------------- | --------------------------------------- | -------------------------- |
+| Theme Context | `apps/pwa/src/context/ThemeContext.tsx` | User preference storage    |
+| Edition Gate  | `packages/core/src/edition.ts`          | `isThemingEnabled()` check |
+| Chart Colors  | `packages/charts/src/colors.ts`         | `getChromeColors(isDark)`  |
+| Theme Hook    | `packages/charts/src/useChartTheme.ts`  | Reactive theme state       |
+
+### Chrome Colors
+
+UI chrome (axes, labels, grid lines) uses theme-aware colors via `getChromeColors()`:
+
+| Property       | Dark      | Light     |
+| -------------- | --------- | --------- |
+| `gridLine`     | `#1e293b` | `#f1f5f9` |
+| `axisPrimary`  | `#94a3b8` | `#64748b` |
+| `labelPrimary` | `#cbd5e1` | `#334155` |
+
+Data colors (`chartColors.pass`, `chartColors.fail`, etc.) remain constant across themes.
+
+## 10. Building & Deployment
 
 ### Development
 
@@ -480,7 +526,7 @@ Deploy `apps/pwa/dist/` to any static host (Netlify, GitHub Pages, S3, etc.)
 
 Deploy `apps/excel-addin/dist/` to any HTTPS host (required for Office Add-ins). Update `manifest.xml` with production URLs.
 
-## 10. Excel Add-in Architecture
+## 11. Excel Add-in Architecture
 
 The Excel Add-in uses a **Hybrid Approach**: native Excel slicers for filtering combined with Visx charts in a Content Add-in.
 
@@ -505,7 +551,7 @@ Configuration is persisted in Excel document via Custom Document Properties, all
 
 > **See also:** [docs/concepts/EXCEL_ADDIN_STRATEGY.md](docs/concepts/EXCEL_ADDIN_STRATEGY.md) for the full strategic analysis.
 
-## 11. Variation Tracking Architecture
+## 12. Variation Tracking Architecture
 
 VariScout implements **cumulative variation tracking** to help users identify the most impactful factors during drill-down analysis. This feature is shared across all platforms.
 
@@ -576,7 +622,7 @@ The `@variscout/charts` `BoxplotBase` component accepts optional `variationPct` 
 
 > **Detailed documentation:** [docs/products/pwa/VARIATION_TRACKING.md](docs/products/pwa/VARIATION_TRACKING.md)
 
-## 12. Performance Budget
+## 13. Performance Budget
 
 | Metric              | Budget          |
 | ------------------- | --------------- |
@@ -587,7 +633,7 @@ The `@variscout/charts` `BoxplotBase` component accepts optional `variationPct` 
 | CLS                 | < 0.1           |
 | Time to Interactive | < 3s            |
 
-## 12. Browser Support
+## 14. Browser Support
 
 | Browser | Minimum Version |
 | ------- | --------------- |
