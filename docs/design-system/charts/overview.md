@@ -55,6 +55,23 @@ All charts use a dark theme matching the application:
 | **GageRRChart**     | Variance breakdown          | Horizontal bars, threshold lines            |
 | **InteractionPlot** | Factor interaction          | Multi-series lines                          |
 
+### I-Chart Data Point Coloring
+
+The I-Chart uses a Minitab-style 2-color scheme for clarity:
+
+| Color | Hex       | Condition                               |
+| ----- | --------- | --------------------------------------- |
+| Blue  | `#3b82f6` | Point is in-control (passes all checks) |
+| Red   | `#ef4444` | Point has any violation                 |
+
+**Violation check order:**
+
+1. Spec limit violations (`value > USL` or `value < LSL`)
+2. Control limit violations (`value > UCL` or `value < LCL`)
+3. Nelson Rule 2 (9+ consecutive points on same side of center line)
+
+See [colors.md](colors.md) for implementation details and graded data handling.
+
 ## Common Elements
 
 ### Spec Limit Lines

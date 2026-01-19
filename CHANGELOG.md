@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **I-Chart Nelson Rule 2 Detection**: Automatic detection of process shifts
+  - Points flagged red when 9+ consecutive points fall on same side of center line
+  - Works with staged mode (per-stage detection using each stage's mean)
+  - Minitab-style 2-color scheme: blue (in-control) / red (any violation)
+  - Violations include: spec limits, control limits, and Nelson Rule 2
+
 - **Staged I-Chart**: Divide I-Chart into distinct phases with separate control limits per stage
   - Available in PWA, Azure Team App, and Excel Add-in
   - Column-based stage definition (select any categorical column with 2-10 unique values)

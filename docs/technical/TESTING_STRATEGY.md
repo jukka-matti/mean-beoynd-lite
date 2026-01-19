@@ -81,16 +81,17 @@ To run agentic tests, issue a prompt to the agent:
 
 ### @variscout/core (140+ test cases)
 
-| Function/Module         | Tested | Cases                                                    |
-| :---------------------- | :----- | :------------------------------------------------------- |
-| `calculateStats()`      | ✅     | Basic stats, Cp/Cpk, one-sided specs, empty data         |
-| `calculateAnova()`      | ✅     | Significant/non-significant, group stats, eta-squared    |
-| `calculateRegression()` | ✅     | Linear, quadratic, weak relationships, optimum detection |
-| `calculateGageRR()`     | ✅     | Excellent/unacceptable systems, variance components      |
-| `license.ts`            | ✅     | Format validation, checksum verification, edge cases     |
-| `parser.ts`             | ✅     | CSV/Excel parsing, auto-mapping, validation, data types  |
-| `export.ts`             | ✅     | CSV generation, special characters, escaping             |
-| `edition.ts`            | ✅     | Edition detection, feature flags, theming gates          |
+| Function/Module                   | Tested | Cases                                                                   |
+| :-------------------------------- | :----- | :---------------------------------------------------------------------- |
+| `calculateStats()`                | ✅     | Basic stats, Cp/Cpk, one-sided specs, empty data                        |
+| `calculateAnova()`                | ✅     | Significant/non-significant, group stats, eta-squared                   |
+| `calculateRegression()`           | ✅     | Linear, quadratic, weak relationships, optimum detection                |
+| `calculateGageRR()`               | ✅     | Excellent/unacceptable systems, variance components                     |
+| `getNelsonRule2ViolationPoints()` | ✅     | Run detection, edge cases (8 vs 9 points), mean breaks run, staged mode |
+| `license.ts`                      | ✅     | Format validation, checksum verification, edge cases                    |
+| `parser.ts`                       | ✅     | CSV/Excel parsing, auto-mapping, validation, data types                 |
+| `export.ts`                       | ✅     | CSV generation, special characters, escaping                            |
+| `edition.ts`                      | ✅     | Edition detection, feature flags, theming gates                         |
 
 ### @variscout/pwa (25+ test cases)
 
@@ -228,6 +229,41 @@ apps/azure/
 
 ---
 
+## Feature-Specific Agent Protocols
+
+Specific prompts to use with the Antigravity Browser Agent for verifying complex features.
+
+### 1. Staged Analysis Verification
+
+**Goal:** Verify the Staged I-Chart correctly calculates and displays separate control limits for each phase.
+
+**Agent Prompt:**
+
+> "Load the 'Process Changes' sample (or any dataset with a categorical column). In the Dashboard header, select the categorical column (e.g., 'Phase' or 'Machine') in the 'Stage' dropdown. Verify that the I-Chart updates to show vertical dashed dividers between stages, and that the UCL, Mean, and LCL lines change values at each stage boundary. Confirm that points are colored according to their specific stage's limits."
+
+**Success Criteria:**
+
+- [ ] Vertical dashed lines separate stages
+- [ ] Control limit steps (changes in level) at boundaries
+- [ ] Stage labels visible at top of chart
+
+### 2. PWA Embed Mode Verification
+
+**Goal:** Verify the PWA renders correctly when embedded (hidden chrome, message listening).
+
+**Agent Prompt:**
+
+> "Open the PWA with the URL parameters `?embed=true&sample=coffee`. Verify that the application header (navigation) and footer are completely hidden. Check that the chart area maximizes to fill the viewport. Verify that clicking the chart still works (though it might not trigger internal navigation if in pure embed mode)."
+
+**Success Criteria:**
+
+- [ ] No header/toolbar visible
+- [ ] No footer visible
+- [ ] Charts render full-width/height
+- [ ] No console errors related to missing context
+
+---
+
 ## Agent-Verified QA Checklist
 
 Instead of a manual checklist, assign the following tasks to the Agent for release verification:
@@ -236,6 +272,8 @@ Instead of a manual checklist, assign the following tasks to the Agent for relea
 
 - [ ] **Smoke Test**: Launch PWA, ensuring it loads without console errors.
 - [ ] **Data Flow**: Load sample data, edit a cell, verify stats update.
+- [ ] **Staged Analysis**: Enable staging on a sample dataset, verify control limit split.
+- [ ] **Embed Mode**: Load `?embed=true`, verify UI chrome is removed.
 - [ ] **Visual Check**: Take screenshots of I-Charts and generic charts; check for layout shifts.
 - [ ] **Persistence**: Reload page, ensure data remains.
 - [ ] **Export**: Generate a PDF/CSV and verify file existence (if environment permits).
