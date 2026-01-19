@@ -5,7 +5,7 @@
 ```
 packages/
 ├── core/      # @variscout/core - Pure logic, glossary (no React)
-├── charts/    # @variscout/charts - React + Visx components, useChartTheme
+├── charts/    # @variscout/charts - React + Visx (standard + Performance charts), useChartTheme
 ├── data/      # @variscout/data - Sample datasets with pre-computed chart data
 ├── hooks/     # @variscout/hooks - Shared React hooks:
 │              #   useChartScale - Y-axis scale calculation

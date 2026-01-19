@@ -93,6 +93,28 @@ Returns:
 - `getSourceBarHeight(showBranding)` for margin calculations
 - Controlled by edition system in `@variscout/core`
 
+## Performance Charts (Multi-Measure Analysis)
+
+Performance charts analyze multiple measurement channels (fill heads, cavities, nozzles):
+
+| Component               | Base Export                 | Purpose                           |
+| ----------------------- | --------------------------- | --------------------------------- |
+| `PerformanceIChart`     | `PerformanceIChartBase`     | Cpk scatter plot by channel       |
+| `PerformanceBoxplot`    | `PerformanceBoxplotBase`    | Distribution comparison (max 5)   |
+| `PerformancePareto`     | `PerformanceParetoBase`     | Cpk ranking, worst first (max 20) |
+| `PerformanceCapability` | `PerformanceCapabilityBase` | Single channel histogram          |
+
+**Props pattern:**
+
+- All accept `channels: ChannelResult[]` from `@variscout/core`
+- Support `selectedMeasure` for drill-down highlighting
+- Use `onChannelClick` callback for selection
+
+**Cross-app usage:**
+
+- PWA/Azure: Use responsive wrapper (auto-sizing)
+- Excel: Use Base variant (explicit sizing with darkTheme tokens)
+
 ## Adding New Charts
 
 1. Create `NewChart.tsx` with `NewChartBase` export

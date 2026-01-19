@@ -47,6 +47,7 @@ Pure TypeScript logic with no React dependencies. Can be used by any JavaScript/
 - `stats.ts` - Statistical calculations (mean, stdDev, Cp, Cpk, calculateConformance, groupDataByFactor, getEtaSquared)
 - `parser.ts` - CSV/Excel file parsing
 - `navigation.ts` - Drill-down navigation types and utilities (DrillAction, BreadcrumbItem, thresholds)
+- `performance.ts` - Multi-channel performance calculations (Cpk per channel, health classification)
 - `glossary/` - Glossary system (`glossaryTerms`, `getTerm`, `getTermsByCategory`, `hasTerm`)
 - `variation.ts` - Cumulative variation tracking (calculateDrillVariation, calculateFactorVariations, shouldHighlightDrill)
 - `license.ts` - License key validation (offline, checksum-based)
@@ -84,6 +85,10 @@ Props-based React components using Visx for data visualization. All components a
 - `CapabilityHistogram.tsx` - Distribution with spec limits
 - `ProbabilityPlot.tsx` - Normal probability plot
 - `ChartSourceBar.tsx` - Branding footer component
+- `PerformanceIChart.tsx` - Multi-channel Cpk scatter with `PerformanceIChartBase`
+- `PerformanceBoxplot.tsx` - Distribution comparison with `PerformanceBoxplotBase`
+- `PerformancePareto.tsx` - Cpk ranking (worst-first) with `PerformanceParetoBase`
+- `PerformanceCapability.tsx` - Single channel histogram with `PerformanceCapabilityBase`
 
 **Utilities:**
 
