@@ -28,6 +28,11 @@ The Azure app includes all PWA analysis features:
 - **Boxplot** with factor comparison and ANOVA
 - **Pareto Chart** for defect categorization
 - **Capability Analysis** (Cp/Cpk, histogram, probability plot)
+- **Performance Mode**: Multi-measure analysis with Cpk by channel
+  - I-Chart showing Cpk across all measures
+  - Boxplot for selected or worst measures
+  - Pareto ranking measures by Cpk
+  - Drill-down to standard I-Chart for detailed analysis
 
 ---
 

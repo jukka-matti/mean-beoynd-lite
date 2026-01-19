@@ -40,6 +40,8 @@ Copy charts to clipboard         ✅          ✅
 Insert charts into Excel         ✅          ✅
 Write stats to cells             ✅          ✅
 FilterBar (breadcrumb display)   ✅          ✅
+Performance Mode (multi-measure) ✅          ✅
+Drill to standard I-Chart        ✅          ✅
 ─────────────────────────────────────────────────────────────────
 Save settings in workbook        ❌          ✅
 Save spec limits                 ❌          ✅
@@ -946,6 +948,21 @@ The Excel Add-in supports staged I-Chart analysis for comparing process phases:
 - Shift or time period comparisons
 
 See [Staged Analysis User Guide](../pwa/STAGED_ANALYSIS.md) for detailed usage patterns.
+
+### Performance Mode
+
+Excel add-in supports Performance Mode for multi-measure analysis:
+
+- **I-Chart**: Cpk scatter plot by measure
+- **Boxplot**: Distribution comparison for worst channels
+- **Pareto**: Measure ranking (worst first)
+- **Capability**: Single measure histogram
+
+**Drill-Down Navigation**
+
+When a measure is selected, click "View in I-Chart →" to navigate to the standard dashboard. A "Back to Performance" banner appears for return navigation.
+
+**Note:** State sync uses Custom Document Properties with ~2s polling latency.
 
 ---
 
