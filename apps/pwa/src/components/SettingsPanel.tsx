@@ -10,6 +10,9 @@ import {
   BarChart3,
   TrendingUp,
   Target,
+  Gauge,
+  Activity,
+  Settings,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useTheme, type ChartFontScale } from '../context/ThemeContext';
@@ -23,7 +26,7 @@ import {
   removeLicenseKey,
 } from '../lib/license';
 
-type AnalysisView = 'dashboard' | 'regression' | 'gagerr';
+type AnalysisView = 'dashboard' | 'regression' | 'gagerr' | 'performance';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -33,6 +36,7 @@ interface SettingsPanelProps {
   onOpenProjects: () => void;
   onNewAnalysis: () => void;
   onSaveProject: () => void;
+  onConfigurePerformance?: () => void;
   isSaving?: boolean;
   hasUnsavedChanges?: boolean;
 }
@@ -45,10 +49,19 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onOpenProjects,
   onNewAnalysis,
   onSaveProject,
+  onConfigurePerformance,
   isSaving = false,
   hasUnsavedChanges = false,
 }) => {
-  const { displayOptions, setDisplayOptions } = useData();
+  const {
+    displayOptions,
+    setDisplayOptions,
+    isPerformanceMode,
+    setPerformanceMode,
+    measureColumns,
+    setMeasureColumns,
+    measureLabel,
+  } = useData();
   const { theme, setTheme } = useTheme();
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -223,6 +236,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 label="Gage R&R"
                 description="Measurement system analysis"
               />
+              <ViewOption
+                view="performance"
+                icon={<Gauge size={18} />}
+                label="Performance"
+                description="Multi-channel Cpk analysis"
+              />
             </div>
           </div>
 
@@ -296,6 +315,108 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   <span className="text-xs text-content-muted">Process capability index</span>
                 </div>
               </label>
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={localDisplayOptions.showContributionLabels ?? false}
+                  onChange={e =>
+                    setLocalDisplayOptions({
+                      ...localDisplayOptions,
+                      showContributionLabels: e.target.checked,
+                    })
+                  }
+                  className="mt-0.5 w-4 h-4 rounded border-edge-secondary bg-surface text-blue-500 focus:ring-blue-500 focus:ring-offset-surface-secondary"
+                />
+                <div>
+                  <span className="text-sm text-content group-hover:text-white transition-colors block">
+                    Show contribution labels
+                  </span>
+                  <span className="text-xs text-content-muted">
+                    Impact % below boxplot categories
+                  </span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-surface-tertiary" />
+
+          {/* Performance Mode Section */}
+          <div>
+            <h3 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-3">
+              Performance Mode
+            </h3>
+            <div className="bg-surface/50 rounded-lg p-3 border border-edge space-y-3">
+              {/* Toggle */}
+              <label className="flex items-center justify-between cursor-pointer group">
+                <div className="flex items-center gap-2">
+                  <Activity size={16} className="text-content-secondary" />
+                  <div>
+                    <span className="text-sm text-content group-hover:text-white transition-colors block">
+                      Multi-Measure Analysis
+                    </span>
+                    <span className="text-xs text-content-muted">
+                      Cpk comparison across measures
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className={`relative w-10 h-6 rounded-full transition-colors ${
+                    isPerformanceMode ? 'bg-blue-600' : 'bg-surface-tertiary'
+                  }`}
+                  onClick={() => {
+                    if (isPerformanceMode) {
+                      setPerformanceMode(false);
+                    } else if (measureColumns.length >= 3) {
+                      setPerformanceMode(true);
+                    } else if (onConfigurePerformance) {
+                      onConfigurePerformance();
+                      onClose();
+                    }
+                  }}
+                >
+                  <div
+                    className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                      isPerformanceMode ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </div>
+              </label>
+
+              {/* Measure count indicator */}
+              {measureColumns.length > 0 && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-content-muted">
+                    {measureColumns.length} {measureLabel.toLowerCase()}s configured
+                  </span>
+                  {onConfigurePerformance && (
+                    <button
+                      onClick={() => {
+                        onConfigurePerformance();
+                        onClose();
+                      }}
+                      className="text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                    >
+                      <Settings size={12} />
+                      Configure
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {measureColumns.length === 0 && onConfigurePerformance && (
+                <button
+                  onClick={() => {
+                    onConfigurePerformance();
+                    onClose();
+                  }}
+                  className="w-full text-xs text-content-muted hover:text-white py-2 text-center border border-dashed border-edge hover:border-blue-500 rounded-lg transition-colors"
+                >
+                  Configure measure columns
+                </button>
+              )}
             </div>
           </div>
 

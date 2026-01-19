@@ -25,6 +25,8 @@ interface BoxplotProps {
   onDrillDown?: (factor: string, value: string) => void;
   /** Variation % explained by this factor (for drill suggestion indicator) */
   variationPct?: number;
+  /** Category contributions - Map from category key to % of total variation */
+  categoryContributions?: Map<string | number, number>;
 }
 
 const Boxplot = ({
@@ -33,6 +35,7 @@ const Boxplot = ({
   parentHeight,
   onDrillDown,
   variationPct,
+  categoryContributions,
 }: BoxplotProps) => {
   const { chrome } = useChartTheme();
   // Determine if this factor should be highlighted as a drill target
@@ -311,6 +314,33 @@ const Boxplot = ({
             })}
           />
 
+          {/* Contribution Labels (below X-axis) */}
+          {displayOptions.showContributionLabels &&
+            categoryContributions &&
+            data.map(d => {
+              const contribution = categoryContributions.get(d.key);
+              if (contribution === undefined) return null;
+              const x = xScale(d.key) || 0;
+              const barWidth = xScale.bandwidth();
+              return (
+                <text
+                  key={`contrib-${d.key}`}
+                  x={x + barWidth / 2}
+                  y={height + (parentWidth < 400 ? 24 : 28)}
+                  textAnchor="middle"
+                  fill={
+                    contribution >= VARIATION_THRESHOLDS.HIGH_IMPACT
+                      ? '#f87171'
+                      : chrome.labelSecondary
+                  }
+                  fontSize={fonts.statLabel}
+                  fontWeight={contribution >= VARIATION_THRESHOLDS.HIGH_IMPACT ? 600 : 400}
+                >
+                  {Math.round(contribution)}%
+                </text>
+              );
+            })}
+
           {/* Custom Clickable Axis Label with Variation Indicator */}
           <Group onClick={() => setIsEditingLabel(true)} className="cursor-pointer group/label2">
             <text
@@ -362,6 +392,36 @@ const Boxplot = ({
           />
         </Group>
       </svg>
+
+      {/* Tooltip */}
+      {tooltipOpen && tooltipData && (
+        <TooltipWithBounds
+          left={margin.left + (tooltipLeft ?? 0)}
+          top={margin.top + (tooltipTop ?? 0)}
+          style={{
+            ...defaultStyles,
+            backgroundColor: chrome.tooltipBg,
+            color: chrome.tooltipText,
+            border: `1px solid ${chrome.tooltipBorder}`,
+            borderRadius: 6,
+            padding: '8px 12px',
+            fontSize: fonts.tooltipText,
+          }}
+        >
+          <div>
+            <strong>{factorLabels[tooltipData.key] || tooltipData.key}</strong>
+          </div>
+          <div>Median: {tooltipData.median.toFixed(2)}</div>
+          <div>Q1: {tooltipData.q1.toFixed(2)}</div>
+          <div>Q3: {tooltipData.q3.toFixed(2)}</div>
+          {categoryContributions && categoryContributions.has(tooltipData.key) && (
+            <div style={{ color: '#f87171', fontWeight: 500, marginTop: 4 }}>
+              Impact: {Math.round(categoryContributions.get(tooltipData.key) ?? 0)}% of total
+              variation
+            </div>
+          )}
+        </TooltipWithBounds>
+      )}
 
       {/* In-Place Label Editor Popover */}
       {isEditingLabel && (

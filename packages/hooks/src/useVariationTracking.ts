@@ -5,6 +5,7 @@ import {
   drillStackToFilters,
   calculateDrillVariation,
   calculateFactorVariations,
+  calculateCategoryContributions,
   applyFilters,
 } from '@variscout/core';
 
@@ -35,6 +36,13 @@ export interface VariationTrackingResult {
    * Factors with > 50% variation should be highlighted in charts
    */
   factorVariations: Map<string, number>;
+
+  /**
+   * Map of factor -> category contributions
+   * For each factor, shows how much each category contributes to TOTAL variation
+   * Used to show "this category alone contributes X% of total variation" in tooltips
+   */
+  categoryContributions: Map<string, Map<string | number, number>>;
 }
 
 /**
@@ -98,8 +106,38 @@ export function useVariationTracking(
     return calculateFactorVariations(filteredData, factors, outcome, drilledFactors);
   }, [rawData, drillStack, outcome, factors]);
 
+  // Calculate category contributions for each factor
+  const categoryContributions = useMemo(() => {
+    const contributions = new Map<string, Map<string | number, number>>();
+
+    if (!outcome || rawData.length < 2) {
+      return contributions;
+    }
+
+    // Get the current filtered data based on drill stack
+    const currentFilters = drillStackToFilters(drillStack);
+    const filteredData = applyFilters(rawData, currentFilters);
+
+    if (filteredData.length < 2) {
+      return contributions;
+    }
+
+    // Calculate contributions for each factor
+    for (const factor of factors) {
+      const result = calculateCategoryContributions(filteredData, factor, outcome);
+      if (result) {
+        contributions.set(factor, result.contributions);
+      }
+    }
+
+    return contributions;
+  }, [rawData, drillStack, outcome, factors]);
+
   // Calculate breadcrumbs with variation percentages
-  const result = useMemo((): Omit<VariationTrackingResult, 'factorVariations'> => {
+  const result = useMemo((): Omit<
+    VariationTrackingResult,
+    'factorVariations' | 'categoryContributions'
+  > => {
     const emptyRoot: BreadcrumbItem = {
       id: 'root',
       label: 'All Data',
@@ -172,6 +210,7 @@ export function useVariationTracking(
   return {
     ...result,
     factorVariations,
+    categoryContributions,
   };
 }
 

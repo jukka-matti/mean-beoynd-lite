@@ -9,10 +9,11 @@ import type {
   GradeTier,
   StagedStatsResult,
   StageBoundary,
+  ChannelResult,
 } from '@variscout/core';
 
 // Re-export types from core for convenience
-export type { SpecLimits, GradeTier, StagedStatsResult, StageBoundary };
+export type { SpecLimits, GradeTier, StagedStatsResult, StageBoundary, ChannelResult };
 
 /**
  * Y-axis domain override for locking scale to full dataset
@@ -184,6 +185,10 @@ export interface BoxplotProps extends BaseChartProps {
   variationPct?: number;
   /** Threshold for "high variation" highlight (default: 50) */
   variationThreshold?: number;
+  /** Category contributions - Map from category key to % of total variation */
+  categoryContributions?: Map<string | number, number>;
+  /** Show contribution labels below boxes (default: false) */
+  showContributionLabels?: boolean;
 }
 
 /**
@@ -287,4 +292,62 @@ export interface ChartFonts {
   statLabel: number;
   tooltipText: number;
   brandingText: number;
+}
+
+// ============================================================================
+// Performance Chart Types
+// ============================================================================
+
+/**
+ * PerformanceIChart props - Cpk scatter plot by channel
+ */
+export interface PerformanceIChartProps extends BaseChartProps {
+  /** Channel results with Cpk values */
+  channels: ChannelResult[];
+  /** Currently selected measure/channel */
+  selectedMeasure?: string | null;
+  /** Callback when a channel point is clicked */
+  onChannelClick?: (channelId: string) => void;
+  /** Which capability metric to display: 'cpk' (default) or 'cp' */
+  capabilityMetric?: 'cp' | 'cpk';
+}
+
+/**
+ * PerformanceBoxplot props - Distribution comparison for channels
+ */
+export interface PerformanceBoxplotProps extends BaseChartProps {
+  /** Channel results with values for boxplot calculation */
+  channels: ChannelResult[];
+  /** Specification limits for reference lines */
+  specs: SpecLimits;
+  /** Currently selected measure/channel (shows only this channel when set) */
+  selectedMeasure?: string | null;
+  /** Maximum number of channels to display (default: 5) */
+  maxDisplayed?: number;
+  /** Callback when a boxplot is clicked */
+  onChannelClick?: (channelId: string) => void;
+}
+
+/**
+ * PerformancePareto props - Cpk ranking chart (worst first)
+ */
+export interface PerformanceParetoProps extends BaseChartProps {
+  /** Channel results for ranking */
+  channels: ChannelResult[];
+  /** Currently selected measure/channel */
+  selectedMeasure?: string | null;
+  /** Maximum number of channels to display (default: 20) */
+  maxDisplayed?: number;
+  /** Callback when a bar is clicked */
+  onChannelClick?: (channelId: string) => void;
+}
+
+/**
+ * PerformanceCapability props - Histogram for selected channel
+ */
+export interface PerformanceCapabilityProps extends BaseChartProps {
+  /** Single channel result to display (null shows placeholder) */
+  channel: ChannelResult | null;
+  /** Specification limits for reference lines */
+  specs: SpecLimits;
 }

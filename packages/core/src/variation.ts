@@ -363,6 +363,118 @@ export function findOptimalFactors(
 }
 
 /**
+ * Result of category contribution calculation
+ */
+export interface CategoryContributionResult {
+  /**
+   * Map from category value to percentage of total variation
+   * Sum of all percentages equals the factor's η² percentage
+   */
+  contributions: Map<string | number, number>;
+
+  /**
+   * Total factor η² (sum of all category contributions as decimal)
+   */
+  factorEtaSquared: number;
+
+  /**
+   * Total SS for reference
+   */
+  ssTotal: number;
+}
+
+/**
+ * Calculate how much each category within a factor contributes to TOTAL variation
+ *
+ * This provides insight into which specific category (e.g., Bed_3 vs Bed_1)
+ * is responsible for the majority of the variation explained by the factor.
+ *
+ * Formula:
+ * - Category contribution = n_i × (category_mean - overall_mean)²
+ * - Category % of total = (category_contribution / SS_total) × 100
+ *
+ * Note: Sum of all category %s = factor η² (since SS_between = Σ category_contributions)
+ *
+ * @param data - Array of data rows
+ * @param factor - Column name for the grouping variable
+ * @param outcome - Column name for the numeric outcome variable
+ * @returns CategoryContributionResult with map of category -> % contribution
+ *
+ * @example
+ * const result = calculateCategoryContributions(data, 'Drying_Bed', 'Moisture_pct');
+ * // result.contributions.get('Bed_3') = 65 -> Bed_3 alone contributes 65% of total variation
+ * // result.contributions.get('Bed_1') = 10 -> Bed_1 contributes 10% of total variation
+ */
+export function calculateCategoryContributions(
+  data: DataRow[],
+  factor: string,
+  outcome: string
+): CategoryContributionResult | null {
+  if (data.length < 2) {
+    return null;
+  }
+
+  // Calculate overall mean
+  const outcomeValues = data
+    .map(d => toNumericValue(d[outcome]))
+    .filter((v): v is number => v !== undefined);
+
+  if (outcomeValues.length < 2) {
+    return null;
+  }
+
+  const overallMean = outcomeValues.reduce((a, b) => a + b, 0) / outcomeValues.length;
+
+  // Calculate SS_total
+  const ssTotal = outcomeValues.reduce((sum, val) => sum + Math.pow(val - overallMean, 2), 0);
+
+  if (ssTotal === 0) {
+    return null;
+  }
+
+  // Group data by factor
+  const groups = new Map<string | number, number[]>();
+
+  for (const row of data) {
+    const factorValue = row[factor];
+    const outcomeValue = toNumericValue(row[outcome]);
+
+    if (factorValue !== undefined && factorValue !== null && outcomeValue !== undefined) {
+      const key = factorValue as string | number;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(outcomeValue);
+    }
+  }
+
+  // Calculate contribution for each category
+  const contributions = new Map<string | number, number>();
+  let ssBetween = 0;
+
+  for (const [categoryValue, values] of groups) {
+    if (values.length === 0) continue;
+
+    const categoryMean = values.reduce((a, b) => a + b, 0) / values.length;
+    const categoryContribution = values.length * Math.pow(categoryMean - overallMean, 2);
+
+    // Convert to percentage of total variation
+    const contributionPct = (categoryContribution / ssTotal) * 100;
+    contributions.set(categoryValue, contributionPct);
+
+    ssBetween += categoryContribution;
+  }
+
+  const factorEtaSquared = ssBetween / ssTotal;
+
+  return {
+    contributions,
+    factorEtaSquared,
+    ssTotal,
+  };
+}
+
+/**
  * Find the best value (category) for a factor based on deviation from overall mean
  * This identifies which category of the factor contributes most to variation
  */

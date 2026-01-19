@@ -20,13 +20,14 @@ import { useData } from '../context/DataContext';
 import { calculateAnova, type AnovaResult, getNextDrillFactor } from '@variscout/core';
 import useVariationTracking from '../hooks/useVariationTracking';
 import useDrillDown from '../hooks/useDrillDown';
-import { Activity, Copy, Check, Maximize2, Layers } from 'lucide-react';
+import { Activity, Copy, Check, Maximize2, Layers, ArrowLeft } from 'lucide-react';
 import type { StageOrderMode } from '@variscout/core';
 import { toBlob } from 'html-to-image';
 
 import type { ChartId, HighlightIntensity } from '../hooks/useEmbedMessaging';
+import PerformanceDashboard from './PerformanceDashboard';
 
-type AnalysisView = 'dashboard' | 'regression' | 'gagerr';
+type AnalysisView = 'dashboard' | 'regression' | 'gagerr' | 'performance';
 
 const MOBILE_BREAKPOINT = 640; // sm breakpoint
 
@@ -51,6 +52,10 @@ interface DashboardProps {
   activeView?: AnalysisView;
   // Highlighted point index from data panel (bi-directional sync)
   highlightedPointIndex?: number | null;
+  // Drill navigation from Performance Mode
+  drillFromPerformance?: string | null;
+  onBackToPerformance?: () => void;
+  onDrillToMeasure?: (measureId: string) => void;
 }
 
 const Dashboard = ({
@@ -67,6 +72,9 @@ const Dashboard = ({
   onSpecEditorOpened,
   activeView = 'dashboard',
   highlightedPointIndex,
+  drillFromPerformance,
+  onBackToPerformance,
+  onDrillToMeasure,
 }: DashboardProps) => {
   const {
     outcome,
@@ -101,6 +109,7 @@ const Dashboard = ({
     breadcrumbsWithVariation: breadcrumbItems,
     cumulativeVariationPct,
     factorVariations,
+    categoryContributions,
   } = useVariationTracking(rawData, drillStack, outcome, factors);
 
   // Responsive mobile detection
@@ -474,9 +483,36 @@ const Dashboard = ({
         </div>
       )}
 
+      {/* Performance View */}
+      {activeView === 'performance' && (
+        <div className="flex-1 overflow-hidden">
+          <ErrorBoundary componentName="Performance Dashboard">
+            <PerformanceDashboard onDrillToMeasure={onDrillToMeasure} />
+          </ErrorBoundary>
+        </div>
+      )}
+
       {/* Dashboard View (default) */}
       {activeView === 'dashboard' && (
         <div className="flex-1 flex flex-col min-h-0">
+          {/* Back to Performance banner when drilled from Performance Mode */}
+          {drillFromPerformance && onBackToPerformance && (
+            <div className="flex items-center justify-between px-4 py-2 bg-blue-600/20 border-b border-blue-600/30">
+              <div className="flex items-center gap-2 text-blue-300 text-sm">
+                <Activity size={14} />
+                <span>
+                  Viewing: <span className="font-medium text-white">{drillFromPerformance}</span>
+                </span>
+              </div>
+              <button
+                onClick={onBackToPerformance}
+                className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-300 hover:text-white hover:bg-blue-600/30 rounded transition-colors"
+              >
+                <ArrowLeft size={12} />
+                Back to Performance
+              </button>
+            </div>
+          )}
           {!focusedChart ? (
             // Scrollable Layout
             <div className="flex flex-col gap-4 p-4">
@@ -652,6 +688,7 @@ const Dashboard = ({
                             factor={boxplotFactor}
                             onDrillDown={handleDrillDown}
                             variationPct={factorVariations.get(boxplotFactor)}
+                            categoryContributions={categoryContributions?.get(boxplotFactor)}
                           />
                         )}
                       </ErrorBoundary>

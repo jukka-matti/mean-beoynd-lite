@@ -26,6 +26,13 @@ export type {
   StageOrderMode,
   StagedStatsResult,
   StageBoundary,
+  // Performance Module Types
+  ChannelHealth,
+  ChannelInfo,
+  ChannelResult,
+  PerformanceSummary,
+  ChannelPerformanceData,
+  WideFormatDetection,
 } from './types';
 
 // Statistics
@@ -44,6 +51,8 @@ export {
   sortDataByStage,
   calculateStatsByStage,
   getStageBoundaries,
+  // Nelson rules
+  getNelsonRule2ViolationPoints,
 } from './stats';
 
 // License
@@ -82,10 +91,36 @@ export type {
   ColumnIssue,
   DataQualityReport,
   ParetoRow,
+  DetectChannelsOptions,
+  DetectWideFormatOptions,
 } from './parser';
 
 // Parser functions
-export { parseCSV, parseExcel, detectColumns, validateData, parseParetoFile } from './parser';
+export {
+  parseCSV,
+  parseExcel,
+  detectColumns,
+  validateData,
+  parseParetoFile,
+  // Wide format detection
+  detectChannelColumns,
+  detectWideFormat,
+} from './parser';
+
+// Performance Module
+export {
+  CPK_THRESHOLDS,
+  CHANNEL_LIMITS,
+  getChannelHealth,
+  calculateChannelStats,
+  calculateChannelPerformance,
+  sortChannels,
+  filterChannelsByHealth,
+  getChannelsNeedingAttention,
+  getWorstChannels,
+  getBestChannels,
+  type ChannelSortBy,
+} from './performance';
 
 // Navigation
 export type {
@@ -115,11 +150,17 @@ export {
 } from './navigation';
 
 // Variation tracking
-export type { DrillVariationResult, DrillLevelVariation, OptimalFactorResult } from './variation';
+export type {
+  DrillVariationResult,
+  DrillLevelVariation,
+  OptimalFactorResult,
+  CategoryContributionResult,
+} from './variation';
 
 export {
   calculateDrillVariation,
   calculateFactorVariations,
+  calculateCategoryContributions,
   shouldHighlightDrill,
   applyFilters,
   getNextDrillFactor,

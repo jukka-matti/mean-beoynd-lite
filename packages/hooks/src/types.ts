@@ -93,6 +93,8 @@ export interface DisplayOptions {
   lockYAxisToFullData?: boolean;
   /** Show control limits (UCL/Mean/LCL) on I-Chart (default: true) */
   showControlLimits?: boolean;
+  /** Show category contribution labels below boxplot boxes (default: false) */
+  showContributionLabels?: boolean;
 }
 
 /**

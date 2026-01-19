@@ -33,6 +33,8 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
   sampleSize,
   variationPct,
   variationThreshold = DEFAULT_VARIATION_THRESHOLD,
+  categoryContributions,
+  showContributionLabels = false,
 }) => {
   // Determine if this factor should be highlighted as a drill target
   const isHighVariation = variationPct !== undefined && variationPct >= variationThreshold;
@@ -266,6 +268,31 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
             })}
           />
 
+          {/* Contribution Labels (below X-axis) */}
+          {showContributionLabels &&
+            categoryContributions &&
+            data.map(d => {
+              const contribution = categoryContributions.get(d.key);
+              if (contribution === undefined) return null;
+              const x = xScale(d.key) || 0;
+              const barWidth = xScale.bandwidth();
+              return (
+                <text
+                  key={`contrib-${d.key}`}
+                  x={x + barWidth / 2}
+                  y={height + (parentWidth < 400 ? 24 : 28)}
+                  textAnchor="middle"
+                  fill={
+                    contribution >= variationThreshold ? '#f87171' : chromeColors.labelSecondary
+                  }
+                  fontSize={fonts.statLabel}
+                  fontWeight={contribution >= variationThreshold ? 600 : 400}
+                >
+                  {Math.round(contribution)}%
+                </text>
+              );
+            })}
+
           {/* X-Axis Label with Variation Indicator */}
           <text
             x={width / 2}
@@ -326,6 +353,12 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
           <div>Q1: {tooltipData.q1.toFixed(2)}</div>
           <div>Q3: {tooltipData.q3.toFixed(2)}</div>
           <div>n: {tooltipData.values.length}</div>
+          {categoryContributions && categoryContributions.has(tooltipData.key) && (
+            <div style={{ color: '#f87171', fontWeight: 500, marginTop: 4 }}>
+              Impact: {Math.round(categoryContributions.get(tooltipData.key) ?? 0)}% of total
+              variation
+            </div>
+          )}
         </TooltipWithBounds>
       )}
     </>
