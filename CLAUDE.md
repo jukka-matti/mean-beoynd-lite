@@ -107,6 +107,8 @@ variscout-lite/
 | `apps/pwa/src/components/MeasureColumnSelector.tsx`    | Checkbox list for selecting measure columns                    |
 | `apps/pwa/src/components/PerformanceSetupPanel.tsx`    | Setup panel for multi-measure analysis                         |
 | `apps/pwa/src/components/PerformanceDetectedModal.tsx` | Auto-detection modal for wide-format data                      |
+| `apps/pwa/src/components/PerformanceDashboard.tsx`     | Performance Mode dashboard (Cp/Cpk toggle, drill navigation)   |
+| `apps/pwa/src/components/Dashboard.tsx`                | Main dashboard (drillFromPerformance, onBackToPerformance)     |
 | `apps/pwa/src/components/views/`                       | Extracted view components (chart containers)                   |
 | `apps/azure/src/context/DataContext.tsx`               | Azure app central state (mirrors PWA)                          |
 | `apps/azure/src/services/storage.ts`                   | Offline-first storage + OneDrive sync                          |

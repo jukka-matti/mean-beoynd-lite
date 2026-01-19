@@ -170,6 +170,198 @@ Show DataQualityBanner in ColumnMapping
 
 ---
 
+## Wide-Format (Multi-Measure) Data Detection
+
+VariScout can automatically detect wide-format data with multiple measurement channels (e.g., fill heads, valves, nozzles) and prompt users to enable Performance Mode.
+
+### Detection Mechanism
+
+The `detectWideFormat()` function in `parser.ts` analyzes data to identify multi-channel structures:
+
+1. **Find numeric columns** - Identify columns with >90% numeric values
+2. **Exclude metadata** - Skip known metadata patterns (date, batch, operator, etc.)
+3. **Match channel patterns** - Check if column names follow channel naming conventions
+4. **Assess data consistency** - Check if ranges are similar across potential channels
+
+### Channel Naming Patterns
+
+Columns matching these patterns are recognized as measurement channels:
+
+```
+V1, V2, V3...            # V + number
+Valve_1, Valve-1         # Valve prefix
+Head_1, Head1            # Head prefix
+Channel_1, Ch1           # Channel prefix
+Nozzle_01, Nozzle-1      # Nozzle prefix
+Cavity_1, Die_1          # Injection molding
+Station_1, Cell_1        # Manufacturing
+1, 2, 3...               # Plain numbers
+```
+
+### Confidence Levels
+
+| Confidence | Criteria                                       |
+| ---------- | ---------------------------------------------- |
+| `high`     | ≥50% of numeric columns match channel patterns |
+| `medium`   | ≥5 numeric columns with consistent data ranges |
+| `low`      | Meets minimum (3) but no clear channel pattern |
+
+### Detection Options
+
+```typescript
+interface DetectWideFormatOptions {
+  minChannels?: number; // Minimum channels required (default: 3)
+  patternMatchThreshold?: number; // Pattern match ratio for high confidence (default: 0.5)
+  numericThreshold?: number; // Required numeric ratio (default: 0.9)
+}
+```
+
+### Return Type
+
+```typescript
+interface WideFormatDetection {
+  isWideFormat: boolean; // True if wide format detected with sufficient confidence
+  channels: ChannelInfo[]; // Detected channel columns with preview stats
+  metadataColumns: string[]; // Non-channel columns (date, batch, etc.)
+  confidence: 'high' | 'medium' | 'low';
+  reason: string; // Explanation of detection result
+}
+
+interface ChannelInfo {
+  id: string; // Column name
+  label: string; // Display name
+  n: number; // Valid value count
+  preview: { min: number; max: number; mean: number };
+  matchedPattern: boolean; // True if name matches channel pattern
+}
+```
+
+### Integration with useDataIngestion
+
+The `useDataIngestion` hook triggers wide-format detection after file upload:
+
+```typescript
+const { handleFileUpload } = useDataIngestion({
+  onWideFormatDetected: (detection: WideFormatDetection) => {
+    // Show PerformanceDetectedModal to user
+    setShowPerformanceModal(true);
+    setPendingDetection(detection);
+  },
+});
+```
+
+The callback fires when:
+
+- Detection confidence is `high` or `medium`
+- At least 3 channel columns are found
+- User hasn't dismissed the prompt before
+
+### User Flow
+
+```
+File Upload
+    │
+    ▼
+detectWideFormat(data)
+    │
+    ├─► confidence: high/medium
+    │       │
+    │       ▼
+    │   PerformanceDetectedModal
+    │       │
+    │       ├─► "Enable" → Performance Mode
+    │       │       • setPerformanceMode(true)
+    │       │       • setMeasureColumns(channels)
+    │       │       • setMeasureLabel(label)
+    │       │
+    │       └─► "Not Now" → Standard Mode
+    │
+    └─► confidence: low → Continue to ColumnMapping
+```
+
+### Components
+
+| Component                  | Purpose                                        |
+| -------------------------- | ---------------------------------------------- |
+| `PerformanceDetectedModal` | Auto-detection prompt after file upload        |
+| `PerformanceSetupPanel`    | Manual configuration (inline or modal)         |
+| `MeasureColumnSelector`    | Checkbox list with preview stats for selection |
+
+### Performance Mode Features
+
+#### Cp/Cpk Metric Toggle
+
+The Performance I-Chart displays capability metrics with a toggle to switch between:
+
+- **Cpk** (default) - Process capability index accounting for centering
+- **Cp** - Potential capability (spread only, ignores centering)
+
+Toggle location: Top-right of the I-Chart header in Performance Mode.
+Tooltip always shows both Cp and Cpk values regardless of selected metric.
+
+```typescript
+// In PerformanceDashboard.tsx
+const [capabilityMetric, setCapabilityMetric] = useState<'cp' | 'cpk'>('cpk');
+
+// Passed to chart component
+<PerformanceIChart capabilityMetric={capabilityMetric} ... />
+```
+
+#### Drill-Down to Standard I-Chart
+
+When a measure is selected in Performance Mode, users can drill down to the standard I-Chart for detailed analysis:
+
+1. Click any channel point in the Performance I-Chart to select it
+2. "View in I-Chart →" button appears in the chart header
+3. Click to navigate to standard dashboard with that measure as the outcome variable
+4. "Back to Performance" banner shows at the top for return navigation
+
+**Navigation Flow:**
+
+```
+Performance Mode → Click channel → "View in I-Chart" button
+                                         │
+                                         ▼
+                          Standard Dashboard (measure as outcome)
+                                         │
+                                         ├─► "Back to Performance" → Performance Mode
+                                         │
+                                         └─► Continue with standard analysis
+```
+
+**State Management (App.tsx):**
+
+```typescript
+// Track drill navigation origin
+const [drillFromPerformance, setDrillFromPerformance] = useState<string | null>(null);
+
+// Drill to measure
+const handleDrillToMeasure = useCallback(
+  (measureId: string) => {
+    setDrillFromPerformance(measureId);
+    setOutcome(measureId);
+    setActiveView('dashboard');
+  },
+  [setOutcome]
+);
+
+// Return to Performance
+const handleBackToPerformance = useCallback(() => {
+  setDrillFromPerformance(null);
+  setActiveView('performance');
+}, []);
+```
+
+**Dashboard Props:**
+
+| Prop                   | Type                          | Purpose                            |
+| ---------------------- | ----------------------------- | ---------------------------------- |
+| `drillFromPerformance` | `string \| null`              | Measure ID if drilled from Perf    |
+| `onBackToPerformance`  | `() => void`                  | Callback to return to Perf Mode    |
+| `onDrillToMeasure`     | `(measureId: string) => void` | Callback to drill to standard view |
+
+---
+
 ## Pareto Data Sources
 
 ### Derived Mode (Default)
@@ -278,20 +470,23 @@ const ROW_HARD_LIMIT = 50000;
 
 ### parser.ts
 
-| Function                      | Purpose                                        |
-| ----------------------------- | ---------------------------------------------- |
-| `parseCSV(file)`              | Parse CSV file to array of objects             |
-| `parseExcel(file)`            | Parse Excel file to array of objects           |
-| `detectColumns(data)`         | Auto-detect column roles with keyword matching |
-| `validateData(data, outcome)` | Validate rows and return quality report        |
-| `parseParetoFile(file)`       | Parse separate Pareto file to ParetoRow[]      |
+| Function                      | Purpose                                         |
+| ----------------------------- | ----------------------------------------------- |
+| `parseCSV(file)`              | Parse CSV file to array of objects              |
+| `parseExcel(file)`            | Parse Excel file to array of objects            |
+| `detectColumns(data)`         | Auto-detect column roles with keyword matching  |
+| `validateData(data, outcome)` | Validate rows and return quality report         |
+| `parseParetoFile(file)`       | Parse separate Pareto file to ParetoRow[]       |
+| `detectWideFormat(data)`      | Auto-detect multi-channel wide format data      |
+| `detectChannelColumns(data)`  | Find numeric columns that appear to be channels |
 
 ### useDataIngestion.ts
 
-| Function                       | Purpose                      |
-| ------------------------------ | ---------------------------- |
-| `handleFileUpload(e)`          | Main file upload handler     |
-| `handleParetoFileUpload(file)` | Separate Pareto file handler |
-| `clearParetoFile()`            | Reset to derived Pareto mode |
-| `loadSample(sample)`           | Load sample dataset          |
-| `clearData()`                  | Reset all data state         |
+| Function                       | Purpose                                    |
+| ------------------------------ | ------------------------------------------ |
+| `handleFileUpload(e)`          | Main file upload handler                   |
+| `handleParetoFileUpload(file)` | Separate Pareto file handler               |
+| `clearParetoFile()`            | Reset to derived Pareto mode               |
+| `loadSample(sample)`           | Load sample dataset                        |
+| `clearData()`                  | Reset all data state                       |
+| `onWideFormatDetected`         | Callback when wide format data is detected |
