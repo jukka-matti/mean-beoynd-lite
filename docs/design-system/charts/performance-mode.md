@@ -6,12 +6,12 @@ Multi-measure analysis charts for comparing performance across multiple measurem
 
 Performance Mode enables analysis of wide-format data with multiple measurement columns (fill heads, cavities, nozzles, etc.). These charts help identify which channels need attention and how they compare.
 
-| Component               | Purpose                     | Max Channels |
-| ----------------------- | --------------------------- | ------------ |
-| `PerformanceIChart`     | Cpk scatter plot by channel | Unlimited    |
-| `PerformanceBoxplot`    | Distribution comparison     | 5            |
-| `PerformancePareto`     | Cpk ranking (worst first)   | 20           |
-| `PerformanceCapability` | Single channel histogram    | 1            |
+| Component               | Purpose                     | Normal | Maximized |
+| ----------------------- | --------------------------- | ------ | --------- |
+| `PerformanceIChart`     | Cpk scatter plot by channel | All    | All       |
+| `PerformanceBoxplot`    | Distribution comparison     | 5      | All       |
+| `PerformancePareto`     | Cpk ranking (worst first)   | 20     | 50        |
+| `PerformanceCapability` | Single channel histogram    | 1      | 1         |
 
 **Source:** `packages/charts/src/Performance*.tsx`
 
@@ -301,6 +301,46 @@ const [selectedMeasure, setSelectedMeasure] = useState<string | null>(null);
   />
 )}
 ```
+
+---
+
+## Focus Mode
+
+Performance charts support maximize/fullscreen mode for detailed analysis of all channels.
+
+### Activation
+
+- Click the maximize button (⤢) in each chart panel header
+- Chart expands to full viewport with navigation arrows
+
+### Keyboard Navigation
+
+| Key       | Action               |
+| --------- | -------------------- |
+| `←` / `→` | Cycle between charts |
+| `Escape`  | Exit focus mode      |
+
+Navigation arrows appear on hover at screen edges.
+
+### Display Limits
+
+When maximized, display limits increase to show more data:
+
+| Chart                   | Normal | Maximized |
+| ----------------------- | ------ | --------- |
+| `PerformanceBoxplot`    | 5      | All       |
+| `PerformancePareto`     | 20     | 50        |
+| `PerformanceIChart`     | All    | All       |
+| `PerformanceCapability` | 1      | 1         |
+
+### Implementation
+
+Focus Mode is implemented in the Performance Dashboard components:
+
+- **PWA:** `apps/pwa/src/components/PerformanceDashboard.tsx`
+- **Azure:** `apps/azure/src/components/PerformanceDashboard.tsx`
+
+State management uses `focusedChart` to track the currently maximized panel (or `null` for normal view).
 
 ---
 
