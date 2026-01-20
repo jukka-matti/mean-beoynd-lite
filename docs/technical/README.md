@@ -8,15 +8,22 @@ Technical specifications for VaRiScout implementation. These documents are desig
 
 ## Documents
 
-| Document                                | Description                                                      |
-| --------------------------------------- | ---------------------------------------------------------------- |
-| `PWA_STORAGE.md`                        | IndexedDB schema, project storage, offline capability            |
-| `TESTING_STRATEGY.md`                   | Testing philosophy, patterns, ownership by package (incl. Azure) |
-| `DATA_INPUT.md`                         | CSV/Excel parsing, validation, auto-mapping                      |
-| `INTERNATIONALIZATION_STRATEGY.md`      | i18next setup, language detection, translation workflow          |
-| `ADR.md`                                | Architecture Decision Records (key technical decisions)          |
-| `DEPLOYMENT.md`                         | CI/CD placeholder, build commands, deployment targets            |
-| `../concepts/SUBSCRIPTION_LICENSING.md` | Paddle integration, license key generation, validation           |
+| Document                           | Description                                                      |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| `TESTING_STRATEGY.md`              | Testing philosophy, patterns, ownership by package (incl. Azure) |
+| `DATA_INPUT.md`                    | CSV/Excel parsing, validation, auto-mapping                      |
+| `INTERNATIONALIZATION_STRATEGY.md` | i18next setup, language detection, translation workflow          |
+| `ADR.md`                           | Architecture Decision Records (key technical decisions)          |
+| `DEPLOYMENT.md`                    | CI/CD placeholder, build commands, deployment targets            |
+
+### Canonical Documentation Locations
+
+Product-specific technical docs live with each product:
+
+| Topic       | Canonical Location                                 |
+| ----------- | -------------------------------------------------- |
+| PWA Storage | `/docs/products/pwa/technical/TECH-PWA-STORAGE.md` |
+| Licensing   | `/docs/products/pwa/technical/TECH-LICENSING.md`   |
 
 ---
 
@@ -214,4 +221,4 @@ npx wrangler publish
 | Private key    | Critical       | Server-only, never exposed    |
 | Paddle secrets | Critical       | Server-only                   |
 
-For €49 product, we accept that determined users could bypass client-side checks. Focus on making the product worth paying for.
+For €99 product, we accept that determined users could bypass client-side checks. Focus on making the product worth paying for.

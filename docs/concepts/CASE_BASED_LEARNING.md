@@ -34,7 +34,7 @@ Each case follows a three-act structure that creates engagement and delivers the
 
 The website drives to three distinct products:
 
-### 📱 VaRiScout Lite PWA (€49/year)
+### 📱 VaRiScout Lite PWA (€99/year)
 
 | Aspect         | Detail                                      |
 | -------------- | ------------------------------------------- |
@@ -44,7 +44,7 @@ The website drives to three distinct products:
 | **How to get** | Download from variscout.com, install as app |
 | **Free tier**  | Yes, with watermark on exports              |
 
-### 📊 VaRiScout Excel Add-in (€49/year)
+### 📊 VaRiScout Excel Add-in (€99/year)
 
 | Aspect         | Detail                                          |
 | -------------- | ----------------------------------------------- |
@@ -407,7 +407,7 @@ What's YOUR average hiding?
 
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
 │  📱 PWA      │  │  📊 Excel    │  │  ☁️ Enterprise│
-│  €49/year    │  │  €49/year    │  │  €399+/year  │
+│  €99/year    │  │  €99/year    │  │  €399+/year  │
 │  [Download]  │  │  [Get it]    │  │  [Contact]   │
 └──────────────┘  └──────────────┘  └──────────────┘
 ```
@@ -518,7 +518,7 @@ CASE JOURNEY
 │  │  Browser-based  │  │  Add-in for     │  │  Enterprise     │ │
 │  │  Offline-first  │  │  Excel users    │  │  deployment     │ │
 │  │                 │  │                 │  │                 │ │
-│  │  €49/year       │  │  €49/year       │  │  €399-1999/yr   │ │
+│  │  €99/year       │  │  €99/year       │  │  €399-1999/yr   │ │
 │  │                 │  │                 │  │                 │ │
 │  │ [Download PWA]  │  │ [Get Add-in]    │  │ [Contact Sales] │ │
 │  │                 │  │                 │  │                 │ │
@@ -533,8 +533,8 @@ CASE JOURNEY
 
 | User Says                         | Recommend                   |
 | --------------------------------- | --------------------------- |
-| "I work in browser / on the go"   | PWA (€49/year)              |
-| "My data is already in Excel"     | Excel Add-in (€49/year)     |
+| "I work in browser / on the go"   | PWA (€99/year)              |
+| "My data is already in Excel"     | Excel Add-in (€99/year)     |
 | "We need this for the whole team" | Azure App (€399+/year)      |
 | "I want to try it first"          | PWA free tier (watermarked) |
 

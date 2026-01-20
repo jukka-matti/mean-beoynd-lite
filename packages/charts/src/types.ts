@@ -83,6 +83,8 @@ export interface IChartProps extends BaseChartProps {
   onSpecClick?: (spec: 'usl' | 'lsl' | 'target') => void;
   /** Callback when Y-axis area is clicked (for editing scale) */
   onYAxisClick?: (event?: React.MouseEvent) => void;
+  /** Highlighted point index for bi-directional sync (e.g., from data panel selection) */
+  highlightedPointIndex?: number | null;
 }
 
 /**

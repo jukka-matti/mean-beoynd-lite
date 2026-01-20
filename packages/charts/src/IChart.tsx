@@ -14,7 +14,8 @@ import {
 import type { IChartProps, StageBoundary } from './types';
 import { getResponsiveTickCount } from './responsive';
 import ChartSourceBar from './ChartSourceBar';
-import { chartColors, chromeColors } from './colors';
+import { chartColors } from './colors';
+import { useChartTheme } from './useChartTheme';
 import { useChartLayout, useChartTooltip } from './hooks';
 import { interactionStyles } from './styles/interactionStyles';
 import { getDataPointA11yProps, getInteractiveA11yProps } from './utils/accessibility';
@@ -41,7 +42,9 @@ const IChartBase: React.FC<IChartProps> = ({
   showLimitLabels = true,
   onSpecClick,
   onYAxisClick,
+  highlightedPointIndex,
 }) => {
+  const { chrome } = useChartTheme();
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltipAtCoords, hideTooltip } =
     useChartTooltip<{ x: number; y: number; index: number; stage?: string }>();
 
@@ -206,7 +209,7 @@ const IChartBase: React.FC<IChartProps> = ({
     <>
       <svg width={parentWidth} height={parentHeight}>
         <Group left={margin.left} top={margin.top}>
-          <GridRows scale={yScale} width={width} stroke={chromeColors.gridLine} />
+          <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
 
           {/* Grade bands (if defined) */}
           {grades &&
@@ -241,7 +244,7 @@ const IChartBase: React.FC<IChartProps> = ({
                     <Line
                       from={{ x: x1 - 5, y: 0 }}
                       to={{ x: x1 - 5, y: height }}
-                      stroke={chromeColors.stageDivider}
+                      stroke={chrome.stageDivider}
                       strokeWidth={1}
                       strokeDasharray="4,4"
                     />
@@ -252,7 +255,7 @@ const IChartBase: React.FC<IChartProps> = ({
                     x={x1 + stageWidth / 2}
                     y={-8}
                     textAnchor="middle"
-                    fill={chromeColors.labelSecondary}
+                    fill={chrome.labelSecondary}
                     fontSize={fonts.tickLabel}
                     fontWeight={500}
                   >
@@ -453,49 +456,65 @@ const IChartBase: React.FC<IChartProps> = ({
             data={data}
             x={d => xScale(d.x)}
             y={d => yScale(d.y)}
-            stroke={chromeColors.dataLine}
+            stroke={chrome.dataLine}
             strokeWidth={1}
             strokeOpacity={0.5}
           />
 
           {/* Data points */}
-          {data.map((d, i) => (
-            <Circle
-              key={i}
-              cx={xScale(d.x)}
-              cy={yScale(d.y)}
-              r={4}
-              fill={getPointColor(d.y, i, d.stage)}
-              stroke={chromeColors.pointStroke}
-              strokeWidth={1}
-              className={onPointClick ? interactionStyles.clickable : ''}
-              onClick={() => onPointClick?.(i, d.originalIndex)}
-              onMouseOver={() =>
-                showTooltipAtCoords(xScale(d.x), yScale(d.y), {
-                  x: d.x,
-                  y: d.y,
-                  index: i,
-                  stage: d.stage,
-                })
-              }
-              onMouseLeave={hideTooltip}
-              {...getDataPointA11yProps(
-                'Observation',
-                d.y,
-                i,
-                onPointClick ? () => onPointClick(i, d.originalIndex) : undefined
-              )}
-            />
-          ))}
+          {data.map((d, i) => {
+            const isHighlighted = highlightedPointIndex === i;
+            return (
+              <g key={i}>
+                {/* Highlight ring for selected point */}
+                {isHighlighted && (
+                  <Circle
+                    cx={xScale(d.x)}
+                    cy={yScale(d.y)}
+                    r={12}
+                    fill="transparent"
+                    stroke={chartColors.mean}
+                    strokeWidth={2}
+                    className="animate-pulse"
+                  />
+                )}
+                <Circle
+                  cx={xScale(d.x)}
+                  cy={yScale(d.y)}
+                  r={isHighlighted ? 6 : 4}
+                  fill={getPointColor(d.y, i, d.stage)}
+                  stroke={isHighlighted ? chartColors.mean : chrome.pointStroke}
+                  strokeWidth={isHighlighted ? 2 : 1}
+                  className={onPointClick ? interactionStyles.clickable : ''}
+                  onClick={() => onPointClick?.(i, d.originalIndex)}
+                  onMouseOver={() =>
+                    showTooltipAtCoords(xScale(d.x), yScale(d.y), {
+                      x: d.x,
+                      y: d.y,
+                      index: i,
+                      stage: d.stage,
+                    })
+                  }
+                  onMouseLeave={hideTooltip}
+                  {...getDataPointA11yProps(
+                    'Observation',
+                    d.y,
+                    i,
+                    onPointClick ? () => onPointClick(i, d.originalIndex) : undefined
+                  )}
+                />
+              </g>
+            );
+          })}
 
           {/* Axes */}
           <AxisLeft
             scale={yScale}
-            stroke={chromeColors.axisPrimary}
-            tickStroke={chromeColors.axisPrimary}
+            stroke={chrome.axisPrimary}
+            tickStroke={chrome.axisPrimary}
             numTicks={yTickCount}
             tickLabelProps={() => ({
-              fill: chromeColors.labelPrimary,
+              fill: chrome.labelPrimary,
               fontSize: fonts.tickLabel,
               textAnchor: 'end',
               dx: -4,
@@ -510,7 +529,7 @@ const IChartBase: React.FC<IChartProps> = ({
             y={height / 2}
             transform={`rotate(-90 ${parentWidth < 400 ? -25 : parentWidth < 768 ? -40 : -50} ${height / 2})`}
             textAnchor="middle"
-            fill={chromeColors.labelPrimary}
+            fill={chrome.labelPrimary}
             fontSize={fonts.axisLabel}
             fontWeight={500}
           >
@@ -536,11 +555,11 @@ const IChartBase: React.FC<IChartProps> = ({
           <AxisBottom
             top={height}
             scale={xScale}
-            stroke={chromeColors.axisPrimary}
-            tickStroke={chromeColors.axisPrimary}
+            stroke={chrome.axisPrimary}
+            tickStroke={chrome.axisPrimary}
             numTicks={xTickCount}
             tickLabelProps={() => ({
-              fill: chromeColors.labelPrimary,
+              fill: chrome.labelPrimary,
               fontSize: fonts.tickLabel,
               textAnchor: 'middle',
               dy: 2,
@@ -552,7 +571,7 @@ const IChartBase: React.FC<IChartProps> = ({
             x={width / 2}
             y={height + (parentWidth < 400 ? 30 : 40)}
             textAnchor="middle"
-            fill={chromeColors.labelPrimary}
+            fill={chrome.labelPrimary}
             fontSize={fonts.axisLabel}
             fontWeight={500}
           >
@@ -579,9 +598,9 @@ const IChartBase: React.FC<IChartProps> = ({
           top={margin.top + (tooltipTop ?? 0)}
           style={{
             ...defaultStyles,
-            backgroundColor: chromeColors.tooltipBg,
-            color: chromeColors.tooltipText,
-            border: `1px solid ${chromeColors.tooltipBorder}`,
+            backgroundColor: chrome.tooltipBg,
+            color: chrome.tooltipText,
+            border: `1px solid ${chrome.tooltipBorder}`,
             borderRadius: 6,
             padding: '8px 12px',
             fontSize: fonts.tooltipText,
@@ -590,7 +609,7 @@ const IChartBase: React.FC<IChartProps> = ({
           <div>
             <strong>#{tooltipData.index + 1}</strong>
             {tooltipData.stage && (
-              <span style={{ color: chromeColors.labelSecondary, marginLeft: 8 }}>
+              <span style={{ color: chrome.labelSecondary, marginLeft: 8 }}>
                 {tooltipData.stage}
               </span>
             )}

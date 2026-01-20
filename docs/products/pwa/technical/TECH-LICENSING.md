@@ -82,8 +82,8 @@ Paddle Dashboard Configuration
 ─────────────────────────────────────────────────────────────────
 
 Products:
-  - VaRiScout Lite PWA (€49/year, subscription)
-  - VaRiScout Excel Add-in (€49/year, subscription)
+  - VaRiScout Lite PWA (€99/year, subscription)
+  - VaRiScout Excel Add-in (€99/year, subscription)
 
 Webhook URL: https://api.variscout.com/webhook/paddle
 Webhook Events:
@@ -756,7 +756,7 @@ function LicenseDialog({ isOpen, onClose }) {
         <p className="help-text">
           Don't have a key?{' '}
           <a href="#" onClick={openPaddleCheckout}>
-            Buy now €49/year
+            Buy now €99/year
           </a>
         </p>
       </DialogContent>
@@ -972,7 +972,7 @@ function exportChartAsPng(chartElement, licenseStatus) {
 
 ### What's NOT Protected (By Design)
 
-At €49/year, we accept:
+At €99/year, we accept:
 
 - Technically savvy users could bypass client-side checks
 - License keys could be shared

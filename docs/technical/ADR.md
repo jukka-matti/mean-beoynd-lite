@@ -246,7 +246,7 @@ We need to support multiple editions of the app:
 
 - **Community**: Free, full features, VariScout branding
 - **ITC**: Custom branding for training partner
-- **Licensed**: Paid (€49), no branding, theme customization
+- **Licensed**: Paid (€99), no branding, theme customization
 
 ### Decision
 

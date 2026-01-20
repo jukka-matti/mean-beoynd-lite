@@ -83,7 +83,7 @@ https://app.variscout.com?sample=mango-export&embed=true
 | ------------- | -------- | --------------------------------------------- |
 | **Community** | Free     | Full features, "VariScout" branding on charts |
 | **ITC**       | Free     | Full features, ITC branding (for ITC network) |
-| **Licensed**  | €49/year | Full features, no branding                    |
+| **Licensed**  | €99/year | Full features, no branding                    |
 
 Activate Licensed edition by entering a license key in Settings → License.
 

@@ -432,7 +432,7 @@ VariScout Lite supports three editions controlled by build-time and runtime conf
 | ------------- | ----------------------------------- | ---------------------- | -------- |
 | **Community** | "VariScout Lite" footer             | Public web             | Free     |
 | **ITC**       | "International Trade Centre" footer | ITC network            | Free     |
-| **Licensed**  | No branding                         | License key activation | €49/year |
+| **Licensed**  | No branding                         | License key activation | €99/year |
 
 **Build-time:** Set `VITE_EDITION` environment variable
 **Runtime:** License key can upgrade Community → Licensed
