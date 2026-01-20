@@ -5,17 +5,21 @@
  * to the PWA's DataContext.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { PerformanceBoxplot as PerformanceBoxplotBase } from '@variscout/charts';
 import { useData } from '../../context/DataContext';
 
 interface PerformanceBoxplotProps {
   onChannelClick?: (channelId: string) => void;
+  /** Maximum number of channels to display (default: 5) */
+  maxDisplayed?: number;
 }
 
-const PerformanceBoxplot: React.FC<PerformanceBoxplotProps> = ({ onChannelClick }) => {
+const PerformanceBoxplot: React.FC<PerformanceBoxplotProps> = ({
+  onChannelClick,
+  maxDisplayed,
+}) => {
   const { performanceResult, selectedMeasure, specs } = useData();
-  const [expanded, setExpanded] = useState(false);
 
   return (
     <PerformanceBoxplotBase
@@ -23,8 +27,7 @@ const PerformanceBoxplot: React.FC<PerformanceBoxplotProps> = ({ onChannelClick 
       specs={specs}
       selectedMeasure={selectedMeasure}
       onChannelClick={onChannelClick}
-      expanded={expanded}
-      onToggleExpand={() => setExpanded(prev => !prev)}
+      maxDisplayed={maxDisplayed}
     />
   );
 };

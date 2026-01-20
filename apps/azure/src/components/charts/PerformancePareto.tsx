@@ -11,9 +11,11 @@ import { useData } from '../../context/DataContext';
 
 interface PerformanceParetoProps {
   onChannelClick?: (channelId: string) => void;
+  /** Maximum number of channels to display (default: 20) */
+  maxDisplayed?: number;
 }
 
-const PerformancePareto: React.FC<PerformanceParetoProps> = ({ onChannelClick }) => {
+const PerformancePareto: React.FC<PerformanceParetoProps> = ({ onChannelClick, maxDisplayed }) => {
   const { performanceResult, selectedMeasure } = useData();
 
   return (
@@ -21,6 +23,7 @@ const PerformancePareto: React.FC<PerformanceParetoProps> = ({ onChannelClick })
       channels={performanceResult?.channels ?? []}
       selectedMeasure={selectedMeasure}
       onChannelClick={onChannelClick}
+      maxDisplayed={maxDisplayed}
     />
   );
 };
