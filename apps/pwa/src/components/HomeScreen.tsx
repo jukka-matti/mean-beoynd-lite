@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, FolderOpen, ArrowRight, BarChart2, FileUp, Clock } from 'lucide-react';
+import { Upload, FolderOpen, ArrowRight, BarChart2, FileUp, Clock, PenLine } from 'lucide-react';
 import { SAMPLES, SampleDataset } from '../data/sampleData';
 import { useData } from '../context/DataContext';
 import type { SavedProject } from '../lib/persistence';
@@ -9,6 +9,7 @@ interface HomeScreenProps {
   onImportFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onOpenProjects: () => void;
   onLoadSample: (sample: SampleDataset) => void;
+  onOpenManualEntry: () => void;
 }
 
 // Format relative time (e.g., "2h ago", "yesterday")
@@ -37,6 +38,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onImportFile,
   onOpenProjects,
   onLoadSample,
+  onOpenManualEntry,
 }) => {
   const { listProjects, loadProject } = useData();
   const [recentProjects, setRecentProjects] = useState<SavedProject[]>([]);
@@ -96,6 +98,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               <FolderOpen size={16} className="text-content-secondary group-hover:text-white" />
               <span className="text-sm text-content-secondary group-hover:text-white">
                 Open Saved Projects
+              </span>
+            </button>
+
+            {/* Manual data entry */}
+            <button
+              onClick={onOpenManualEntry}
+              className="w-full flex items-center justify-center gap-2 p-3 bg-surface-secondary hover:bg-surface-tertiary border border-edge hover:border-edge-secondary rounded-xl transition-all group"
+            >
+              <PenLine size={16} className="text-content-secondary group-hover:text-white" />
+              <span className="text-sm text-content-secondary group-hover:text-white">
+                Enter Data Manually
               </span>
             </button>
           </div>

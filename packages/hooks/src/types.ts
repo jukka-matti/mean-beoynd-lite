@@ -147,15 +147,6 @@ export interface SavedProject {
  * Allows apps to provide their own storage implementations
  */
 export interface PersistenceAdapter {
-  /** Auto-save state to local storage */
-  autoSave: (state: Omit<AnalysisState, 'version'>) => void;
-
-  /** Load auto-saved state */
-  loadAutoSave: () => AnalysisState | null;
-
-  /** Clear auto-saved state */
-  clearAutoSave: () => void;
-
   /** Save project to storage */
   saveProject: (name: string, state: Omit<AnalysisState, 'version'>) => Promise<SavedProject>;
 

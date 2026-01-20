@@ -43,44 +43,11 @@ export interface SavedProject {
   modifiedBy?: string;
 }
 
-const AUTOSAVE_KEY = 'variscout_azure_autosave';
 const VERSION = '1.0.0';
 
 // Generate unique ID
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-// Auto-save to localStorage (for session recovery)
-export function autoSave(state: Omit<AnalysisState, 'version'>): void {
-  try {
-    const saveState: AnalysisState = { ...state, version: VERSION };
-    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(saveState));
-  } catch (e) {
-    console.warn('Auto-save failed:', e);
-  }
-}
-
-// Load auto-saved session from localStorage
-export function loadAutoSave(): AnalysisState | null {
-  try {
-    const saved = localStorage.getItem(AUTOSAVE_KEY);
-    if (saved) {
-      return JSON.parse(saved) as AnalysisState;
-    }
-  } catch (e) {
-    console.warn('Failed to load auto-save:', e);
-  }
-  return null;
-}
-
-// Clear auto-save
-export function clearAutoSave(): void {
-  try {
-    localStorage.removeItem(AUTOSAVE_KEY);
-  } catch (e) {
-    console.warn('Failed to clear auto-save:', e);
-  }
 }
 
 // Save project to IndexedDB (local cache)

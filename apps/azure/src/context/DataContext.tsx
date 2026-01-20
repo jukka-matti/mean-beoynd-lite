@@ -77,7 +77,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Core state from shared hook
   const [state, actions] = useDataState({
     persistence: azurePersistenceAdapter,
-    autoSaveDelay: 1000,
   });
 
   // Azure-specific state

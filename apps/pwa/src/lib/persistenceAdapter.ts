@@ -7,9 +7,6 @@
 
 import type { PersistenceAdapter, AnalysisState, SavedProject } from '@variscout/hooks';
 import {
-  autoSave as autoSaveImpl,
-  loadAutoSave as loadAutoSaveImpl,
-  clearAutoSave as clearAutoSaveImpl,
   saveProject as saveProjectImpl,
   loadProject as loadProjectImpl,
   listProjects as listProjectsImpl,
@@ -21,21 +18,9 @@ import {
 
 /**
  * PWA persistence adapter implementation
- * Uses IndexedDB for projects and localStorage for auto-save
+ * Uses IndexedDB for projects
  */
 export const pwaPersistenceAdapter: PersistenceAdapter = {
-  autoSave: (state: Omit<AnalysisState, 'version'>): void => {
-    autoSaveImpl(state);
-  },
-
-  loadAutoSave: (): AnalysisState | null => {
-    return loadAutoSaveImpl();
-  },
-
-  clearAutoSave: (): void => {
-    clearAutoSaveImpl();
-  },
-
   saveProject: async (
     name: string,
     state: Omit<AnalysisState, 'version'>

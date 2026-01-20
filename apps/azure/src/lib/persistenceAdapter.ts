@@ -10,9 +10,6 @@
 
 import type { PersistenceAdapter, AnalysisState, SavedProject } from '@variscout/hooks';
 import {
-  autoSave as autoSaveImpl,
-  loadAutoSave as loadAutoSaveImpl,
-  clearAutoSave as clearAutoSaveImpl,
   saveProjectLocally,
   loadProjectLocally,
   listProjectsLocally,
@@ -37,24 +34,12 @@ export function setDefaultLocation(location: 'team' | 'personal'): void {
 
 /**
  * Azure persistence adapter implementation
- * Uses IndexedDB for local cache and localStorage for auto-save
+ * Uses IndexedDB for local cache
  *
  * The adapter uses project name as the lookup key (Azure's approach)
  * but the SavedProject returned includes both id and name for compatibility.
  */
 export const azurePersistenceAdapter: PersistenceAdapter = {
-  autoSave: (state: Omit<AnalysisState, 'version'>): void => {
-    autoSaveImpl(state);
-  },
-
-  loadAutoSave: (): AnalysisState | null => {
-    return loadAutoSaveImpl();
-  },
-
-  clearAutoSave: (): void => {
-    clearAutoSaveImpl();
-  },
-
   /**
    * Save project to local IndexedDB
    * Note: In Azure, the 'id' parameter is treated as the project name

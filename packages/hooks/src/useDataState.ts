@@ -10,7 +10,7 @@
  * ```
  */
 
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   calculateStats,
   calculateStatsByStage,
@@ -40,10 +40,8 @@ import type {
 // ============================================================================
 
 export interface UseDataStateOptions {
-  /** Persistence adapter for auto-save and project storage */
+  /** Persistence adapter for project storage */
   persistence: PersistenceAdapter;
-  /** Debounce delay for auto-save in ms (default: 1000) */
-  autoSaveDelay?: number;
 }
 
 export interface DataState {
@@ -143,28 +141,6 @@ export interface DataActions {
 }
 
 // ============================================================================
-// Debounce Utility
-// ============================================================================
-
-function debounce<T extends (...args: Parameters<T>) => void>(
-  fn: T,
-  delay: number
-): T & { cancel: () => void } {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  const debounced = ((...args: Parameters<T>) => {
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  }) as T & { cancel: () => void };
-
-  debounced.cancel = () => {
-    if (timeoutId) clearTimeout(timeoutId);
-  };
-
-  return debounced;
-}
-
-// ============================================================================
 // Default Values
 // ============================================================================
 
@@ -181,7 +157,7 @@ const DEFAULT_DISPLAY_OPTIONS: DisplayOptions = {
 // ============================================================================
 
 export function useDataState(options: UseDataStateOptions): [DataState, DataActions] {
-  const { persistence, autoSaveDelay = 1000 } = options;
+  const { persistence } = options;
 
   // Core state
   const [rawData, setRawData] = useState<DataRow[]>([]);
@@ -224,8 +200,6 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
   const [measureColumns, setMeasureColumns] = useState<string[]>([]);
   const [measureLabel, setMeasureLabel] = useState('Measure');
   const [selectedMeasure, setSelectedMeasure] = useState<string | null>(null);
-
-  const isInitialized = useRef(false);
 
   // ---------------------------------------------------------------------------
   // Computed values
@@ -342,60 +316,6 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       displayOptions,
     ]
   );
-
-  // ---------------------------------------------------------------------------
-  // Auto-save
-  // ---------------------------------------------------------------------------
-
-  const debouncedAutoSave = useMemo(
-    () =>
-      debounce((state: Omit<AnalysisState, 'version'>) => {
-        if (state.rawData.length > 0) {
-          persistence.autoSave(state);
-        }
-      }, autoSaveDelay),
-    [persistence, autoSaveDelay]
-  );
-
-  useEffect(() => {
-    if (!isInitialized.current) return;
-    if (rawData.length > 0) {
-      setHasUnsavedChanges(true);
-      debouncedAutoSave(getCurrentState());
-    }
-    return () => debouncedAutoSave.cancel();
-  }, [
-    rawData,
-    outcome,
-    factors,
-    specs,
-    grades,
-    filters,
-    axisSettings,
-    columnAliases,
-    valueLabels,
-    displayOptions,
-    getCurrentState,
-    debouncedAutoSave,
-  ]);
-
-  // Restore from auto-save on mount
-  useEffect(() => {
-    const saved = persistence.loadAutoSave();
-    if (saved && saved.rawData && saved.rawData.length > 0) {
-      setRawData(saved.rawData as DataRow[]);
-      if (saved.outcome) setOutcome(saved.outcome);
-      if (saved.factors) setFactors(saved.factors);
-      if (saved.specs) setSpecs(saved.specs);
-      if (saved.grades) setGrades(saved.grades);
-      if (saved.filters) setFilters(saved.filters);
-      if (saved.axisSettings) setAxisSettings(saved.axisSettings);
-      if (saved.columnAliases) setColumnAliases(saved.columnAliases);
-      if (saved.valueLabels) setValueLabels(saved.valueLabels);
-      if (saved.displayOptions) setDisplayOptions(saved.displayOptions);
-    }
-    isInitialized.current = true;
-  }, [persistence]);
 
   // ---------------------------------------------------------------------------
   // Persistence actions
@@ -517,8 +437,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
     setMeasureColumns([]);
     setMeasureLabel('Measure');
     setSelectedMeasure(null);
-    persistence.clearAutoSave();
-  }, [persistence]);
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Return memoized state and actions

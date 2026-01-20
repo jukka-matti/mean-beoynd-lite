@@ -34,7 +34,6 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, actions] = useDataState({
     persistence: pwaPersistenceAdapter,
-    autoSaveDelay: 1000,
   });
 
   // Combine state and actions into a memoized context value

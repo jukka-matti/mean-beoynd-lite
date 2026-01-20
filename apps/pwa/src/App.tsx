@@ -11,13 +11,14 @@ import FunnelWindow, { openFunnelPopout } from './components/FunnelWindow';
 import ColumnMapping from './components/ColumnMapping';
 import Dashboard from './components/Dashboard';
 import HomeScreen from './components/HomeScreen';
+import ManualEntry from './components/ManualEntry';
 import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
 import { useDataIngestion } from './hooks/useDataIngestion';
 import { useEmbedMessaging } from './hooks/useEmbedMessaging';
 import { useAutoSave } from './hooks/useAutoSave';
 import { SAMPLES } from './data/sampleData';
-import type { ExclusionReason } from './logic/parser';
+import { validateData, type ExclusionReason } from './logic/parser';
 import PerformanceDetectedModal from './components/PerformanceDetectedModal';
 import type { WideFormatDetection } from '@variscout/core';
 
@@ -41,12 +42,16 @@ function App() {
     saveProject,
     exportProject,
     importProject,
+    setRawData,
     setOutcome,
     setFactors,
     setFilters,
+    setSpecs,
     setMeasureColumns,
     setMeasureLabel,
     setPerformanceMode,
+    setDataFilename,
+    setDataQualityReport,
     factors,
     columnAliases,
   } = useData();
@@ -54,6 +59,8 @@ function App() {
   // State for performance mode auto-detection
   const [wideFormatDetection, setWideFormatDetection] = useState<WideFormatDetection | null>(null);
   const [isPerformanceSetupOpen, setIsPerformanceSetupOpen] = useState(false);
+  // State for manual data entry view
+  const [isManualEntry, setIsManualEntry] = useState(false);
   // State for drill navigation from Performance Mode to standard I-Chart
   const [drillFromPerformance, setDrillFromPerformance] = useState<string | null>(null);
   // Callback for wide format detection
@@ -481,6 +488,74 @@ function App() {
     setActiveView('performance');
   }, []);
 
+  // Handle manual data entry completion
+  const handleManualDataAnalyze = useCallback(
+    (
+      data: any[],
+      config: {
+        outcome: string;
+        factors: string[];
+        specs?: { usl?: number; lsl?: number };
+        isPerformanceMode?: boolean;
+        measureColumns?: string[];
+        measureLabel?: string;
+      }
+    ) => {
+      // Set raw data
+      setRawData(data);
+      setDataFilename('Manual Entry');
+
+      // Set outcome and factors
+      setOutcome(config.outcome);
+      setFactors(config.factors);
+
+      // Set specs if provided
+      if (config.specs) {
+        setSpecs(config.specs);
+      }
+
+      // Run validation
+      const report = validateData(data, config.outcome);
+      setDataQualityReport(report);
+
+      // Handle performance mode
+      if (config.isPerformanceMode && config.measureColumns && config.measureColumns.length >= 3) {
+        setMeasureColumns(config.measureColumns);
+        setMeasureLabel(config.measureLabel || 'Channel');
+        setPerformanceMode(true);
+        setActiveView('performance');
+      } else {
+        setMeasureColumns([]);
+        setPerformanceMode(false);
+        setActiveView('dashboard');
+      }
+
+      // Exit manual entry view
+      setIsManualEntry(false);
+    },
+    [
+      setRawData,
+      setDataFilename,
+      setOutcome,
+      setFactors,
+      setSpecs,
+      setDataQualityReport,
+      setMeasureColumns,
+      setMeasureLabel,
+      setPerformanceMode,
+    ]
+  );
+
+  // Handle canceling manual entry
+  const handleManualEntryCancel = useCallback(() => {
+    setIsManualEntry(false);
+  }, []);
+
+  // Handle opening manual entry from home screen
+  const handleOpenManualEntry = useCallback(() => {
+    setIsManualEntry(true);
+  }, []);
+
   // Render only FunnelWindow in popout mode
   if (isFunnelPopoutMode) {
     return <FunnelWindow />;
@@ -590,12 +665,15 @@ function App() {
       <main className="flex-1 overflow-hidden relative flex">
         {/* Main content area */}
         <div className="flex-1 overflow-hidden flex flex-col">
-          {rawData.length === 0 ? (
+          {isManualEntry ? (
+            <ManualEntry onAnalyze={handleManualDataAnalyze} onCancel={handleManualEntryCancel} />
+          ) : rawData.length === 0 ? (
             <HomeScreen
               onFileUpload={handleFileUpload}
               onImportFile={handleImportFile}
               onOpenProjects={() => setIsProjectsOpen(true)}
               onLoadSample={loadSample}
+              onOpenManualEntry={handleOpenManualEntry}
             />
           ) : isMapping ? (
             <ColumnMapping
