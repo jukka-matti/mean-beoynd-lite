@@ -5,15 +5,18 @@
 
 ## Entry Points
 
-The PWA HomeScreen offers four ways to start:
+The PWA HomeScreen offers five ways to start:
 
 ```
 HomeScreen
 ├── 1. Upload CSV/Excel file (drag-drop or click)
 ├── 2. Load sample data (pre-built demos)
 ├── 3. Import .vrs file (saved project)
-└── 4. Open recent project (from history)
+├── 4. Open recent project (from history)
+└── 5. Enter data manually (direct entry)
 ```
+
+> **Manual Entry**: For direct data entry without a file, see [Manual Entry Flow](./MANUAL-ENTRY.md).
 
 ---
 
@@ -284,6 +287,7 @@ After data loads, the Column Mapping panel allows adjustments:
 
 ## Related Documentation
 
+- [Manual Entry Flow](./MANUAL-ENTRY.md) - Direct data entry without files
 - [Core Analysis Journey](../CORE-ANALYSIS-JOURNEY.md) - Shared analysis experience
 - [Platform Adaptations](../PLATFORM-ADAPTATIONS.md) - How PWA differs from other apps
 - [FLOW-FIRST-USE.md](../../products/website/flows/FLOW-FIRST-USE.md) - First use experience design

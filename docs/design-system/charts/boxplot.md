@@ -412,6 +412,122 @@ const fonts = getResponsiveFonts(parentWidth);
 
 ---
 
+## BoxplotStatsTable
+
+A companion component that displays distribution metrics alongside boxplot charts.
+
+### Overview
+
+`BoxplotStatsTable` provides a tabular summary of boxplot statistics:
+
+| Column          | Description                                           |
+| --------------- | ----------------------------------------------------- |
+| **Group**       | Category identifier                                   |
+| **n**           | Sample size                                           |
+| **Mean**        | Arithmetic mean                                       |
+| **Median**      | 50th percentile                                       |
+| **StdDev**      | Standard deviation                                    |
+| **Variation %** | Category's contribution to total variation (optional) |
+
+### Props Interface
+
+```typescript
+interface BoxplotStatsTableProps {
+  /** Boxplot data with pre-calculated statistics */
+  data: BoxplotGroupData[];
+  /** Category contributions - Map from category key to % of total variation */
+  categoryContributions?: Map<string | number, number>;
+  /** Threshold for "high variation" highlight (default: 50) */
+  variationThreshold?: number;
+  /** Compact mode for space-constrained layouts */
+  compact?: boolean;
+}
+```
+
+### Visual Highlights
+
+The table automatically highlights important patterns:
+
+| Highlight           | Indicator                       | Meaning                                    |
+| ------------------- | ------------------------------- | ------------------------------------------ |
+| **Highest StdDev**  | ★ star prefix (amber)           | Category with most internal variability    |
+| **High Variation**  | Red text on Variation %         | Category explains ≥ threshold of variation |
+| **Top Contributor** | Red text (even below threshold) | Category with highest contribution %       |
+
+### Theme Support
+
+Uses `useChartTheme()` hook for automatic light/dark adaptation:
+
+```typescript
+// Colors adapt automatically:
+// - Header background: slate-800 (dark) / slate-100 (light)
+// - Row alternation: slate-900/800 (dark) / white/slate-50 (light)
+// - Text: slate-200/400 (dark) / slate-800/600 (light)
+```
+
+### Display Modes
+
+| Mode        | Font Size | Padding     | Use Case                    |
+| ----------- | --------- | ----------- | --------------------------- |
+| **Default** | `text-sm` | `px-3 py-2` | PWA fullscreen view         |
+| **Compact** | `text-xs` | `px-2 py-1` | Excel Add-in, tight layouts |
+
+### Usage Example
+
+```tsx
+import BoxplotStatsTable from '@variscout/charts/BoxplotStatsTable';
+
+// Basic usage
+<BoxplotStatsTable
+  data={boxplotData}
+/>
+
+// With variation tracking
+<BoxplotStatsTable
+  data={boxplotData}
+  categoryContributions={contributionMap}
+  variationThreshold={50}
+/>
+
+// Compact mode for Excel
+<BoxplotStatsTable
+  data={boxplotData}
+  compact={true}
+/>
+```
+
+### Contribution Bars (on Boxplot Chart)
+
+When `categoryContributions` is provided to the Boxplot component, small horizontal bars appear below each box:
+
+```
+       ┌─────┐
+       │     │
+   ────┼─────┼────
+       │     │
+       └─────┘
+         ■■■■■      ← Contribution bar (red when ≥ threshold)
+        [67%]       ← Optional label
+```
+
+| Element       | Style                                           |
+| ------------- | ----------------------------------------------- |
+| Bar width     | Proportional to contribution %                  |
+| Bar color     | Red when ≥ `variationThreshold`, gray otherwise |
+| Max bar width | Box width (100% = full width)                   |
+
+Enable with `showContributionLabels={true}` on Boxplot component.
+
+### Integration Points
+
+| App          | Component                | Mode    | Notes                     |
+| ------------ | ------------------------ | ------- | ------------------------- |
+| PWA          | FocusedChartView         | Default | Fullscreen boxplot detail |
+| Azure        | Dashboard (focused view) | Default | Same as PWA               |
+| Excel Add-in | ContentDashboard         | Compact | Space-constrained         |
+
+---
+
 ## Exports
 
 ```typescript
@@ -422,6 +538,9 @@ import PerformanceBoxplot from '@variscout/charts/PerformanceBoxplot';
 // Base components (manual sizing)
 import { BoxplotBase } from '@variscout/charts/Boxplot';
 import { PerformanceBoxplotBase } from '@variscout/charts/PerformanceBoxplot';
+
+// Stats table
+import BoxplotStatsTable from '@variscout/charts/BoxplotStatsTable';
 
 // Data utilities
 import { calculateBoxplotStats, BoxplotGroupInput, BoxplotGroupData } from '@variscout/charts';

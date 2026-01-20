@@ -22,7 +22,10 @@ We deliberately chose simplicity over feature richness. Instead of building a co
 ### Data Input
 
 - **File Import**: Drag-and-drop CSV and Excel (.xlsx)
-- **Manual Entry**: Direct data entry with running statistics, keyboard navigation, and spec compliance feedback (56px touch targets for tablets)
+- **Manual Entry**: Direct data entry with two modes:
+  - **Standard Mode**: Factor-outcome analysis with running statistics
+  - **Performance Mode**: Multi-channel entry with per-channel Cpk indicators
+  - Keyboard navigation, spec compliance feedback (56px touch targets for tablets)
 - **Paste from Excel**: Tab-separated data supported
 
 ### Export Options

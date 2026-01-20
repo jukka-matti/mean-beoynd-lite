@@ -89,12 +89,28 @@ VariScout Lite includes a touch-optimized data entry mode for field use or when 
 1. From the home screen (before uploading data), click **"Enter Data Manually"**
 2. Or use the **Manual Entry** option in the upload area dropdown
 
-### Step 1: Configure Your Measurement
+### Step 1: Choose Analysis Mode
+
+Select your analysis type:
+
+| Mode                  | Use Case                              | Output           |
+| --------------------- | ------------------------------------- | ---------------- |
+| **Standard Analysis** | Factor-outcome analysis (Y = f(X))    | Dashboard        |
+| **Performance Mode**  | Multi-channel comparison (fill heads) | Performance view |
+
+### Step 1a: Standard Analysis Setup
 
 1. **Outcome (Y)**: Name of the measurement you're recording (e.g., "Weight", "Diameter", "pH")
 2. **Factors (X)**: Grouping variables (e.g., "Operator", "Machine", "Batch")
    - Click **+ Add Factor** to add more (up to 3 recommended)
    - Click the **X** to remove a factor
+3. Click **Continue** to proceed to data entry
+
+### Step 1b: Performance Mode Setup
+
+1. **Measure Label**: Base name for channels (e.g., "Head", "Nozzle", "Cavity")
+2. **Number of Channels**: How many parallel channels (3-20)
+   - Preview shows generated column names (e.g., "Head 1, Head 2, ...")
 3. Click **Continue** to proceed to data entry
 
 ### Step 2: Enter Your Data
@@ -128,10 +144,20 @@ The data entry grid has these features:
 
 As you enter data, live statistics appear:
 
+**Standard Mode:**
+
 - **Count**: Number of valid measurements
 - **Mean**: Running average
 - **Min/Max**: Range of values
 - **Pass Rate**: Percentage meeting specs (if limits defined)
+
+**Performance Mode:**
+Per-channel statistics cards showing:
+
+- **n**: Sample count per channel
+- **μ (Mean)**: Average value per channel
+- **Cpk**: Process capability index (when specs set)
+- **Status indicator**: Green (Cpk ≥ 1.33), Amber (1.0-1.33), Red (< 1.0)
 
 #### Paste from Clipboard
 
