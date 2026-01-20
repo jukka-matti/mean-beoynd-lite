@@ -6,7 +6,7 @@
  * calculations at runtime.
  */
 
-import { calculateStats } from '@variscout/core';
+import { calculateStats, calculateGageRR } from '@variscout/core';
 import { calculateBoxplotStats } from '@variscout/charts';
 import { SAMPLES, getSample } from '../samples';
 import type {
@@ -15,6 +15,7 @@ import type {
   BoxplotGroup,
   ParetoItem,
   PrecomputedStats,
+  GageRRData,
 } from '../types';
 
 /**
@@ -164,6 +165,32 @@ export function computeStats(
 }
 
 /**
+ * Compute Gage R&R data if sample has required structure
+ */
+export function computeGageRRData(
+  data: Record<string, unknown>[],
+  partColumn: string,
+  operatorColumn: string,
+  measurementColumn: string
+): GageRRData | undefined {
+  const result = calculateGageRR(data, partColumn, operatorColumn, measurementColumn);
+  if (!result) return undefined;
+
+  return {
+    pctPart: result.pctPart,
+    pctRepeatability: result.pctRepeatability,
+    pctReproducibility: result.pctReproducibility,
+    pctGRR: result.pctGRR,
+    verdict: result.verdict,
+    interactionData: result.interactionData.map(d => ({
+      part: d.part,
+      operator: d.operator,
+      mean: d.mean,
+    })),
+  };
+}
+
+/**
  * Get fully computed chart data for a sample
  */
 export function getComputedData(urlKey: string): ComputedChartData | undefined {
@@ -171,7 +198,13 @@ export function getComputedData(urlKey: string): ComputedChartData | undefined {
   if (!sample) return undefined;
 
   const { data, config } = sample;
-  const { outcome, factors, specs } = config;
+  const { outcome, factors, specs, partColumn, operatorColumn, measurementColumn } = config;
+
+  // Compute Gage R&R if sample has required columns
+  let gagerr: GageRRData | undefined;
+  if (partColumn && operatorColumn && measurementColumn) {
+    gagerr = computeGageRRData(data, partColumn, operatorColumn, measurementColumn);
+  }
 
   return {
     urlKey,
@@ -180,6 +213,7 @@ export function getComputedData(urlKey: string): ComputedChartData | undefined {
     paretoData: factors.length > 0 ? computeParetoData(data, factors[0]) : [],
     stats: computeStats(data, outcome, specs),
     specs,
+    gagerr,
   };
 }
 

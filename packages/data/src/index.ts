@@ -18,6 +18,8 @@ export type {
   BoxplotGroup,
   ParetoItem,
   PrecomputedStats,
+  GageRRData,
+  GageRRInteractionData,
 } from './types';
 
 // Sample datasets
@@ -43,6 +45,7 @@ export {
   mangoExport,
   textiles,
   pizza,
+  gagerr,
 } from './samples';
 
 // Computed data utilities
@@ -51,6 +54,7 @@ export {
   computeBoxplotData,
   computeParetoData,
   computeStats,
+  computeGageRRData,
   getComputedData,
   getCachedComputedData,
 } from './computed';

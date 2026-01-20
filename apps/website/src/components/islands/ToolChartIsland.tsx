@@ -5,6 +5,7 @@ import {
   CapabilityHistogramBase,
   ScatterPlotBase,
   GageRRChartBase,
+  InteractionPlotBase,
 } from '@variscout/charts';
 import { getSample, getCachedComputedData } from '@variscout/data';
 import ChartContainer from './ChartContainer';
@@ -148,8 +149,36 @@ export default function ToolChartIsland({
             );
 
           case 'gage-rr':
-            // GageRR requires specific data structure with operators and parts
-            // Fall back to boxplot view for now
+            // GageRR requires pre-computed data with parts and operators
+            if (computed.gagerr) {
+              // Split the container: 40% for variance chart, 55% for interaction plot
+              const gagerrHeight = Math.floor(containerHeight * 0.38);
+              const interactionHeight = Math.floor(containerHeight * 0.55);
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ height: gagerrHeight }}>
+                    <GageRRChartBase
+                      pctPart={computed.gagerr.pctPart}
+                      pctRepeatability={computed.gagerr.pctRepeatability}
+                      pctReproducibility={computed.gagerr.pctReproducibility}
+                      pctGRR={computed.gagerr.pctGRR}
+                      parentWidth={width}
+                      parentHeight={gagerrHeight}
+                      showBranding={false}
+                    />
+                  </div>
+                  <div style={{ height: interactionHeight }}>
+                    <InteractionPlotBase
+                      data={computed.gagerr.interactionData}
+                      parentWidth={width}
+                      parentHeight={interactionHeight}
+                      showBranding={showBranding}
+                    />
+                  </div>
+                </div>
+              );
+            }
+            // Fallback to boxplot if no GageRR data available
             return (
               <BoxplotBase
                 data={computed.boxplotData}

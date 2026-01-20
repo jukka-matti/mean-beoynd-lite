@@ -14,6 +14,7 @@ export { mangoExport } from './mango-export';
 export { textiles } from './textiles';
 export { pizza } from './pizza';
 export { sachets } from './sachets';
+export { gagerr } from './gagerr';
 
 // Re-export types
 export type { SampleDataset, SampleConfig, SpecLimits, GradeDefinition } from '../types';
@@ -34,6 +35,7 @@ import { mangoExport } from './mango-export';
 import { textiles } from './textiles';
 import { pizza } from './pizza';
 import { sachets } from './sachets';
+import { gagerr } from './gagerr';
 import type { SampleDataset } from '../types';
 
 /**
@@ -57,6 +59,8 @@ export const SAMPLES: SampleDataset[] = [
   sockMystery,
   // Performance Mode (Multi-Channel Analysis)
   sachets,
+  // Gage R&R (Measurement System Analysis)
+  gagerr,
   // Journey/Training
   journey,
   journeyBefore,

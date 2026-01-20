@@ -4,6 +4,7 @@ import {
   ParetoChartBase,
   ScatterPlotBase,
   GageRRChartBase,
+  InteractionPlotBase,
 } from '@variscout/charts';
 import { getSample, getCachedComputedData } from '@variscout/data';
 import ChartContainer from './ChartContainer';
@@ -115,7 +116,37 @@ export default function CaseStudyChartsIsland({
         );
 
       case 'gagerr':
-        // GageRR requires specific data structure - fall back to boxplot
+        // GageRR requires pre-computed data with parts and operators
+        if (computed.gagerr) {
+          return (
+            <div className="flex flex-col gap-2">
+              <ChartContainer height={Math.floor(chartHeight * 0.45)}>
+                {({ width, height: containerHeight }) => (
+                  <GageRRChartBase
+                    pctPart={computed.gagerr!.pctPart}
+                    pctRepeatability={computed.gagerr!.pctRepeatability}
+                    pctReproducibility={computed.gagerr!.pctReproducibility}
+                    pctGRR={computed.gagerr!.pctGRR}
+                    parentWidth={width}
+                    parentHeight={containerHeight}
+                    showBranding={false}
+                  />
+                )}
+              </ChartContainer>
+              <ChartContainer height={Math.floor(chartHeight * 0.55)}>
+                {({ width, height: containerHeight }) => (
+                  <InteractionPlotBase
+                    data={computed.gagerr!.interactionData}
+                    parentWidth={width}
+                    parentHeight={containerHeight}
+                    showBranding={showBranding}
+                  />
+                )}
+              </ChartContainer>
+            </div>
+          );
+        }
+        // Fallback to boxplot if no GageRR data available
         return (
           <ChartContainer height={chartHeight}>
             {({ width, height: containerHeight }) => (
