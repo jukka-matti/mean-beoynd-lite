@@ -119,9 +119,11 @@ variscout-lite/
 | `docs/cases/`                                                  | Case studies with demo data and teaching briefs                    |
 | `docs/concepts/LSS_TRAINER_STRATEGY.md`                        | Green Belt training feature roadmap                                |
 | `docs/concepts/POWER_BI_STRATEGY.md`                           | Power BI Custom Visual strategy                                    |
-| `docs/concepts/SUBSCRIPTION_LICENSING.md`                      | Paddle integration, license key system                             |
-| `docs/concepts/FOUR_PILLARS_METHODOLOGY.md`                    | Core methodology (Watson's Four Pillars)                           |
-| `docs/concepts/TWO_VOICES_CONTROL_VS_SPEC.md`                  | Control limits vs spec limits (Two Voices)                         |
+| `docs/concepts/licensing/OVERVIEW.md`                          | Paddle integration, license key system                             |
+| `docs/concepts/four-pillars/OVERVIEW.md`                       | Core methodology (Watson's Four Pillars)                           |
+| `docs/concepts/two-voices/OVERVIEW.md`                         | Control limits vs spec limits (Two Voices)                         |
+| `docs/design-system/charts/hooks.md`                           | Chart hooks (useChartLayout, useChartTooltip, useSelectionState)   |
+| `docs/design-system/charts/shared-components.md`               | Reusable chart components (SpecLimitLine, ChartTooltip, etc.)      |
 | `docs/concepts/CASE_BASED_LEARNING.md`                         | Three-act case structure for learning                              |
 | `docs/technical/TESTING_STRATEGY.md`                           | Testing philosophy, coverage, patterns                             |
 | `docs/technical/`                                              | PWA storage, deployment, testing strategy                          |

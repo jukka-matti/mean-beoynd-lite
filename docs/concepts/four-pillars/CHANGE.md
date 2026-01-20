@@ -1,0 +1,62 @@
+# CHANGE Pillar: I-Chart (The Adaptive Pillar)
+
+> Part of [Watson's Four Pillars](./OVERVIEW.md)
+
+---
+
+## The Question
+
+_"Is the process stable, or is something degrading/shifting over time?"_
+
+---
+
+## What the I-Chart Reveals
+
+- Time-based stability or instability
+- Trends, shifts, cycles
+- Points outside control limits (UCL/LCL)
+- Dynamic behavior: wear, degradation, seasonal effects
+
+---
+
+## Key Insight from Sock Mystery
+
+> "Processes aren't static snapshots; they are moving pictures."
+
+The wash cycle discovery (NEW → WORN → USED) showed how characteristics change over time. The I-Chart is your "time-lapse camera" for the process.
+
+---
+
+## VaRiScout Implementation
+
+- Auto-calculated control limits (x̄ ± 2.66MR̄)
+- Specification lines overlay (USL/LSL)
+- Click any point to see its factor values
+- Linked filtering: click a time region → see which factors were active
+
+---
+
+## The Reality Check
+
+> "What variables are degrading or shifting over time?"
+
+Questions to ask:
+
+- Static vs dynamic analysis
+- Cyclical factors (shift patterns, seasonal effects)
+- Degradation factors (tool wear, material aging)
+
+---
+
+## Chart-to-Pillar Reference
+
+| Pillar | Chart   | Key Metric                    | Key Visual                  | User Action               |
+| ------ | ------- | ----------------------------- | --------------------------- | ------------------------- |
+| CHANGE | I-Chart | Stability (in/out of control) | Points vs UCL/LCL over time | Click point → see factors |
+
+---
+
+## See Also
+
+- [OVERVIEW](./OVERVIEW.md) - Four Pillars introduction
+- [Two Voices](../two-voices/OVERVIEW.md) - Control limits vs specification limits

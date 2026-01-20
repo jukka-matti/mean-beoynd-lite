@@ -189,10 +189,6 @@ export interface BoxplotProps extends BaseChartProps {
   categoryContributions?: Map<string | number, number>;
   /** Show contribution labels below boxes (default: false) */
   showContributionLabels?: boolean;
-  /** Whether the stats table is expanded (default: false) */
-  expanded?: boolean;
-  /** Callback when expand toggle is clicked */
-  onToggleExpand?: () => void;
 }
 
 /**
@@ -330,10 +326,6 @@ export interface PerformanceBoxplotProps extends BaseChartProps {
   maxDisplayed?: number;
   /** Callback when a boxplot is clicked */
   onChannelClick?: (channelId: string) => void;
-  /** Whether the stats table is expanded (default: false) */
-  expanded?: boolean;
-  /** Callback when expand toggle is clicked */
-  onToggleExpand?: () => void;
 }
 
 /**

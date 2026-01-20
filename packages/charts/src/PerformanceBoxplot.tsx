@@ -22,7 +22,6 @@ import { chartColors } from './colors';
 import { useChartTheme } from './useChartTheme';
 import { getResponsiveMargins, getResponsiveFonts } from './responsive';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
-import { PerformanceStatsTable } from './components/PerformanceStatsTable';
 import * as d3 from 'd3';
 
 const DEFAULT_MAX_DISPLAYED = 5;
@@ -64,8 +63,6 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
   maxDisplayed = DEFAULT_MAX_DISPLAYED,
   onChannelClick,
   showBranding = true,
-  expanded = false,
-  onToggleExpand,
 }) => {
   const { chrome } = useChartTheme();
   const sourceBarHeight = getSourceBarHeight(showBranding);
@@ -181,282 +178,245 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
   const boxWidth = xScale.bandwidth();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
-      <div style={{ position: 'relative', flex: expanded ? '0 0 auto' : 1 }}>
-        <svg width={parentWidth} height={expanded ? Math.min(parentHeight, 300) : parentHeight}>
-          <Group left={margin.left} top={margin.top}>
-            <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <svg width={parentWidth} height={parentHeight}>
+        <Group left={margin.left} top={margin.top}>
+          <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
 
-            {/* Spec limits */}
-            {specs.usl !== undefined && (
-              <>
+          {/* Spec limits */}
+          {specs.usl !== undefined && (
+            <>
+              <Line
+                from={{ x: 0, y: yScale(specs.usl) }}
+                to={{ x: width, y: yScale(specs.usl) }}
+                stroke={chartColors.spec}
+                strokeWidth={1.5}
+                strokeDasharray="4,4"
+              />
+              <text
+                x={width - 4}
+                y={yScale(specs.usl) - 4}
+                fill={chartColors.spec}
+                fontSize={fonts.statLabel}
+                textAnchor="end"
+              >
+                USL
+              </text>
+            </>
+          )}
+          {specs.lsl !== undefined && (
+            <>
+              <Line
+                from={{ x: 0, y: yScale(specs.lsl) }}
+                to={{ x: width, y: yScale(specs.lsl) }}
+                stroke={chartColors.spec}
+                strokeWidth={1.5}
+                strokeDasharray="4,4"
+              />
+              <text
+                x={width - 4}
+                y={yScale(specs.lsl) + 12}
+                fill={chartColors.spec}
+                fontSize={fonts.statLabel}
+                textAnchor="end"
+              >
+                LSL
+              </text>
+            </>
+          )}
+
+          {/* Boxplots */}
+          {boxplotData.map(({ channel, stats }) => {
+            const x = xScale(channel.id) ?? 0;
+            const boxColor = getBoxColor(channel);
+            const isSelected = selectedMeasure === channel.id;
+
+            return (
+              <Group
+                key={channel.id}
+                style={{ cursor: onChannelClick ? 'pointer' : 'default' }}
+                onClick={() => onChannelClick?.(channel.id)}
+                onMouseEnter={() => showTooltip({ channel, stats }, x + boxWidth / 2)}
+                onMouseLeave={hideTooltip}
+              >
+                {/* Vertical line (whiskers) */}
                 <Line
-                  from={{ x: 0, y: yScale(specs.usl) }}
-                  to={{ x: width, y: yScale(specs.usl) }}
-                  stroke={chartColors.spec}
-                  strokeWidth={1.5}
-                  strokeDasharray="4,4"
+                  from={{ x: x + boxWidth / 2, y: yScale(stats.min) }}
+                  to={{ x: x + boxWidth / 2, y: yScale(stats.max) }}
+                  stroke={boxColor}
+                  strokeWidth={isSelected ? 2 : 1}
                 />
-                <text
-                  x={width - 4}
-                  y={yScale(specs.usl) - 4}
-                  fill={chartColors.spec}
-                  fontSize={fonts.statLabel}
-                  textAnchor="end"
-                >
-                  USL
-                </text>
-              </>
-            )}
-            {specs.lsl !== undefined && (
-              <>
+
+                {/* Min whisker cap */}
                 <Line
-                  from={{ x: 0, y: yScale(specs.lsl) }}
-                  to={{ x: width, y: yScale(specs.lsl) }}
-                  stroke={chartColors.spec}
-                  strokeWidth={1.5}
-                  strokeDasharray="4,4"
+                  from={{ x: x + boxWidth * 0.25, y: yScale(stats.min) }}
+                  to={{ x: x + boxWidth * 0.75, y: yScale(stats.min) }}
+                  stroke={boxColor}
+                  strokeWidth={isSelected ? 2 : 1}
                 />
-                <text
-                  x={width - 4}
-                  y={yScale(specs.lsl) + 12}
-                  fill={chartColors.spec}
-                  fontSize={fonts.statLabel}
-                  textAnchor="end"
-                >
-                  LSL
-                </text>
-              </>
-            )}
 
-            {/* Boxplots */}
-            {boxplotData.map(({ channel, stats }) => {
-              const x = xScale(channel.id) ?? 0;
-              const boxColor = getBoxColor(channel);
-              const isSelected = selectedMeasure === channel.id;
+                {/* Max whisker cap */}
+                <Line
+                  from={{ x: x + boxWidth * 0.25, y: yScale(stats.max) }}
+                  to={{ x: x + boxWidth * 0.75, y: yScale(stats.max) }}
+                  stroke={boxColor}
+                  strokeWidth={isSelected ? 2 : 1}
+                />
 
-              return (
-                <Group
-                  key={channel.id}
-                  style={{ cursor: onChannelClick ? 'pointer' : 'default' }}
-                  onClick={() => onChannelClick?.(channel.id)}
-                  onMouseEnter={() => showTooltip({ channel, stats }, x + boxWidth / 2)}
-                  onMouseLeave={hideTooltip}
-                >
-                  {/* Vertical line (whiskers) */}
-                  <Line
-                    from={{ x: x + boxWidth / 2, y: yScale(stats.min) }}
-                    to={{ x: x + boxWidth / 2, y: yScale(stats.max) }}
-                    stroke={boxColor}
-                    strokeWidth={isSelected ? 2 : 1}
-                  />
+                {/* Box (Q1 to Q3) */}
+                <Bar
+                  x={x}
+                  y={yScale(stats.q3)}
+                  width={boxWidth}
+                  height={Math.max(0, yScale(stats.q1) - yScale(stats.q3))}
+                  fill={boxColor}
+                  fillOpacity={isSelected ? 0.4 : 0.2}
+                  stroke={boxColor}
+                  strokeWidth={isSelected ? 2 : 1}
+                  rx={2}
+                />
 
-                  {/* Min whisker cap */}
-                  <Line
-                    from={{ x: x + boxWidth * 0.25, y: yScale(stats.min) }}
-                    to={{ x: x + boxWidth * 0.75, y: yScale(stats.min) }}
-                    stroke={boxColor}
-                    strokeWidth={isSelected ? 2 : 1}
-                  />
+                {/* Median line */}
+                <Line
+                  from={{ x: x, y: yScale(stats.median) }}
+                  to={{ x: x + boxWidth, y: yScale(stats.median) }}
+                  stroke={boxColor}
+                  strokeWidth={2}
+                />
 
-                  {/* Max whisker cap */}
-                  <Line
-                    from={{ x: x + boxWidth * 0.25, y: yScale(stats.max) }}
-                    to={{ x: x + boxWidth * 0.75, y: yScale(stats.max) }}
-                    stroke={boxColor}
-                    strokeWidth={isSelected ? 2 : 1}
-                  />
-
-                  {/* Box (Q1 to Q3) */}
-                  <Bar
-                    x={x}
-                    y={yScale(stats.q3)}
-                    width={boxWidth}
-                    height={Math.max(0, yScale(stats.q1) - yScale(stats.q3))}
-                    fill={boxColor}
-                    fillOpacity={isSelected ? 0.4 : 0.2}
-                    stroke={boxColor}
-                    strokeWidth={isSelected ? 2 : 1}
-                    rx={2}
-                  />
-
-                  {/* Median line */}
-                  <Line
-                    from={{ x: x, y: yScale(stats.median) }}
-                    to={{ x: x + boxWidth, y: yScale(stats.median) }}
-                    stroke={boxColor}
-                    strokeWidth={2}
-                  />
-
-                  {/* Mean marker (diamond) */}
-                  <polygon
-                    points={`
+                {/* Mean marker (diamond) */}
+                <polygon
+                  points={`
                     ${x + boxWidth / 2},${yScale(stats.mean) - 4}
                     ${x + boxWidth / 2 + 4},${yScale(stats.mean)}
                     ${x + boxWidth / 2},${yScale(stats.mean) + 4}
                     ${x + boxWidth / 2 - 4},${yScale(stats.mean)}
                   `}
-                    fill={chrome.labelPrimary}
-                  />
-                </Group>
-              );
-            })}
+                  fill={chrome.labelPrimary}
+                />
+              </Group>
+            );
+          })}
 
-            {/* X Axis */}
-            <AxisBottom
-              scale={xScale}
-              top={height}
-              stroke={chrome.axisPrimary}
-              tickStroke={chrome.axisPrimary}
-              tickLabelProps={() => ({
-                fill: chrome.labelPrimary,
-                fontSize: fonts.tickLabel,
-                textAnchor: 'middle',
-                dy: 4,
-              })}
-              tickFormat={channelId => {
-                const channel = boxplotData.find(d => d.channel.id === channelId);
-                return channel?.channel.label ?? channelId;
-              }}
-            />
-
-            {/* n Labels (always visible below X-axis) */}
-            {boxplotData.map(({ channel }) => {
-              const x = xScale(channel.id) ?? 0;
-              return (
-                <text
-                  key={`n-${channel.id}`}
-                  x={x + boxWidth / 2}
-                  y={height + (parentWidth < 400 ? 24 : 28)}
-                  textAnchor="middle"
-                  fill={chrome.labelMuted}
-                  fontSize={fonts.statLabel - 1}
-                >
-                  n={channel.n}
-                </text>
-              );
-            })}
-
-            {/* Y Axis */}
-            <AxisLeft
-              scale={yScale}
-              stroke={chrome.axisPrimary}
-              tickStroke={chrome.axisPrimary}
-              tickLabelProps={() => ({
-                fill: chrome.labelPrimary,
-                fontSize: fonts.tickLabel,
-                textAnchor: 'end',
-                dx: -4,
-                dy: 3,
-                fontFamily: 'monospace',
-              })}
-            />
-
-            {/* Y Axis Label */}
-            <text
-              x={-height / 2}
-              y={-margin.left + 14}
-              fill={chrome.labelPrimary}
-              fontSize={fonts.axisLabel}
-              textAnchor="middle"
-              transform="rotate(-90)"
-            >
-              Value
-            </text>
-          </Group>
-
-          {/* Source Bar */}
-          {showBranding && (
-            <ChartSourceBar
-              width={parentWidth}
-              top={parentHeight - getSourceBarHeight()}
-              n={boxplotData.reduce((sum, d) => sum + d.channel.n, 0)}
-            />
-          )}
-        </svg>
-
-        {/* Expand Toggle Icon */}
-        {onToggleExpand && (
-          <button
-            onClick={onToggleExpand}
-            style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              background: 'transparent',
-              border: `1px solid ${chrome.labelMuted}`,
-              borderRadius: 4,
-              padding: '4px 8px',
-              cursor: 'pointer',
-              color: chrome.labelSecondary,
-              fontSize: 12,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
-            title={expanded ? 'Collapse stats' : 'Expand stats'}
-          >
-            <span style={{ fontSize: 10 }}>{expanded ? '▲' : '▼'}</span>
-            Stats
-          </button>
-        )}
-
-        {/* Tooltip */}
-        {tooltipData && (
-          <TooltipWithBounds
-            left={tooltipLeft}
-            top={tooltipTop}
-            style={{
-              ...defaultStyles,
-              backgroundColor: chrome.tooltipBg,
-              color: chrome.labelPrimary,
-              border: `1px solid ${chrome.gridLine}`,
-              borderRadius: '4px',
-              padding: '8px 12px',
+          {/* X Axis */}
+          <AxisBottom
+            scale={xScale}
+            top={height}
+            stroke={chrome.axisPrimary}
+            tickStroke={chrome.axisPrimary}
+            tickLabelProps={() => ({
+              fill: chrome.labelPrimary,
               fontSize: fonts.tickLabel,
+              textAnchor: 'middle',
+              dy: 4,
+            })}
+            tickFormat={channelId => {
+              const channel = boxplotData.find(d => d.channel.id === channelId);
+              return channel?.channel.label ?? channelId;
             }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={{ fontWeight: 600 }}>{tooltipData.channel.label}</div>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '0 16px',
-                  fontSize: '0.75rem',
-                }}
-              >
-                <span>Max:</span>
-                <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.max.toFixed(2)}</span>
-                <span>Q3:</span>
-                <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.q3.toFixed(2)}</span>
-                <span>Median:</span>
-                <span style={{ fontFamily: 'monospace' }}>
-                  {tooltipData.stats.median.toFixed(2)}
-                </span>
-                <span>Mean:</span>
-                <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.mean.toFixed(2)}</span>
-                <span>Q1:</span>
-                <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.q1.toFixed(2)}</span>
-                <span>Min:</span>
-                <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.min.toFixed(2)}</span>
-              </div>
-              <div style={{ paddingTop: '4px', borderTop: `1px solid ${chrome.gridLine}` }}>
-                Cpk:{' '}
-                <span style={{ fontFamily: 'monospace' }}>
-                  {tooltipData.channel.cpk?.toFixed(2) ?? 'N/A'}
-                </span>
-              </div>
-            </div>
-          </TooltipWithBounds>
-        )}
-      </div>
+          />
 
-      {/* Expandable Stats Table */}
-      {expanded && (
-        <div style={{ flex: 1, overflow: 'auto', padding: '0 8px' }}>
-          <PerformanceStatsTable channels={displayedChannels} />
-        </div>
+          {/* n Labels (always visible below X-axis) */}
+          {boxplotData.map(({ channel }) => {
+            const x = xScale(channel.id) ?? 0;
+            return (
+              <text
+                key={`n-${channel.id}`}
+                x={x + boxWidth / 2}
+                y={height + (parentWidth < 400 ? 24 : 28)}
+                textAnchor="middle"
+                fill={chrome.labelMuted}
+                fontSize={fonts.statLabel - 1}
+              >
+                n={channel.n}
+              </text>
+            );
+          })}
+
+          {/* Y Axis */}
+          <AxisLeft
+            scale={yScale}
+            stroke={chrome.axisPrimary}
+            tickStroke={chrome.axisPrimary}
+            tickLabelProps={() => ({
+              fill: chrome.labelPrimary,
+              fontSize: fonts.tickLabel,
+              textAnchor: 'end',
+              dx: -4,
+              dy: 3,
+              fontFamily: 'monospace',
+            })}
+          />
+
+          {/* Y Axis Label */}
+          <text
+            x={-height / 2}
+            y={-margin.left + 14}
+            fill={chrome.labelPrimary}
+            fontSize={fonts.axisLabel}
+            textAnchor="middle"
+            transform="rotate(-90)"
+          >
+            Value
+          </text>
+        </Group>
+
+        {/* Source Bar */}
+        {showBranding && (
+          <ChartSourceBar
+            width={parentWidth}
+            top={parentHeight - getSourceBarHeight()}
+            n={boxplotData.reduce((sum, d) => sum + d.channel.n, 0)}
+          />
+        )}
+      </svg>
+
+      {/* Tooltip */}
+      {tooltipData && (
+        <TooltipWithBounds
+          left={tooltipLeft}
+          top={tooltipTop}
+          style={{
+            ...defaultStyles,
+            backgroundColor: chrome.tooltipBg,
+            color: chrome.labelPrimary,
+            border: `1px solid ${chrome.gridLine}`,
+            borderRadius: '4px',
+            padding: '8px 12px',
+            fontSize: fonts.tickLabel,
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ fontWeight: 600 }}>{tooltipData.channel.label}</div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '0 16px',
+                fontSize: '0.75rem',
+              }}
+            >
+              <span>Max:</span>
+              <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.max.toFixed(2)}</span>
+              <span>Q3:</span>
+              <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.q3.toFixed(2)}</span>
+              <span>Median:</span>
+              <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.median.toFixed(2)}</span>
+              <span>Mean:</span>
+              <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.mean.toFixed(2)}</span>
+              <span>Q1:</span>
+              <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.q1.toFixed(2)}</span>
+              <span>Min:</span>
+              <span style={{ fontFamily: 'monospace' }}>{tooltipData.stats.min.toFixed(2)}</span>
+            </div>
+            <div style={{ paddingTop: '4px', borderTop: `1px solid ${chrome.gridLine}` }}>
+              Cpk:{' '}
+              <span style={{ fontFamily: 'monospace' }}>
+                {tooltipData.channel.cpk?.toFixed(2) ?? 'N/A'}
+              </span>
+            </div>
+          </div>
+        </TooltipWithBounds>
       )}
     </div>
   );

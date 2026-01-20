@@ -97,11 +97,6 @@ export {
 
 // Shared components
 export { ChartTooltip, getTooltipStyle, type ChartTooltipProps } from './components/ChartTooltip';
-export { BoxplotStatsTable, type BoxplotStatsTableProps } from './components/BoxplotStatsTable';
-export {
-  PerformanceStatsTable,
-  type PerformanceStatsTableProps,
-} from './components/PerformanceStatsTable';
 
 export {
   getYAxisTickLabelProps,

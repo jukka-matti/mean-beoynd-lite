@@ -87,7 +87,6 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
   const [selectedMeasure, setSelectedMeasure] = useState<string | null>(
     state.selectedMeasure ?? null
   );
-  const [boxplotExpanded, setBoxplotExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Observe container size for responsive charts
@@ -280,10 +279,8 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
                 selectedMeasure={selectedMeasure}
                 onChannelClick={handleMeasureClick}
                 parentWidth={bottomChartWidth}
-                parentHeight={boxplotExpanded ? bottomChartHeight * 1.5 : bottomChartHeight}
+                parentHeight={bottomChartHeight}
                 showBranding={false}
-                expanded={boxplotExpanded}
-                onToggleExpand={() => setBoxplotExpanded(prev => !prev)}
               />
             </ChartErrorBoundary>
           </div>
