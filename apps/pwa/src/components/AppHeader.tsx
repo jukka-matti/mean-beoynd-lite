@@ -14,6 +14,7 @@ interface AppHeaderProps {
   isFunnelPanelOpen?: boolean;
   onSaveToBrowser: () => void;
   onOpenProjects: () => void;
+  onNewAnalysis: () => void;
   onToggleDataPanel?: () => void;
   onToggleFunnelPanel?: () => void;
   onOpenDataTable: () => void;
@@ -31,7 +32,7 @@ interface AppHeaderProps {
  *
  * Design principles:
  * - Icons only for efficiency
- * - Logo clickable → project picker
+ * - Logo clickable → new analysis (home screen)
  * - Unsaved indicator dot
  * - Data panel toggle persists
  */
@@ -46,6 +47,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   isFunnelPanelOpen = false,
   onSaveToBrowser,
   onOpenProjects,
+  onNewAnalysis,
   onToggleDataPanel,
   onToggleFunnelPanel,
   onOpenDataTable,
@@ -92,18 +94,18 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className="h-14 border-b border-edge flex items-center justify-between px-4 sm:px-6 bg-surface/50 backdrop-blur-md z-10">
-      {/* Logo and project name - clickable to open projects */}
+      {/* Logo and project name - clickable to start new analysis */}
       <button
-        onClick={onOpenProjects}
+        onClick={onNewAnalysis}
         className="flex items-center gap-2 sm:gap-3 group hover:opacity-90 transition-opacity"
-        title="Open Projects"
+        title="New Analysis"
       >
         <div className="p-1.5 sm:p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-shadow">
           <Activity className="text-white" size={18} />
         </div>
         <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
           <h1 className="text-base sm:text-lg font-bold bg-gradient-to-r from-white to-content-secondary bg-clip-text text-transparent">
-            VariScout <span className="font-light text-content-muted">Lite</span>
+            VariScout
           </h1>
           {hasData && (currentProjectName || dataFilename) && (
             <span className="text-[10px] sm:text-xs text-content-muted truncate max-w-[150px] sm:max-w-none flex items-center gap-1.5">

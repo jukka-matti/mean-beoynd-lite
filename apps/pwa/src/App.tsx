@@ -576,6 +576,7 @@ function App() {
           isFunnelPanelOpen={isFunnelPanelOpen}
           onSaveToBrowser={handleSaveToBrowser}
           onOpenProjects={() => setIsProjectsOpen(true)}
+          onNewAnalysis={handleResetRequest}
           onToggleDataPanel={handleToggleDataPanel}
           onToggleFunnelPanel={handleToggleFunnelPanel}
           onOpenDataTable={() => {
