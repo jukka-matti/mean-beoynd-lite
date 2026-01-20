@@ -6,6 +6,7 @@ import {
   CapabilityHistogramBase,
   ProbabilityPlotBase,
   calculateBoxplotStats,
+  BoxplotStatsTable,
   type ParetoDataPoint,
 } from '@variscout/charts';
 import {
@@ -1010,6 +1011,13 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
       {/* ANOVA Results - shows when factor column exists */}
       {anovaResult && state.factorColumns?.[0] && (
         <AnovaResults result={anovaResult} factorLabel={state.factorColumns[0]} />
+      )}
+
+      {/* Boxplot Stats Table (compact, below ANOVA) */}
+      {boxplotData.length > 0 && boxplotData.length <= 8 && (
+        <div style={{ marginTop: theme.spacingS }}>
+          <BoxplotStatsTable data={boxplotData} compact />
+        </div>
       )}
     </div>
   );

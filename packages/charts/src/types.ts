@@ -104,8 +104,10 @@ export interface BoxplotGroupData {
   max: number;
   q1: number;
   median: number;
+  mean: number;
   q3: number;
   outliers: number[];
+  stdDev: number;
 }
 
 /**
@@ -123,8 +125,10 @@ export function calculateBoxplotStats(input: BoxplotGroupInput): BoxplotGroupDat
       max: 0,
       q1: 0,
       median: 0,
+      mean: 0,
       q3: 0,
       outliers: [],
+      stdDev: 0,
     };
   }
 
@@ -149,6 +153,13 @@ export function calculateBoxplotStats(input: BoxplotGroupInput): BoxplotGroupDat
   const upperFence = q3 + 1.5 * iqr;
   const outliers = sorted.filter(v => v < lowerFence || v > upperFence);
 
+  // Calculate mean
+  const mean = sorted.reduce((sum, v) => sum + v, 0) / n;
+
+  // Calculate standard deviation
+  const sumSquaredDiff = sorted.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0);
+  const stdDev = n > 1 ? Math.sqrt(sumSquaredDiff / (n - 1)) : 0;
+
   return {
     key: input.group,
     values: input.values,
@@ -156,8 +167,10 @@ export function calculateBoxplotStats(input: BoxplotGroupInput): BoxplotGroupDat
     max: Math.min(max, upperFence),
     q1,
     median,
+    mean,
     q3,
     outliers,
+    stdDev,
   };
 }
 
@@ -189,6 +202,8 @@ export interface BoxplotProps extends BaseChartProps {
   categoryContributions?: Map<string | number, number>;
   /** Show contribution labels below boxes (default: false) */
   showContributionLabels?: boolean;
+  /** Show contribution bars below boxes (default: true when categoryContributions provided) */
+  showContributionBars?: boolean;
 }
 
 /**
@@ -326,6 +341,8 @@ export interface PerformanceBoxplotProps extends BaseChartProps {
   maxDisplayed?: number;
   /** Callback when a boxplot is clicked */
   onChannelClick?: (channelId: string) => void;
+  /** Show stats table below the chart (default: false) */
+  showStatsTable?: boolean;
 }
 
 /**

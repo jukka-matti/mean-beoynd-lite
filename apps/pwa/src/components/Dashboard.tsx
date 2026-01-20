@@ -18,6 +18,7 @@ import { useIsMobile } from '@variscout/ui';
 import { useKeyboardNavigation } from '@variscout/hooks';
 import { useData } from '../context/DataContext';
 import { calculateAnova, type AnovaResult, getNextDrillFactor } from '@variscout/core';
+import { calculateBoxplotStats, type BoxplotGroupData } from '@variscout/charts';
 import useVariationTracking from '../hooks/useVariationTracking';
 import useDrillDown from '../hooks/useDrillDown';
 import { Activity, Copy, Check, Maximize2, Layers, ArrowLeft } from 'lucide-react';
@@ -276,6 +277,27 @@ const Dashboard = ({
   const anovaResult: AnovaResult | null = useMemo(() => {
     if (!outcome || !boxplotFactor || filteredData.length === 0) return null;
     return calculateAnova(filteredData, outcome, boxplotFactor);
+  }, [filteredData, outcome, boxplotFactor]);
+
+  // Compute boxplot data for the selected factor (for stats table in fullscreen mode)
+  const boxplotData: BoxplotGroupData[] = useMemo(() => {
+    if (!outcome || !boxplotFactor || filteredData.length === 0) return [];
+
+    // Group data by factor
+    const groups = new Map<string, number[]>();
+    for (const row of filteredData) {
+      const key = String(row[boxplotFactor] ?? '');
+      const value = Number(row[outcome]);
+      if (!isNaN(value)) {
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(value);
+      }
+    }
+
+    // Calculate stats for each group
+    return Array.from(groups.entries())
+      .map(([group, values]) => calculateBoxplotStats({ group, values }))
+      .sort((a, b) => a.key.localeCompare(b.key));
   }, [filteredData, outcome, boxplotFactor]);
 
   // Handle breadcrumb navigation (delegates to hook)
@@ -788,6 +810,8 @@ const Dashboard = ({
               factorVariations={factorVariations}
               showParetoComparison={showParetoComparison}
               anovaResult={anovaResult}
+              boxplotData={boxplotData}
+              boxplotCategoryContributions={categoryContributions?.get(boxplotFactor)}
               onSetOutcome={setOutcome}
               onSetBoxplotFactor={setBoxplotFactor}
               onSetParetoFactor={setParetoFactor}

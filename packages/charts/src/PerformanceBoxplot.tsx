@@ -13,7 +13,6 @@ import { Group } from '@visx/group';
 import { Bar, Line } from '@visx/shape';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
-import { GridRows } from '@visx/grid';
 import { withParentSize } from '@visx/responsive';
 import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { getWorstChannels } from '@variscout/core';
@@ -63,6 +62,7 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
   maxDisplayed = DEFAULT_MAX_DISPLAYED,
   onChannelClick,
   showBranding = true,
+  showStatsTable = false,
 }) => {
   const { chrome } = useChartTheme();
   const sourceBarHeight = getSourceBarHeight(showBranding);
@@ -133,22 +133,6 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
     });
   }, [boxplotData, height, specs]);
 
-  // Get box color based on channel health
-  const getBoxColor = (channel: ChannelResult): string => {
-    switch (channel.health) {
-      case 'critical':
-        return chartColors.fail;
-      case 'warning':
-        return chartColors.warning;
-      case 'capable':
-        return chartColors.pass;
-      case 'excellent':
-        return chartColors.mean;
-      default:
-        return chrome.labelSecondary;
-    }
-  };
-
   const showTooltip = (data: { channel: ChannelResult; stats: BoxplotStats }, x: number) => {
     setTooltipData(data);
     setTooltipLeft(x + margin.left);
@@ -181,54 +165,29 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <svg width={parentWidth} height={parentHeight}>
         <Group left={margin.left} top={margin.top}>
-          <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
-
           {/* Spec limits */}
           {specs.usl !== undefined && (
-            <>
-              <Line
-                from={{ x: 0, y: yScale(specs.usl) }}
-                to={{ x: width, y: yScale(specs.usl) }}
-                stroke={chartColors.spec}
-                strokeWidth={1.5}
-                strokeDasharray="4,4"
-              />
-              <text
-                x={width - 4}
-                y={yScale(specs.usl) - 4}
-                fill={chartColors.spec}
-                fontSize={fonts.statLabel}
-                textAnchor="end"
-              >
-                USL
-              </text>
-            </>
+            <Line
+              from={{ x: 0, y: yScale(specs.usl) }}
+              to={{ x: width, y: yScale(specs.usl) }}
+              stroke={chartColors.spec}
+              strokeWidth={1.5}
+              strokeDasharray="4,4"
+            />
           )}
           {specs.lsl !== undefined && (
-            <>
-              <Line
-                from={{ x: 0, y: yScale(specs.lsl) }}
-                to={{ x: width, y: yScale(specs.lsl) }}
-                stroke={chartColors.spec}
-                strokeWidth={1.5}
-                strokeDasharray="4,4"
-              />
-              <text
-                x={width - 4}
-                y={yScale(specs.lsl) + 12}
-                fill={chartColors.spec}
-                fontSize={fonts.statLabel}
-                textAnchor="end"
-              >
-                LSL
-              </text>
-            </>
+            <Line
+              from={{ x: 0, y: yScale(specs.lsl) }}
+              to={{ x: width, y: yScale(specs.lsl) }}
+              stroke={chartColors.spec}
+              strokeWidth={1.5}
+              strokeDasharray="4,4"
+            />
           )}
 
           {/* Boxplots */}
           {boxplotData.map(({ channel, stats }) => {
             const x = xScale(channel.id) ?? 0;
-            const boxColor = getBoxColor(channel);
             const isSelected = selectedMeasure === channel.id;
 
             return (
@@ -243,7 +202,7 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
                 <Line
                   from={{ x: x + boxWidth / 2, y: yScale(stats.min) }}
                   to={{ x: x + boxWidth / 2, y: yScale(stats.max) }}
-                  stroke={boxColor}
+                  stroke={chrome.whisker}
                   strokeWidth={isSelected ? 2 : 1}
                 />
 
@@ -251,7 +210,7 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
                 <Line
                   from={{ x: x + boxWidth * 0.25, y: yScale(stats.min) }}
                   to={{ x: x + boxWidth * 0.75, y: yScale(stats.min) }}
-                  stroke={boxColor}
+                  stroke={chrome.whisker}
                   strokeWidth={isSelected ? 2 : 1}
                 />
 
@@ -259,7 +218,7 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
                 <Line
                   from={{ x: x + boxWidth * 0.25, y: yScale(stats.max) }}
                   to={{ x: x + boxWidth * 0.75, y: yScale(stats.max) }}
-                  stroke={boxColor}
+                  stroke={chrome.whisker}
                   strokeWidth={isSelected ? 2 : 1}
                 />
 
@@ -269,9 +228,8 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
                   y={yScale(stats.q3)}
                   width={boxWidth}
                   height={Math.max(0, yScale(stats.q1) - yScale(stats.q3))}
-                  fill={boxColor}
-                  fillOpacity={isSelected ? 0.4 : 0.2}
-                  stroke={boxColor}
+                  fill={isSelected ? chartColors.selected : chrome.boxDefault}
+                  stroke={isSelected ? chartColors.selectedBorder : chrome.boxBorder}
                   strokeWidth={isSelected ? 2 : 1}
                   rx={2}
                 />
@@ -280,7 +238,7 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
                 <Line
                   from={{ x: x, y: yScale(stats.median) }}
                   to={{ x: x + boxWidth, y: yScale(stats.median) }}
-                  stroke={boxColor}
+                  stroke={chartColors.cumulative}
                   strokeWidth={2}
                 />
 
@@ -417,6 +375,137 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
             </div>
           </div>
         </TooltipWithBounds>
+      )}
+
+      {/* Stats Table (optional) */}
+      {showStatsTable && boxplotData.length > 0 && (
+        <div style={{ marginTop: 8, fontSize: fonts.tickLabel }}>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              border: `1px solid ${chrome.gridLine}`,
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: chrome.tooltipBg }}>
+                <th
+                  style={{
+                    padding: '4px 8px',
+                    textAlign: 'left',
+                    color: chrome.labelPrimary,
+                    borderBottom: `1px solid ${chrome.gridLine}`,
+                  }}
+                >
+                  Channel
+                </th>
+                <th
+                  style={{
+                    padding: '4px 8px',
+                    textAlign: 'right',
+                    color: chrome.labelPrimary,
+                    borderBottom: `1px solid ${chrome.gridLine}`,
+                  }}
+                >
+                  n
+                </th>
+                <th
+                  style={{
+                    padding: '4px 8px',
+                    textAlign: 'right',
+                    color: chrome.labelPrimary,
+                    borderBottom: `1px solid ${chrome.gridLine}`,
+                  }}
+                >
+                  Mean
+                </th>
+                <th
+                  style={{
+                    padding: '4px 8px',
+                    textAlign: 'right',
+                    color: chrome.labelPrimary,
+                    borderBottom: `1px solid ${chrome.gridLine}`,
+                  }}
+                >
+                  StdDev
+                </th>
+                <th
+                  style={{
+                    padding: '4px 8px',
+                    textAlign: 'right',
+                    color: chrome.labelPrimary,
+                    borderBottom: `1px solid ${chrome.gridLine}`,
+                  }}
+                >
+                  Cpk
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {boxplotData.map(({ channel, stats }) => (
+                <tr key={channel.id}>
+                  <td
+                    style={{
+                      padding: '4px 8px',
+                      color: chrome.labelPrimary,
+                      borderBottom: `1px solid ${chrome.gridLine}`,
+                    }}
+                  >
+                    {channel.label}
+                  </td>
+                  <td
+                    style={{
+                      padding: '4px 8px',
+                      textAlign: 'right',
+                      color: chrome.labelSecondary,
+                      fontFamily: 'monospace',
+                      borderBottom: `1px solid ${chrome.gridLine}`,
+                    }}
+                  >
+                    {channel.n}
+                  </td>
+                  <td
+                    style={{
+                      padding: '4px 8px',
+                      textAlign: 'right',
+                      color: chrome.labelSecondary,
+                      fontFamily: 'monospace',
+                      borderBottom: `1px solid ${chrome.gridLine}`,
+                    }}
+                  >
+                    {stats.mean.toFixed(2)}
+                  </td>
+                  <td
+                    style={{
+                      padding: '4px 8px',
+                      textAlign: 'right',
+                      color: chrome.labelSecondary,
+                      fontFamily: 'monospace',
+                      borderBottom: `1px solid ${chrome.gridLine}`,
+                    }}
+                  >
+                    {channel.stdDev?.toFixed(3) ?? '-'}
+                  </td>
+                  <td
+                    style={{
+                      padding: '4px 8px',
+                      textAlign: 'right',
+                      color:
+                        channel.cpk !== undefined && channel.cpk < 1.33
+                          ? chartColors.fail
+                          : chrome.labelSecondary,
+                      fontFamily: 'monospace',
+                      fontWeight: channel.cpk !== undefined && channel.cpk < 1.33 ? 600 : 400,
+                      borderBottom: `1px solid ${chrome.gridLine}`,
+                    }}
+                  >
+                    {channel.cpk?.toFixed(2) ?? '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

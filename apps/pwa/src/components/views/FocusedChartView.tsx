@@ -7,6 +7,7 @@ import FactorSelector from '../FactorSelector';
 import AnovaResults from '../AnovaResults';
 import { Activity, ChevronLeft, ChevronRight, Minimize2 } from 'lucide-react';
 import type { AnovaResult } from '@variscout/core';
+import { BoxplotStatsTable, type BoxplotGroupData } from '@variscout/charts';
 
 export type FocusableChart = 'ichart' | 'boxplot' | 'pareto';
 
@@ -21,6 +22,8 @@ export interface FocusedChartViewProps {
   factorVariations: Map<string, number>;
   showParetoComparison: boolean;
   anovaResult: AnovaResult | null;
+  boxplotData?: BoxplotGroupData[];
+  boxplotCategoryContributions?: Map<string | number, number>;
   onSetOutcome: (outcome: string) => void;
   onSetBoxplotFactor: (factor: string) => void;
   onSetParetoFactor: (factor: string) => void;
@@ -51,6 +54,8 @@ const FocusedChartView: React.FC<FocusedChartViewProps> = ({
   factorVariations,
   showParetoComparison,
   anovaResult,
+  boxplotData,
+  boxplotCategoryContributions,
   onSetOutcome,
   onSetBoxplotFactor,
   onSetParetoFactor,
@@ -125,7 +130,7 @@ const FocusedChartView: React.FC<FocusedChartViewProps> = ({
       {focusedChart === 'boxplot' && (
         <div
           id="boxplot-focus"
-          className="flex-1 bg-surface-secondary border border-edge p-6 rounded-2xl shadow-xl shadow-black/20 flex flex-col h-full"
+          className="flex-1 bg-surface-secondary border border-edge p-6 rounded-2xl shadow-xl shadow-black/20 flex flex-col h-full overflow-hidden"
         >
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-semibold text-content uppercase tracking-wider">Boxplot</h3>
@@ -153,10 +158,20 @@ const FocusedChartView: React.FC<FocusedChartViewProps> = ({
                   factor={boxplotFactor}
                   onDrillDown={onDrillDown}
                   variationPct={factorVariations.get(boxplotFactor)}
+                  categoryContributions={boxplotCategoryContributions}
                 />
               )}
             </ErrorBoundary>
           </div>
+          {/* Stats Table (fullscreen only) */}
+          {boxplotData && boxplotData.length > 0 && (
+            <div className="mt-2 max-h-[200px] overflow-y-auto">
+              <BoxplotStatsTable
+                data={boxplotData}
+                categoryContributions={boxplotCategoryContributions}
+              />
+            </div>
+          )}
           {anovaResult && <AnovaResults result={anovaResult} factorLabel={boxplotFactor} />}
         </div>
       )}

@@ -35,7 +35,10 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
   variationThreshold = DEFAULT_VARIATION_THRESHOLD,
   categoryContributions,
   showContributionLabels = false,
+  showContributionBars,
 }) => {
+  // Show contribution bars by default when categoryContributions is provided
+  const shouldShowBars = showContributionBars ?? categoryContributions !== undefined;
   // Determine if this factor should be highlighted as a drill target
   const isHighVariation = variationPct !== undefined && variationPct >= variationThreshold;
 
@@ -221,6 +224,17 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
                   strokeWidth={2}
                 />
 
+                {/* Mean marker (diamond) */}
+                <polygon
+                  points={`
+                    ${x + barWidth / 2},${yScale(d.mean) - 4}
+                    ${x + barWidth / 2 + 4},${yScale(d.mean)}
+                    ${x + barWidth / 2},${yScale(d.mean) + 4}
+                    ${x + barWidth / 2 - 4},${yScale(d.mean)}
+                  `}
+                  fill={chromeColors.labelPrimary}
+                />
+
                 {/* Outliers */}
                 {d.outliers.map((o, j) => (
                   <circle
@@ -321,6 +335,31 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
             );
           })}
 
+          {/* Contribution Bars (small horizontal bars under each box) */}
+          {shouldShowBars &&
+            categoryContributions &&
+            data.map(d => {
+              const contribution = categoryContributions.get(d.key) ?? 0;
+              const x = xScale(d.key) || 0;
+              const boxWidth = xScale.bandwidth();
+              // Bar width proportional to contribution (max 100%)
+              const contribBarWidth = Math.min(contribution / 100, 1) * boxWidth;
+              const barY = height + nLabelOffset + 6;
+              const isHighContrib = contribution >= variationThreshold;
+
+              return (
+                <rect
+                  key={`bar-${d.key}`}
+                  x={x + (boxWidth - contribBarWidth) / 2}
+                  y={barY}
+                  width={contribBarWidth}
+                  height={4}
+                  fill={isHighContrib ? '#f87171' : chromeColors.labelSecondary}
+                  rx={2}
+                />
+              );
+            })}
+
           {/* X-Axis Label with Variation Indicator */}
           <text
             x={width / 2}
@@ -378,6 +417,7 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
             <strong>{tooltipData.key}</strong>
           </div>
           <div>Median: {tooltipData.median.toFixed(2)}</div>
+          <div>Mean: {tooltipData.mean.toFixed(2)}</div>
           <div>Q1: {tooltipData.q1.toFixed(2)}</div>
           <div>Q3: {tooltipData.q3.toFixed(2)}</div>
           <div>n: {tooltipData.values.length}</div>

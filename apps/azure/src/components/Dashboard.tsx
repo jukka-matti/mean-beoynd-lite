@@ -19,6 +19,7 @@ import {
   getEtaSquared,
   getNextDrillFactor,
 } from '@variscout/core';
+import { calculateBoxplotStats, BoxplotStatsTable, type BoxplotGroupData } from '@variscout/charts';
 import {
   Activity,
   BarChart3,
@@ -162,6 +163,27 @@ const Dashboard = ({
   const anovaResult: AnovaResult | null = useMemo(() => {
     if (!outcome || !boxplotFactor || filteredData.length === 0) return null;
     return calculateAnova(filteredData, outcome, boxplotFactor);
+  }, [filteredData, outcome, boxplotFactor]);
+
+  // Compute boxplot data for the selected factor (for stats table in fullscreen mode)
+  const boxplotData: BoxplotGroupData[] = useMemo(() => {
+    if (!outcome || !boxplotFactor || filteredData.length === 0) return [];
+
+    // Group data by factor
+    const groups = new Map<string, number[]>();
+    for (const row of filteredData) {
+      const key = String(row[boxplotFactor] ?? '');
+      const value = Number(row[outcome]);
+      if (!isNaN(value)) {
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(value);
+      }
+    }
+
+    // Calculate stats for each group
+    return Array.from(groups.entries())
+      .map(([group, values]) => calculateBoxplotStats({ group, values }))
+      .sort((a, b) => a.key.localeCompare(b.key));
   }, [filteredData, outcome, boxplotFactor]);
 
   // Convert current filters to breadcrumb items for navigation display
@@ -720,7 +742,7 @@ const Dashboard = ({
               )}
 
               {focusedChart === 'boxplot' && (
-                <div className="flex-1 bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 flex flex-col h-full">
+                <div className="flex-1 bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 flex flex-col h-full overflow-hidden">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold text-slate-200 uppercase tracking-wider">
                       Boxplot
@@ -753,6 +775,12 @@ const Dashboard = ({
                       )}
                     </ErrorBoundary>
                   </div>
+                  {/* Stats Table (fullscreen only) */}
+                  {boxplotData.length > 0 && (
+                    <div className="mt-2 max-h-[200px] overflow-y-auto">
+                      <BoxplotStatsTable data={boxplotData} />
+                    </div>
+                  )}
                   {anovaResult && <AnovaResults result={anovaResult} factorLabel={boxplotFactor} />}
                 </div>
               )}

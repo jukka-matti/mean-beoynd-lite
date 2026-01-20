@@ -119,6 +119,7 @@ export {
 // Chart components
 export { default as IChart, IChartBase } from './IChart';
 export { default as Boxplot, BoxplotBase } from './Boxplot';
+export { default as BoxplotStatsTable, type BoxplotStatsTableProps } from './BoxplotStatsTable';
 export { default as ParetoChart, ParetoChartBase } from './ParetoChart';
 export { default as CapabilityHistogram, CapabilityHistogramBase } from './CapabilityHistogram';
 export { default as ProbabilityPlot, ProbabilityPlotBase } from './ProbabilityPlot';
