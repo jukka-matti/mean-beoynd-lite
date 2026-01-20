@@ -76,8 +76,7 @@
 
 **persistence.ts** (213 lines) - Current implementation:
 
-- Full IndexedDB for projects
-- Auto-save to localStorage
+- Full IndexedDB for projects (explicit save/load)
 - .vrs export/import working
 - Missing: Template saving
 

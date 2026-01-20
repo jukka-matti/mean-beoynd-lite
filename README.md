@@ -51,7 +51,7 @@ A lightweight, offline-first variation analysis tool for quality professionals. 
 - **PNG Export**: Save charts as images for reports
 - **CSV Export**: Excel-compatible data with spec status column
 - **Project Files**: Save/load as `.vrs` files for sharing
-- **Browser Storage**: Auto-save and named projects
+- **Browser Storage**: Named projects with explicit save/load
 
 ### Display
 

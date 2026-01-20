@@ -409,7 +409,7 @@ This keeps the PWA focused while letting users discover enterprise options.
 4. Analyze (I-Chart, Boxplot, Pareto)
 5. Click to filter → drill down
 6. Export charts/data
-7. Save project (auto-save + manual .vrs export)
+7. Save project (explicit save to IndexedDB or .vrs export)
 ```
 
 ### Upgrade Flow

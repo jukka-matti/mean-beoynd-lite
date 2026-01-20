@@ -226,7 +226,6 @@ import { useDataState } from '@variscout/hooks';
 // In DataProvider
 const [state, actions] = useDataState({
   persistence: persistenceAdapter,
-  autoSaveDelay: 1000,
 });
 ```
 

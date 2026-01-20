@@ -53,9 +53,9 @@ We deliberately chose simplicity over feature richness. Instead of building a co
 
 ### Persistence
 
-- **Auto-save**: Crash recovery via localStorage
-- **Named Projects**: Save multiple analyses to browser storage (IndexedDB)
+- **Named Projects**: Save analyses to browser storage (IndexedDB) via explicit save action
 - **File Backup**: Download .vrs files for external backup
+- **Session**: App always starts on HomeScreen
 
 ---
 

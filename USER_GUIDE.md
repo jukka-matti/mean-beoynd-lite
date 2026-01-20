@@ -276,7 +276,7 @@ You can always override these suggestions in the column mapping screen.
 - **Linked Filtering**: Click any bar in Pareto or group in Boxplot to filter all charts instantly.
 - **Focus Mode**: Click the fullscreen icon (⛶) to maximize. **Use Arrow Keys (Left/Right)** or on-screen buttons to cycle through charts like a slideshow.
 - **Data Table**: Toggle the Data Panel (📊) to view raw data alongside your charts. Click a row to highlight it in the chart.
-- **Auto-Save**: Your work is automatically saved every 2 seconds. The blue dot (●) next to the project name indicates save status.
+- **Save Project**: Use the Save button to save your work to the browser. The app always starts on HomeScreen - unsaved work will be lost on page close.
 
 ---
 
@@ -325,9 +325,9 @@ A: Yes! After visiting once, the app caches itself for offline use. You can even
 
 A: All data stays in your browser:
 
-- **Auto-save**: Changes are automatically saved to IndexedDB every 2 seconds (indicated by the blue dot next to the project name)
-- **Manual save**: Click **"Save Now"** in the Settings Panel for immediate save
+- **Explicit save**: Click **"Save"** in the toolbar to save your project to IndexedDB
 - **Saved Projects**: Stored in IndexedDB (larger storage, persists across sessions)
+- **Session start**: App always starts on HomeScreen - load saved projects from there
 - **No cloud**: Nothing is sent to any server
 
 ### Projects & Export

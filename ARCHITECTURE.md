@@ -234,7 +234,7 @@ The application uses a centralized React Context to manage the entire analysis s
 
 - **State (`filteredData`)**: Derived from `rawData` based on active global filters.
 - **Performance**: Uses `useMemo` extensively to prevent re-calculating statistics on every render.
-- **Persistence**: Auto-saves to localStorage, exposes methods for IndexedDB project management.
+- **Persistence**: Exposes methods for IndexedDB project management (explicit save/load).
 - **Flow**: Import → `setRawData` → `detectColumns` → `DataContext` Updates → Charts Render.
 
 ### 4.2 Statistics Engine (`packages/core/src/stats.ts`)
@@ -265,17 +265,12 @@ Built with Visx to ensure complete control over rendering behavior and interacti
 
 Handles all data storage operations in the browser.
 
-- **Auto-save**: Debounced saves to localStorage on every state change.
-- **Project Storage**: Named projects saved to IndexedDB for larger datasets.
+- **Project Storage**: Named projects saved to IndexedDB via explicit save/load actions.
 - **File Export/Import**: Download/upload `.vrs` JSON files for portability.
 
 ## 5. Data Persistence
 
-### Auto-Save (localStorage)
-
-- Current session auto-saved every second (debounced)
-- Automatically restores on page reload
-- Provides session recovery if browser closes unexpectedly
+The app always starts on the HomeScreen. Users must explicitly save and load projects.
 
 ### Named Projects (IndexedDB)
 

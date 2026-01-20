@@ -8,7 +8,7 @@ VariScout uses a consistent navigation model across all products:
 
 - **Filter-based navigation**: Clicking chart elements filters data
 - **Breadcrumb trail**: Shows current drill path with back navigation
-- **State persistence**: Filters auto-saved in project state
+- **State persistence**: Filters saved with project when user saves explicitly
 
 ## Drill-Down Behavior by Chart
 

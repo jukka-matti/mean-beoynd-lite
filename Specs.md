@@ -693,7 +693,6 @@ Charts are copied to clipboard as PNG — paste directly into PowerPoint, Word, 
 ├─────────────────────────────────────────┤
 │  Browser APIs                           │
 │  ├── IndexedDB (project storage)        │
-│  ├── localStorage (auto-save)           │
 │  ├── Service Worker (offline)           │
 │  └── File API (import/export)           │
 └─────────────────────────────────────────┘

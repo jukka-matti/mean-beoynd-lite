@@ -184,7 +184,7 @@ npx wrangler publish
 ### Storage System
 
 - [ ] Create project
-- [ ] Auto-save works
+- [ ] Save project works (explicit save)
 - [ ] Load saved project
 - [ ] Export .vrs file
 - [ ] Import .vrs file

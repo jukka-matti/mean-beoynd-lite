@@ -292,31 +292,7 @@ User adds grade tiers
 
 ## Data Persistence Flows
 
-### Auto-Save (Session Recovery)
-
-```
-Any state change
-         │
-         ▼
-┌────────────────────────────┐
-│ Debounce 1 second          │
-└────────────┬───────────────┘
-             │
-             ▼
-┌────────────────────────────┐
-│ localStorage.setItem(      │
-│   'variscout_autosave',    │
-│   JSON.stringify(state)    │
-│ )                          │
-└────────────────────────────┘
-
-On page reload:
-┌────────────────────────────┐
-│ loadAutoSave()             │
-│  • Check localStorage      │
-│  • Restore if present      │
-└────────────────────────────┘
-```
+The app always starts on HomeScreen. There is no auto-save or session recovery - users must explicitly save their projects to IndexedDB.
 
 ### Save Named Project
 

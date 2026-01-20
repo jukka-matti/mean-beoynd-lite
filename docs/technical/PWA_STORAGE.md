@@ -356,34 +356,6 @@ export async function searchProjects(query) {
 }
 ```
 
-### Auto-save
-
-```javascript
-// src/db/autosave.js
-
-import { db } from './database';
-import { debounce } from 'lodash-es';
-
-// Debounced auto-save (saves 500ms after last change)
-export const autoSave = debounce(async (projectId, updates) => {
-  if (!projectId) return;
-
-  const updated = new Date().toISOString();
-  await db.projects.update(projectId, { ...updates, updated });
-
-  console.log(`Auto-saved project ${projectId}`);
-}, 500);
-
-// Usage in React component
-function useAutoSave(projectId, data, config, results) {
-  useEffect(() => {
-    if (projectId) {
-      autoSave(projectId, { data, config, results });
-    }
-  }, [projectId, data, config, results]);
-}
-```
-
 ### Import/Export (.vrs files)
 
 ```javascript
@@ -688,7 +660,7 @@ db.version(2).upgrade(tx => {
 // src/hooks/useProject.js
 
 import { useState, useEffect, useCallback } from 'react';
-import { getProject, updateProject, autoSave } from '../db/projects';
+import { getProject, updateProject } from '../db/projects';
 
 export function useProject(projectId) {
   const [project, setProject] = useState(null);
@@ -710,11 +682,11 @@ export function useProject(projectId) {
       .finally(() => setLoading(false));
   }, [projectId]);
 
-  // Update with auto-save
+  // Update project (requires explicit save)
   const update = useCallback(
     updates => {
       setProject(prev => ({ ...prev, ...updates }));
-      autoSave(projectId, updates);
+      // Note: Changes are held in memory until user explicitly saves
     },
     [projectId]
   );
@@ -747,15 +719,15 @@ export function useProjects() {
 
 ## Summary
 
-| Feature         | Implementation                    |
-| --------------- | --------------------------------- |
-| Project storage | IndexedDB via Dexie.js            |
-| Auto-save       | Debounced writes on change        |
-| File export     | .vrs (JSON) download              |
-| File import     | .vrs file parsing                 |
-| Settings        | IndexedDB key-value store         |
-| License         | IndexedDB (see TECH-LICENSING.md) |
-| Offline         | Service Worker + IndexedDB        |
-| PWA install     | manifest.json + service worker    |
+| Feature         | Implementation                                    |
+| --------------- | ------------------------------------------------- |
+| Project storage | IndexedDB via Dexie.js (explicit save/load)       |
+| File export     | .vrs (JSON) download                              |
+| File import     | .vrs file parsing                                 |
+| Settings        | IndexedDB key-value store                         |
+| License         | IndexedDB (see TECH-LICENSING.md)                 |
+| Offline         | Service Worker + IndexedDB                        |
+| PWA install     | manifest.json + service worker                    |
+| Session         | App always starts on HomeScreen (no auto-restore) |
 
 All data stays on user's device. No server sync. No user database. Simple and private.

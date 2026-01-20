@@ -126,13 +126,11 @@ The PWA header uses an icon-based toolbar for a cleaner, more focused interface.
 
 Mobile shares most icons with desktop. The Share icon is accessible via Settings.
 
-#### Auto-Save Behavior
+#### Save Behavior
 
-- Changes auto-save to IndexedDB after 2-second debounce
-- Save indicator (●) shows sync status:
-  - Blue dot: All changes saved
-  - Pulsing: Save in progress
-- Manual "Save Now" available in Settings Panel
+- No auto-save: users must explicitly save projects
+- App always starts on HomeScreen
+- "Save" action in toolbar saves to IndexedDB
 
 #### Component Structure
 
@@ -237,7 +235,7 @@ Slide-in panel from the right (modal on mobile) for configuration options.
 │                                     │
 │ ─────────────────────────────────── │
 │                                     │
-│ [Save Now]  Auto-save: On           │
+│ [Save Project]                      │
 │                                     │
 └─────────────────────────────────────┘
 ```
@@ -331,7 +329,7 @@ Specs popover:
 | **Drill-down**         | Full               | Read-only display | Planned               |
 | **Breadcrumbs**        | Interactive        | Display only      | Interactive (planned) |
 | **Mobile**             | Responsive         | Fixed 350px       | Responsive            |
-| **Auto-save**          | Yes (2s debounce)  | N/A               | Planned               |
+| **Auto-save**          | No (explicit save) | N/A               | No                    |
 | **URL routing**        | None               | N/A               | None                  |
 | **Deep linking**       | Future             | N/A               | Future                |
 
@@ -343,8 +341,7 @@ Specs popover:
 - **Settings**: `SettingsPanel` for configuration, opens via ⚙ icon
 - **Data table**: `DataPanel` - resizable right panel (desktop) or bottom sheet (mobile)
 - **Mobile detection**: `window.innerWidth < 640`
-- **Auto-save**: `useAutoSave` hook with 2-second debounce
-- **Persistence**: Filters and panel width saved to IndexedDB with project
+- **Persistence**: Explicit save/load via IndexedDB; filters and panel width saved with project
 
 #### Excel Add-in (`apps/excel-addin`)
 
@@ -524,7 +521,7 @@ All navigation patterns follow accessibility guidelines:
 | `packages/core/src/navigation.ts`                | Types and utilities           |
 | `packages/core/src/variation.ts`                 | Auto-switch logic, η² helpers |
 | `apps/pwa/src/hooks/useDrillDown.ts`             | React hook for drill-down     |
-| `apps/pwa/src/hooks/useAutoSave.ts`              | Auto-save hook (2s debounce)  |
+| `apps/pwa/src/lib/persistence.ts`                | IndexedDB project storage     |
 | `apps/pwa/src/components/AppHeader.tsx`          | Icon-based toolbar            |
 | `apps/pwa/src/components/SettingsPanel.tsx`      | Slide-in settings panel       |
 | `apps/pwa/src/components/DataPanel.tsx`          | Resizable data table panel    |

@@ -46,8 +46,8 @@ Open app → HomeScreen
 ### Persistence
 
 - **localStorage**: Settings, recent projects list
-- **IndexedDB**: Full project data, raw data storage
-- **Auto-save**: 1-second debounce on changes
+- **IndexedDB**: Full project data (explicit save/load)
+- **Session behavior**: App always starts on HomeScreen
 
 ### See Also
 
