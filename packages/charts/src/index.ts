@@ -13,6 +13,7 @@ export type {
   GradeTier,
   StagedStatsResult,
   StageBoundary,
+  ChannelResult,
   IChartDataPoint,
   IChartProps,
   BoxplotGroupInput,
@@ -26,6 +27,10 @@ export type {
   ChartMargins,
   ChartFonts,
   YAxisDomain,
+  PerformanceIChartProps,
+  PerformanceBoxplotProps,
+  PerformanceParetoProps,
+  PerformanceCapabilityProps,
 } from './types';
 
 export type { ScatterPlotProps } from './ScatterPlot';
@@ -92,6 +97,11 @@ export {
 
 // Shared components
 export { ChartTooltip, getTooltipStyle, type ChartTooltipProps } from './components/ChartTooltip';
+export { BoxplotStatsTable, type BoxplotStatsTableProps } from './components/BoxplotStatsTable';
+export {
+  PerformanceStatsTable,
+  type PerformanceStatsTableProps,
+} from './components/PerformanceStatsTable';
 
 export {
   getYAxisTickLabelProps,
@@ -121,6 +131,15 @@ export { default as ScatterPlot, ScatterPlotBase } from './ScatterPlot';
 export { default as GageRRChart, GageRRChartBase } from './GageRRChart';
 export { default as InteractionPlot, InteractionPlotBase } from './InteractionPlot';
 export { default as ChartSourceBar, getSourceBarHeight } from './ChartSourceBar';
+
+// Performance chart components
+export { default as PerformanceIChart, PerformanceIChartBase } from './PerformanceIChart';
+export { default as PerformanceBoxplot, PerformanceBoxplotBase } from './PerformanceBoxplot';
+export { default as PerformancePareto, PerformanceParetoBase } from './PerformancePareto';
+export {
+  default as PerformanceCapability,
+  PerformanceCapabilityBase,
+} from './PerformanceCapability';
 
 // UI Components
 export {

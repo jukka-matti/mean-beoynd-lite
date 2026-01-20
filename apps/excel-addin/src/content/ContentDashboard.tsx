@@ -35,6 +35,10 @@ import { getAllSlicerSelections, clearAllSlicerSelections } from '../lib/slicerM
 
 interface ContentDashboardProps {
   state: AddInState;
+  /** Drill navigation from Performance Mode */
+  drillFromPerformance?: string | null;
+  /** Callback to return to Performance Mode */
+  onBackToPerformance?: () => void;
 }
 
 /**
@@ -97,7 +101,11 @@ class ChartErrorBoundary extends React.Component<
  */
 type ExportStatus = 'idle' | 'copying' | 'inserting' | 'writing' | 'done' | 'error';
 
-const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
+const ContentDashboard: React.FC<ContentDashboardProps> = ({
+  state,
+  drillFromPerformance,
+  onBackToPerformance,
+}) => {
   const [filteredData, setFilteredData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -511,6 +519,19 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({ state }) => {
 
   return (
     <div style={styles.container}>
+      {/* Back to Performance banner when drilled from Performance Mode */}
+      {drillFromPerformance && onBackToPerformance && (
+        <div style={styles.drillBanner}>
+          <div style={styles.drillBannerText}>
+            <span style={styles.drillBannerLabel}>Viewing:</span>
+            <span style={styles.drillBannerMeasure}>{drillFromPerformance}</span>
+          </div>
+          <button onClick={onBackToPerformance} style={styles.drillBannerButton}>
+            &larr; Back to Performance
+          </button>
+        </div>
+      )}
+
       {/* Header with stats summary and export toolbar */}
       <div style={styles.header}>
         <div style={styles.statsRow}>
@@ -944,6 +965,39 @@ const styles: Record<string, React.CSSProperties> = {
   errorHint: {
     color: darkTheme.colorNeutralForeground2,
     fontSize: darkTheme.fontSizeSmall,
+  },
+  drillBanner: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: `${darkTheme.spacingS}px ${darkTheme.spacingM}px`,
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+    borderBottom: '1px solid rgba(59, 130, 246, 0.3)',
+    marginBottom: darkTheme.spacingS,
+  },
+  drillBannerText: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: darkTheme.spacingS,
+    fontSize: darkTheme.fontSizeSmall,
+    color: '#93c5fd',
+  },
+  drillBannerLabel: {
+    color: '#93c5fd',
+  },
+  drillBannerMeasure: {
+    color: darkTheme.colorNeutralForeground1,
+    fontWeight: darkTheme.fontWeightSemibold,
+  },
+  drillBannerButton: {
+    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: darkTheme.borderRadiusS,
+    color: '#93c5fd',
+    fontSize: darkTheme.fontSizeSmall,
+    fontWeight: darkTheme.fontWeightSemibold,
+    cursor: 'pointer',
   },
 };
 

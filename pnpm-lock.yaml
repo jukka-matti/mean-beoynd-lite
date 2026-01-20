@@ -374,6 +374,24 @@ importers:
       '@variscout/data':
         specifier: workspace:*
         version: link:../../packages/data
+      '@visx/axis':
+        specifier: ^3.12.0
+        version: 3.12.0(react@19.2.3)
+      '@visx/event':
+        specifier: ^3.12.0
+        version: 3.12.0
+      '@visx/group':
+        specifier: ^3.12.0
+        version: 3.12.0(react@19.2.3)
+      '@visx/scale':
+        specifier: ^3.12.0
+        version: 3.12.0
+      '@visx/shape':
+        specifier: ^3.12.0
+        version: 3.12.0(react@19.2.3)
+      '@visx/tooltip':
+        specifier: ^3.12.0
+        version: 3.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       astro:
         specifier: ^5.1.4
         version: 5.16.6(@azure/identity@4.13.0)(@azure/storage-blob@12.29.1)(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.54.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2)

@@ -2,35 +2,49 @@
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { ui } from "../../../i18n/ui";
 
-// React island component for charts
+// React island components for charts
 import IChartIsland from "../../../components/islands/IChartIsland";
+import PerformanceDemo from "../../../components/islands/PerformanceDemo";
 
 export function getStaticPaths() {
 	const languages = Object.keys(ui);
 	const useCases = [
-		{ 
+		{
 			slug: "lss-training",
 			props: {
 				title: "LSS Training & Projects",
 				description: "Teach methodology, not software menus. Simplified statistics for Green Belts and trainers.",
 				sampleKey: "pizza",
+				chartType: "ichart",
 				heroTitle: "Teach methodology, not software menus.",
 				heroSub: "Learn to find factors driving variation — not to navigate complex software. From training to tollgate presentations in minutes.",
 			}
 		},
-		{ 
+		{
 			slug: "operations",
 			props: {
 				title: "Quality & Operations",
 				description: "Live analysis for daily decisions. Answer questions in the meeting, not after.",
 				sampleKey: "mango-export",
+				chartType: "ichart",
 				heroTitle: "Real-time insights for the shop floor.",
 				heroSub: "Stop waiting for static reports. Analyze live with your team and make data-driven decisions during the daily huddle.",
 			}
 		},
+		{
+			slug: "equipment-maintenance",
+			props: {
+				title: "Equipment Maintenance",
+				description: "Find which filling heads need attention before they cause rejects.",
+				sampleKey: "sachets",
+				chartType: "performance",
+				heroTitle: "Which heads need attention?",
+				heroSub: "8-head sachet filler. 2 heads underperforming. Find them in seconds.",
+			}
+		},
 	];
 
-	return languages.flatMap((lang) => 
+	return languages.flatMap((lang) =>
 		useCases.map((useCase) => ({
 			params: { lang, slug: useCase.slug },
 			props: useCase.props
@@ -38,7 +52,7 @@ export function getStaticPaths() {
 	);
 }
 
-const { title, description, sampleKey, heroTitle, heroSub } = Astro.props;
+const { title, description, sampleKey, chartType, heroTitle, heroSub } = Astro.props;
 ---
 
 <BaseLayout title={`VaRiScout | ${title}`} description={description}>
@@ -54,7 +68,11 @@ const { title, description, sampleKey, heroTitle, heroSub } = Astro.props;
 			</div>
 
 			<div class="bg-slate-900 rounded-2xl overflow-hidden">
-				<IChartIsland client:only="react" sampleKey={sampleKey} height={500} />
+				{chartType === "performance" ? (
+					<PerformanceDemo client:only="react" sampleKey={sampleKey} height={500} />
+				) : (
+					<IChartIsland client:only="react" sampleKey={sampleKey} height={500} />
+				)}
 			</div>
 		</div>
 	</section>

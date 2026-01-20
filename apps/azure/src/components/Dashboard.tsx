@@ -6,6 +6,7 @@ import StatsPanel from './StatsPanel';
 import AnovaResults from './AnovaResults';
 import RegressionPanel from './RegressionPanel';
 import GageRRPanel from './GageRRPanel';
+import PerformanceDashboard from './PerformanceDashboard';
 import ErrorBoundary from './ErrorBoundary';
 import DrillBreadcrumb from './DrillBreadcrumb';
 import FactorSelector from './FactorSelector';
@@ -29,16 +30,29 @@ import {
   ChevronRight,
   HelpCircle,
   Layers,
+  Gauge,
+  ArrowLeft,
 } from 'lucide-react';
 import type { StageOrderMode } from '@variscout/core';
 
-type DashboardTab = 'analysis' | 'regression' | 'gagerr';
+type DashboardTab = 'analysis' | 'regression' | 'gagerr' | 'performance';
 
 interface DashboardProps {
   onPointClick?: (index: number) => void;
+  /** Drill navigation from Performance Mode */
+  drillFromPerformance?: string | null;
+  /** Callback to return to Performance Mode */
+  onBackToPerformance?: () => void;
+  /** Callback to drill to a specific measure */
+  onDrillToMeasure?: (measureId: string) => void;
 }
 
-const Dashboard = ({ onPointClick }: DashboardProps) => {
+const Dashboard = ({
+  onPointClick,
+  drillFromPerformance,
+  onBackToPerformance,
+  onDrillToMeasure,
+}: DashboardProps) => {
   const {
     outcome,
     factors,
@@ -58,6 +72,13 @@ const Dashboard = ({ onPointClick }: DashboardProps) => {
   } = useData();
 
   const [activeTab, setActiveTab] = useState<DashboardTab>('analysis');
+
+  // Auto-switch to analysis tab when drilling from performance mode
+  useEffect(() => {
+    if (drillFromPerformance) {
+      setActiveTab('analysis');
+    }
+  }, [drillFromPerformance]);
 
   // Local state for chart configuration
   const [boxplotFactor, setBoxplotFactor] = useState<string>('');
@@ -350,6 +371,17 @@ const Dashboard = ({ onPointClick }: DashboardProps) => {
             <Target size={16} />
             Gage R&R
           </button>
+          <button
+            onClick={() => setActiveTab('performance')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'performance'
+                ? 'bg-blue-600 text-white'
+                : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+            }`}
+          >
+            <Gauge size={16} />
+            Performance
+          </button>
         </div>
       </div>
 
@@ -371,9 +403,36 @@ const Dashboard = ({ onPointClick }: DashboardProps) => {
         </div>
       )}
 
+      {/* Performance Tab */}
+      {activeTab === 'performance' && (
+        <div className="flex-1 overflow-hidden">
+          <ErrorBoundary componentName="Performance Dashboard">
+            <PerformanceDashboard onDrillToMeasure={onDrillToMeasure} />
+          </ErrorBoundary>
+        </div>
+      )}
+
       {/* Analysis Tab */}
       {activeTab === 'analysis' && (
         <div className="flex-1 flex flex-col min-h-0">
+          {/* Back to Performance banner when drilled from Performance Mode */}
+          {drillFromPerformance && onBackToPerformance && (
+            <div className="flex items-center justify-between px-4 py-2 bg-blue-600/20 border-b border-blue-600/30">
+              <div className="flex items-center gap-2 text-blue-300 text-sm">
+                <Activity size={14} />
+                <span>
+                  Viewing: <span className="font-medium text-white">{drillFromPerformance}</span>
+                </span>
+              </div>
+              <button
+                onClick={onBackToPerformance}
+                className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-300 hover:text-white hover:bg-blue-600/30 rounded transition-colors"
+              >
+                <ArrowLeft size={12} />
+                Back to Performance
+              </button>
+            </div>
+          )}
           {!focusedChart ? (
             // Scrollable Layout
             <div className="flex flex-col gap-4 p-4">

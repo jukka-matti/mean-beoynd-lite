@@ -28,28 +28,58 @@ fill={chromeColors.labelSecondary} // #94a3b8
 
 ## Data Point Colors
 
-### Spec Status Colors
+### I-Chart Color Scheme (Minitab-style)
 
-| Status             | Hex       | Usage                       |
-| ------------------ | --------- | --------------------------- |
-| In-spec            | `#22c55e` | Values within LSL-USL range |
-| Out-of-spec (high) | `#ef4444` | Values > USL                |
-| Out-of-spec (low)  | `#f59e0b` | Values < LSL                |
+The I-Chart uses a simplified 2-color scheme following Minitab conventions:
+
+| Status         | Color | Hex       | Conditions                                            |
+| -------------- | ----- | --------- | ----------------------------------------------------- |
+| In-control     | Blue  | `#3b82f6` | All checks pass                                       |
+| Out-of-control | Red   | `#ef4444` | Any violation (spec, control limits, or Nelson rules) |
+
+**Violation checks (in order):**
+
+1. Spec limit violations: `value > USL` or `value < LSL`
+2. Control limit violations: `value > UCL` or `value < LCL`
+3. Nelson Rule 2: 9+ consecutive points on same side of center line
 
 ```tsx
-const getPointColor = (value: number, usl?: number, lsl?: number): string => {
-  if (usl !== undefined && value > usl) return '#ef4444';
-  if (lsl !== undefined && value < lsl) return '#f59e0b';
-  return '#22c55e';
+const getPointColor = (value: number, index: number): string => {
+  // Spec limit violations -> Red
+  if (usl !== undefined && value > usl) return chartColors.fail;
+  if (lsl !== undefined && value < lsl) return chartColors.fail;
+
+  // Control limit violations -> Red
+  if (value > ucl || value < lcl) return chartColors.fail;
+
+  // Nelson Rule 2 violations -> Red
+  if (nelsonRule2Violations.has(index)) return chartColors.fail;
+
+  // In-control -> Blue
+  return chartColors.mean;
 };
 ```
 
-### Control Status Colors
+### Graded Data (Multi-tier Classification)
 
-| Status         | Hex       | Usage           |
-| -------------- | --------- | --------------- |
-| In control     | `#22c55e` | Within UCL/LCL  |
-| Out of control | `#ef4444` | Outside UCL/LCL |
+When grade tiers are defined, points use grade-specific colors instead of the 2-color scheme:
+
+```tsx
+// Example grade tiers
+const grades = [
+  { max: 80, label: 'Grade A', color: '#22c55e' },
+  { max: 85, label: 'Grade B', color: '#eab308' },
+  { max: 90, label: 'Grade C', color: '#f97316' },
+];
+```
+
+### Nelson Rule 2 Detection
+
+Nelson Rule 2 identifies when 9 or more consecutive points fall on the same side of the center line (mean). This indicates a shift in the process, even if individual points remain within control limits.
+
+**Implementation:** `getNelsonRule2ViolationPoints()` in `@variscout/core/stats.ts`
+
+**Staged mode:** Nelson Rule 2 is computed per-stage using each stage's mean.
 
 ## Line Colors
 

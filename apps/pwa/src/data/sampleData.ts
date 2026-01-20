@@ -11,6 +11,9 @@ export interface SampleDataset {
     factors: string[];
     specs: { usl?: number; lsl?: number; target?: number };
     grades?: { max: number; label: string; color: string }[];
+    // Performance mode (multi-measure analysis)
+    performanceMode?: boolean;
+    measureColumns?: string[];
   };
 }
 

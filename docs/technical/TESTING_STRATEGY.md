@@ -260,7 +260,25 @@ Specific prompts to use with the Antigravity Browser Agent for verifying complex
 - [ ] No header/toolbar visible
 - [ ] No footer visible
 - [ ] Charts render full-width/height
+- [ ] No footer visible
+- [ ] Charts render full-width/height
 - [ ] No console errors related to missing context
+
+### 3. Performance Module Verification
+
+**Goal:** Verify the Multi-Channel Performance Dashboard loads and displays all relevant charts.
+
+**Agent Prompt:**
+
+> "Load a dataset with multiple numeric columns (e.g., 'Coffee Moisture'). Ensure at least 3 numeric columns are selected for analysis in the setup panel (or via 'New Analysis' -> 'Performance Analysis'). Verify that the Dashboard displays the Performance View, containing a Summary Bar, an I-Chart with multiple series (or selectable series), a Boxplot comparing channels, and a Pareto chart ranking them. Click on a specific channel in the Boxplot and verify the other charts update to focus on that channel."
+
+**Success Criteria:**
+
+- [ ] Performance Dashboard layout (Summary + 3-chart grid)
+- [ ] I-Chart showing Cpk/Cp values
+- [ ] Boxplot showing distribution comparison
+- [ ] Pareto showing ranking
+- [ ] Interactive cross-filtering between charts
 
 ---
 
@@ -273,6 +291,7 @@ Instead of a manual checklist, assign the following tasks to the Agent for relea
 - [ ] **Smoke Test**: Launch PWA, ensuring it loads without console errors.
 - [ ] **Data Flow**: Load sample data, edit a cell, verify stats update.
 - [ ] **Staged Analysis**: Enable staging on a sample dataset, verify control limit split.
+- [ ] **Performance Analysis**: Enable multi-channel analysis, verify I-Chart/Boxplot/Pareto grid.
 - [ ] **Embed Mode**: Load `?embed=true`, verify UI chrome is removed.
 - [ ] **Visual Check**: Take screenshots of I-Charts and generic charts; check for layout shifts.
 - [ ] **Persistence**: Reload page, ensure data remains.

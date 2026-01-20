@@ -54,6 +54,12 @@ interface DataContextType extends Omit<DataState, 'saveProject' | 'loadProject'>
   setStageColumn: DataActions['setStageColumn'];
   setStageOrderMode: DataActions['setStageOrderMode'];
 
+  // Performance mode (multi-measure analysis)
+  setPerformanceMode: DataActions['setPerformanceMode'];
+  setMeasureColumns: DataActions['setMeasureColumns'];
+  setMeasureLabel: DataActions['setMeasureLabel'];
+  setSelectedMeasure: DataActions['setSelectedMeasure'];
+
   // Azure-specific persistence methods (with location support)
   saveProject: (name: string, location?: StorageLocation) => Promise<SavedProject>;
   loadProject: (name: string) => Promise<void>;
@@ -167,6 +173,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       fullDataYDomain: state.fullDataYDomain,
       yDomainForCharts: state.yDomainForCharts,
 
+      // Performance mode state
+      isPerformanceMode: state.isPerformanceMode,
+      measureColumns: state.measureColumns,
+      measureLabel: state.measureLabel,
+      selectedMeasure: state.selectedMeasure,
+      performanceResult: state.performanceResult,
+
       // Azure-specific state
       currentProjectLocation,
       syncStatus,
@@ -191,6 +204,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSeparateParetoFilename: actions.setSeparateParetoFilename,
       setStageColumn: actions.setStageColumn,
       setStageOrderMode: actions.setStageOrderMode,
+
+      // Performance mode setters
+      setPerformanceMode: actions.setPerformanceMode,
+      setMeasureColumns: actions.setMeasureColumns,
+      setMeasureLabel: actions.setMeasureLabel,
+      setSelectedMeasure: actions.setSelectedMeasure,
 
       // Azure-enhanced persistence methods
       saveProject,

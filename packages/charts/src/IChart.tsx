@@ -6,7 +6,11 @@ import { AxisBottom, AxisLeft } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { withParentSize } from '@visx/responsive';
 import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
-import { getStageBoundaries, type StatsResult } from '@variscout/core';
+import {
+  getStageBoundaries,
+  getNelsonRule2ViolationPoints,
+  type StatsResult,
+} from '@variscout/core';
 import type { IChartProps, StageBoundary } from './types';
 import { getResponsiveTickCount } from './responsive';
 import ChartSourceBar from './ChartSourceBar';
@@ -128,26 +132,72 @@ const IChartBase: React.FC<IChartProps> = ({
     return stagedStats?.stages.get(stage) ?? null;
   };
 
-  // Determine point color based on specs or grades
-  const getPointColor = (value: number, stage?: string): string => {
-    // Check grades first (multi-tier)
+  // Compute Nelson Rule 2 violations (9+ consecutive points on same side of mean)
+  const nelsonRule2Violations = useMemo(() => {
+    if (grades && grades.length > 0) {
+      // Skip Nelson Rule 2 for graded data
+      return new Set<number>();
+    }
+
+    if (isStaged && stagedStats) {
+      // For staged mode, compute violations per stage
+      const allViolations = new Set<number>();
+      let dataIndex = 0;
+
+      stageBoundaries.forEach(boundary => {
+        const stageData = data.filter(d => d.stage === boundary.name);
+        const stageValues = stageData.map(d => d.y);
+        const stageViolations = getNelsonRule2ViolationPoints(stageValues, boundary.stats.mean);
+
+        // Map stage-local indices to global indices
+        stageViolations.forEach(localIdx => {
+          // Find the global index for this point
+          const globalIdx = data.findIndex(
+            (d, i) =>
+              i >= dataIndex && d.stage === boundary.name && stageData.indexOf(d) === localIdx
+          );
+          if (globalIdx !== -1) {
+            allViolations.add(globalIdx);
+          }
+        });
+        dataIndex += stageData.length;
+      });
+      return allViolations;
+    }
+
+    if (stats) {
+      const values = data.map(d => d.y);
+      return getNelsonRule2ViolationPoints(values, stats.mean);
+    }
+
+    return new Set<number>();
+  }, [data, stats, isStaged, stagedStats, stageBoundaries, grades]);
+
+  // Determine point color using Minitab-style 2-color scheme
+  // Blue = in-control, Red = any violation
+  const getPointColor = (value: number, index: number, stage?: string): string => {
+    // Check grades first (multi-tier) - use grade colors when defined
     if (grades && grades.length > 0) {
       const grade = grades.find(g => value <= g.max);
       return grade?.color || chartColors.fail; // Default red if above all grades
     }
 
-    // Check spec limits
-    if (specs.usl !== undefined && value > specs.usl) return chartColors.fail; // Red - above USL
-    if (specs.lsl !== undefined && value < specs.lsl) return chartColors.warning; // Amber - below LSL
+    // Check spec limit violations -> Red
+    if (specs.usl !== undefined && value > specs.usl) return chartColors.fail;
+    if (specs.lsl !== undefined && value < specs.lsl) return chartColors.fail;
 
-    // Check control limits (use stage-specific limits if staged)
+    // Check control limit violations (use stage-specific limits if staged) -> Red
     const stageStats = getStageStatsForPoint(stage);
     if (stageStats) {
-      if (value > stageStats.ucl) return chartColors.violation; // Orange - above UCL
-      if (value < stageStats.lcl) return chartColors.violation; // Orange - below LCL
+      if (value > stageStats.ucl) return chartColors.fail;
+      if (value < stageStats.lcl) return chartColors.fail;
     }
 
-    return chartColors.pass; // Green - in spec/control
+    // Check Nelson Rule 2 violations -> Red
+    if (nelsonRule2Violations.has(index)) return chartColors.fail;
+
+    // In-control -> Blue (Minitab-style)
+    return chartColors.mean;
   };
 
   if (data.length === 0) return null;
@@ -415,7 +465,7 @@ const IChartBase: React.FC<IChartProps> = ({
               cx={xScale(d.x)}
               cy={yScale(d.y)}
               r={4}
-              fill={getPointColor(d.y, d.stage)}
+              fill={getPointColor(d.y, i, d.stage)}
               stroke={chromeColors.pointStroke}
               strokeWidth={1}
               className={onPointClick ? interactionStyles.clickable : ''}

@@ -16,7 +16,12 @@ import ChartSignature from './ChartSignature';
 import { Edit2 } from 'lucide-react';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { VARIATION_THRESHOLDS } from '@variscout/core';
-import { chartColors, useChartTheme } from '@variscout/charts';
+import {
+  chartColors,
+  useChartTheme,
+  BoxplotStatsTable,
+  type BoxplotGroupData,
+} from '@variscout/charts';
 
 interface BoxplotProps {
   factor: string;
@@ -57,14 +62,15 @@ const Boxplot = ({
     displayOptions,
   } = useData();
   const [isEditingLabel, setIsEditingLabel] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
     useTooltip<any>();
 
   const data = useMemo(() => {
     if (!outcome) return [];
     const groups = d3.group(filteredData, (d: any) => d[factor]);
-    return Array.from(groups, ([key, values]) => {
-      const v = values
+    return Array.from(groups, ([key, groupValues]) => {
+      const v = groupValues
         .map((d: any) => Number(d[outcome]))
         .filter(val => !isNaN(val))
         .sort(d3.ascending);
@@ -75,9 +81,32 @@ const Boxplot = ({
       const iqr = q3 - q1;
       const min = Math.max(v[0], q1 - 1.5 * iqr);
       const max = Math.min(v[v.length - 1], q3 + 1.5 * iqr);
-      return { key, q1, median, q3, min, max, outliers: v.filter(x => x < min || x > max) };
+      return {
+        key,
+        q1,
+        median,
+        q3,
+        min,
+        max,
+        outliers: v.filter(x => x < min || x > max),
+        values: v,
+      };
     }).filter(d => d !== null) as any[];
   }, [filteredData, factor, outcome]);
+
+  // Transform data for BoxplotStatsTable
+  const boxplotGroupData: BoxplotGroupData[] = useMemo(() => {
+    return data.map(d => ({
+      key: d.key,
+      values: d.values,
+      min: d.min,
+      max: d.max,
+      q1: d.q1,
+      median: d.median,
+      q3: d.q3,
+      outliers: d.outliers,
+    }));
+  }, [data]);
 
   const width = Math.max(0, parentWidth - margin.left - margin.right);
   const height = Math.max(0, parentHeight - margin.top - margin.bottom);
@@ -144,297 +173,353 @@ const Boxplot = ({
   };
 
   return (
-    <div className="relative w-full h-full">
-      <svg width={parentWidth} height={parentHeight}>
-        <Group left={margin.left} top={margin.top}>
-          {/* Spec Lines */}
-          {displayOptions.showSpecs !== false && specs && (
-            <>
-              {specs.usl !== undefined && (
-                <line
-                  x1={0}
-                  x2={width}
-                  y1={yScale(specs.usl)}
-                  y2={yScale(specs.usl)}
-                  stroke={chartColors.spec}
-                  strokeWidth={2}
-                  strokeDasharray="4,4"
-                />
-              )}
-              {specs.lsl !== undefined && (
-                <line
-                  x1={0}
-                  x2={width}
-                  y1={yScale(specs.lsl)}
-                  y2={yScale(specs.lsl)}
-                  stroke={chartColors.spec}
-                  strokeWidth={2}
-                  strokeDasharray="4,4"
-                />
-              )}
-              {specs.target !== undefined && (
-                <line
-                  x1={0}
-                  x2={width}
-                  y1={yScale(specs.target)}
-                  y2={yScale(specs.target)}
-                  stroke={chartColors.target}
-                  strokeWidth={1}
-                  strokeDasharray="4,4"
-                />
-              )}
-            </>
-          )}
-          {data.map((d: any, i: number) => {
-            const x = xScale(d.key) || 0;
-            const barWidth = xScale.bandwidth();
-            const isSelected = (filters[factor] || []).includes(d.key);
-            const opacity = filters[factor] && filters[factor].length > 0 && !isSelected ? 0.3 : 1;
-
-            return (
-              <Group
-                key={i}
-                onClick={() => handleBoxClick(d.key)}
-                onMouseOver={event => {
-                  const coords = { x: event.clientX, y: event.clientY }; // localPoint might be better but let's try client first
-                  showTooltip({
-                    tooltipLeft: x + barWidth,
-                    tooltipTop: yScale(d.median),
-                    tooltipData: d,
-                  });
-                }}
-                onMouseLeave={hideTooltip}
-                className="cursor-pointer"
-                opacity={opacity}
-              >
-                {/* Transparent capture rect for better clickability */}
-                <rect x={x - 5} y={0} width={barWidth + 10} height={height} fill="transparent" />
-
-                {/* Whisker Line */}
-                <line
-                  x1={x + barWidth / 2}
-                  x2={x + barWidth / 2}
-                  y1={yScale(d.min)}
-                  y2={yScale(d.max)}
-                  stroke={chrome.whisker}
-                  strokeWidth={1}
-                />
-
-                {/* Box */}
-                <rect
-                  x={x}
-                  y={yScale(d.q3)}
-                  width={barWidth}
-                  height={Math.abs(yScale(d.q1) - yScale(d.q3))}
-                  fill={chartColors.selected}
-                  stroke={chartColors.selectedBorder}
-                  rx={2}
-                />
-
-                {/* Median Line */}
-                <line
-                  x1={x}
-                  x2={x + barWidth}
-                  y1={yScale(d.median)}
-                  y2={yScale(d.median)}
-                  stroke="#f97316"
-                  strokeWidth={2}
-                />
-
-                {/* Outliers */}
-                {d.outliers.map((o: number, j: number) => (
-                  <circle
-                    key={j}
-                    cx={x + barWidth / 2}
-                    cy={yScale(o)}
-                    r={3}
-                    fill={chartColors.fail}
-                    opacity={0.6}
+    <div className="flex flex-col w-full h-full">
+      <div className="relative" style={{ flex: expanded ? '0 0 auto' : 1 }}>
+        <svg width={parentWidth} height={expanded ? Math.min(parentHeight, 300) : parentHeight}>
+          <Group left={margin.left} top={margin.top}>
+            {/* Spec Lines */}
+            {displayOptions.showSpecs !== false && specs && (
+              <>
+                {specs.usl !== undefined && (
+                  <line
+                    x1={0}
+                    x2={width}
+                    y1={yScale(specs.usl)}
+                    y2={yScale(specs.usl)}
+                    stroke={chartColors.spec}
+                    strokeWidth={2}
+                    strokeDasharray="4,4"
                   />
-                ))}
-              </Group>
-            );
-          })}
-          <AxisLeft
-            scale={yScale}
-            stroke={chrome.axisPrimary}
-            tickStroke={chrome.axisPrimary}
-            label=""
-            tickLabelProps={() => ({
-              fill: chrome.labelPrimary,
-              fontSize: fonts.tickLabel,
-              textAnchor: 'end',
-              dx: -4,
-              dy: 3,
-              fontFamily: 'monospace',
-            })}
-          />
-
-          {/* Interactive Y-Axis Label */}
-          <Group onClick={() => setIsEditingLabel(true)} className="cursor-pointer group/label">
-            <text
-              x={yLabelOffset}
-              y={height / 2}
-              transform={`rotate(-90 ${yLabelOffset} ${height / 2})`}
-              textAnchor="middle"
-              fill={chrome.labelPrimary}
-              fontSize={fonts.axisLabel}
-              fontWeight={500}
-              className="group-hover/label:fill-blue-400 transition-colors"
-            >
-              {columnAliases[outcome] || outcome}
-            </text>
-            {/* Edit Icon */}
-            <foreignObject
-              x={yLabelOffset - 8}
-              y={height / 2 + 10}
-              width={16}
-              height={16}
-              transform={`rotate(-90 ${yLabelOffset} ${height / 2})`}
-              className="opacity-0 group-hover/label:opacity-100 transition-opacity"
-            >
-              <div className="flex items-center justify-center text-blue-400">
-                <Edit2 size={14} />
-              </div>
-            </foreignObject>
-          </Group>
-
-          <AxisBottom
-            top={height}
-            scale={xScale}
-            stroke={chrome.axisPrimary}
-            tickStroke={chrome.axisPrimary}
-            label={''} // Custom Label below
-            tickFormat={val => factorLabels[val] || val}
-            tickLabelProps={() => ({
-              fill: chrome.labelSecondary,
-              fontSize: fonts.tickLabel,
-              textAnchor: 'middle',
-              dy: 2,
-            })}
-          />
-
-          {/* Contribution Labels (below X-axis) */}
-          {displayOptions.showContributionLabels &&
-            categoryContributions &&
-            data.map(d => {
-              const contribution = categoryContributions.get(d.key);
-              if (contribution === undefined) return null;
+                )}
+                {specs.lsl !== undefined && (
+                  <line
+                    x1={0}
+                    x2={width}
+                    y1={yScale(specs.lsl)}
+                    y2={yScale(specs.lsl)}
+                    stroke={chartColors.spec}
+                    strokeWidth={2}
+                    strokeDasharray="4,4"
+                  />
+                )}
+                {specs.target !== undefined && (
+                  <line
+                    x1={0}
+                    x2={width}
+                    y1={yScale(specs.target)}
+                    y2={yScale(specs.target)}
+                    stroke={chartColors.target}
+                    strokeWidth={1}
+                    strokeDasharray="4,4"
+                  />
+                )}
+              </>
+            )}
+            {data.map((d: any, i: number) => {
               const x = xScale(d.key) || 0;
               const barWidth = xScale.bandwidth();
+              const isSelected = (filters[factor] || []).includes(d.key);
+              const opacity =
+                filters[factor] && filters[factor].length > 0 && !isSelected ? 0.3 : 1;
+
+              return (
+                <Group
+                  key={i}
+                  onClick={() => handleBoxClick(d.key)}
+                  onMouseOver={event => {
+                    const coords = { x: event.clientX, y: event.clientY }; // localPoint might be better but let's try client first
+                    showTooltip({
+                      tooltipLeft: x + barWidth,
+                      tooltipTop: yScale(d.median),
+                      tooltipData: d,
+                    });
+                  }}
+                  onMouseLeave={hideTooltip}
+                  className="cursor-pointer"
+                  opacity={opacity}
+                >
+                  {/* Transparent capture rect for better clickability */}
+                  <rect x={x - 5} y={0} width={barWidth + 10} height={height} fill="transparent" />
+
+                  {/* Whisker Line */}
+                  <line
+                    x1={x + barWidth / 2}
+                    x2={x + barWidth / 2}
+                    y1={yScale(d.min)}
+                    y2={yScale(d.max)}
+                    stroke={chrome.whisker}
+                    strokeWidth={1}
+                  />
+
+                  {/* Box */}
+                  <rect
+                    x={x}
+                    y={yScale(d.q3)}
+                    width={barWidth}
+                    height={Math.abs(yScale(d.q1) - yScale(d.q3))}
+                    fill={chartColors.selected}
+                    stroke={chartColors.selectedBorder}
+                    rx={2}
+                  />
+
+                  {/* Median Line */}
+                  <line
+                    x1={x}
+                    x2={x + barWidth}
+                    y1={yScale(d.median)}
+                    y2={yScale(d.median)}
+                    stroke="#f97316"
+                    strokeWidth={2}
+                  />
+
+                  {/* Outliers */}
+                  {d.outliers.map((o: number, j: number) => (
+                    <circle
+                      key={j}
+                      cx={x + barWidth / 2}
+                      cy={yScale(o)}
+                      r={3}
+                      fill={chartColors.fail}
+                      opacity={0.6}
+                    />
+                  ))}
+                </Group>
+              );
+            })}
+            <AxisLeft
+              scale={yScale}
+              stroke={chrome.axisPrimary}
+              tickStroke={chrome.axisPrimary}
+              label=""
+              tickLabelProps={() => ({
+                fill: chrome.labelPrimary,
+                fontSize: fonts.tickLabel,
+                textAnchor: 'end',
+                dx: -4,
+                dy: 3,
+                fontFamily: 'monospace',
+              })}
+            />
+
+            {/* Interactive Y-Axis Label */}
+            <Group onClick={() => setIsEditingLabel(true)} className="cursor-pointer group/label">
+              <text
+                x={yLabelOffset}
+                y={height / 2}
+                transform={`rotate(-90 ${yLabelOffset} ${height / 2})`}
+                textAnchor="middle"
+                fill={chrome.labelPrimary}
+                fontSize={fonts.axisLabel}
+                fontWeight={500}
+                className="group-hover/label:fill-blue-400 transition-colors"
+              >
+                {columnAliases[outcome] || outcome}
+              </text>
+              {/* Edit Icon */}
+              <foreignObject
+                x={yLabelOffset - 8}
+                y={height / 2 + 10}
+                width={16}
+                height={16}
+                transform={`rotate(-90 ${yLabelOffset} ${height / 2})`}
+                className="opacity-0 group-hover/label:opacity-100 transition-opacity"
+              >
+                <div className="flex items-center justify-center text-blue-400">
+                  <Edit2 size={14} />
+                </div>
+              </foreignObject>
+            </Group>
+
+            <AxisBottom
+              top={height}
+              scale={xScale}
+              stroke={chrome.axisPrimary}
+              tickStroke={chrome.axisPrimary}
+              label={''} // Custom Label below
+              tickFormat={val => factorLabels[val] || val}
+              tickLabelProps={() => ({
+                fill: chrome.labelSecondary,
+                fontSize: fonts.tickLabel,
+                textAnchor: 'middle',
+                dy: 2,
+              })}
+            />
+
+            {/* Contribution Labels (below X-axis) */}
+            {displayOptions.showContributionLabels &&
+              categoryContributions &&
+              data.map(d => {
+                const contribution = categoryContributions.get(d.key);
+                if (contribution === undefined) return null;
+                const x = xScale(d.key) || 0;
+                const barWidth = xScale.bandwidth();
+                return (
+                  <text
+                    key={`contrib-${d.key}`}
+                    x={x + barWidth / 2}
+                    y={height + (parentWidth < 400 ? 24 : 28)}
+                    textAnchor="middle"
+                    fill={
+                      contribution >= VARIATION_THRESHOLDS.HIGH_IMPACT
+                        ? '#f87171'
+                        : chrome.labelSecondary
+                    }
+                    fontSize={fonts.statLabel}
+                    fontWeight={contribution >= VARIATION_THRESHOLDS.HIGH_IMPACT ? 600 : 400}
+                  >
+                    {Math.round(contribution)}%
+                  </text>
+                );
+              })}
+
+            {/* n Labels (always visible below contribution labels or below x-axis) */}
+            {data.map(d => {
+              const x = xScale(d.key) || 0;
+              const barWidth = xScale.bandwidth();
+              const nLabelOffset =
+                displayOptions.showContributionLabels && categoryContributions?.has(d.key)
+                  ? parentWidth < 400
+                    ? 36
+                    : 42
+                  : parentWidth < 400
+                    ? 24
+                    : 28;
               return (
                 <text
-                  key={`contrib-${d.key}`}
+                  key={`n-${d.key}`}
                   x={x + barWidth / 2}
-                  y={height + (parentWidth < 400 ? 24 : 28)}
+                  y={height + nLabelOffset}
                   textAnchor="middle"
-                  fill={
-                    contribution >= VARIATION_THRESHOLDS.HIGH_IMPACT
-                      ? '#f87171'
-                      : chrome.labelSecondary
-                  }
-                  fontSize={fonts.statLabel}
-                  fontWeight={contribution >= VARIATION_THRESHOLDS.HIGH_IMPACT ? 600 : 400}
+                  fill={chrome.labelMuted}
+                  fontSize={fonts.statLabel - 1}
                 >
-                  {Math.round(contribution)}%
+                  n={d.values.length}
                 </text>
               );
             })}
 
-          {/* Custom Clickable Axis Label with Variation Indicator */}
-          <Group onClick={() => setIsEditingLabel(true)} className="cursor-pointer group/label2">
-            <text
-              x={xParams.x}
-              y={xParams.y}
-              textAnchor="middle"
-              fill={isHighVariation ? '#f87171' : chrome.labelSecondary}
-              fontSize={13}
-              fontWeight={isHighVariation ? 600 : 500}
-              className="group-hover/label2:fill-blue-400 transition-colors"
-            >
-              {xParams.label}
-              {variationPct !== undefined && ` (${Math.round(variationPct)}%)`}
-            </text>
-            {/* Drill suggestion indicator */}
-            {isHighVariation && (
+            {/* Custom Clickable Axis Label with Variation Indicator */}
+            <Group onClick={() => setIsEditingLabel(true)} className="cursor-pointer group/label2">
               <text
                 x={xParams.x}
-                y={xParams.y + 14}
+                y={xParams.y}
                 textAnchor="middle"
-                fill="#f87171"
-                fontSize={10}
-                className="pointer-events-none"
+                fill={isHighVariation ? '#f87171' : chrome.labelSecondary}
+                fontSize={13}
+                fontWeight={isHighVariation ? 600 : 500}
+                className="group-hover/label2:fill-blue-400 transition-colors"
               >
-                ↓ drill here
+                {xParams.label}
+                {variationPct !== undefined && ` (${Math.round(variationPct)}%)`}
               </text>
-            )}
-            <foreignObject
-              x={xParams.x + (variationPct !== undefined ? 40 : 8)}
-              y={xParams.y - 12}
-              width={16}
-              height={16}
-              className="opacity-0 group-hover/label2:opacity-100 transition-opacity"
-            >
-              <div className="flex items-center justify-center text-blue-400">
-                <Edit2 size={14} />
-              </div>
-            </foreignObject>
+              {/* Drill suggestion indicator */}
+              {isHighVariation && (
+                <text
+                  x={xParams.x}
+                  y={xParams.y + 14}
+                  textAnchor="middle"
+                  fill="#f87171"
+                  fontSize={10}
+                  className="pointer-events-none"
+                >
+                  ↓ drill here
+                </text>
+              )}
+              <foreignObject
+                x={xParams.x + (variationPct !== undefined ? 40 : 8)}
+                y={xParams.y - 12}
+                width={16}
+                height={16}
+                className="opacity-0 group-hover/label2:opacity-100 transition-opacity"
+              >
+                <div className="flex items-center justify-center text-blue-400">
+                  <Edit2 size={14} />
+                </div>
+              </foreignObject>
+            </Group>
+
+            {/* Signature (painter-style branding) */}
+            <ChartSignature x={width - 10} y={height + margin.bottom - sourceBarHeight - 18} />
+
+            {/* Source Bar (branding) */}
+            <ChartSourceBar
+              width={width}
+              top={height + margin.bottom - sourceBarHeight}
+              n={filteredData.length}
+            />
           </Group>
+        </svg>
 
-          {/* Signature (painter-style branding) */}
-          <ChartSignature x={width - 10} y={height + margin.bottom - sourceBarHeight - 18} />
-
-          {/* Source Bar (branding) */}
-          <ChartSourceBar
-            width={width}
-            top={height + margin.bottom - sourceBarHeight}
-            n={filteredData.length}
-          />
-        </Group>
-      </svg>
-
-      {/* Tooltip */}
-      {tooltipOpen && tooltipData && (
-        <TooltipWithBounds
-          left={margin.left + (tooltipLeft ?? 0)}
-          top={margin.top + (tooltipTop ?? 0)}
+        {/* Expand Toggle Icon */}
+        <button
+          onClick={() => setExpanded(prev => !prev)}
+          className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 text-xs border rounded cursor-pointer transition-colors hover:bg-slate-700"
           style={{
-            ...defaultStyles,
-            backgroundColor: chrome.tooltipBg,
-            color: chrome.tooltipText,
-            border: `1px solid ${chrome.tooltipBorder}`,
-            borderRadius: 6,
-            padding: '8px 12px',
-            fontSize: fonts.tooltipText,
+            background: 'transparent',
+            borderColor: chrome.labelMuted,
+            color: chrome.labelSecondary,
           }}
+          title={expanded ? 'Collapse stats' : 'Expand stats'}
         >
-          <div>
-            <strong>{factorLabels[tooltipData.key] || tooltipData.key}</strong>
-          </div>
-          <div>Median: {tooltipData.median.toFixed(2)}</div>
-          <div>Q1: {tooltipData.q1.toFixed(2)}</div>
-          <div>Q3: {tooltipData.q3.toFixed(2)}</div>
-          {categoryContributions && categoryContributions.has(tooltipData.key) && (
-            <div style={{ color: '#f87171', fontWeight: 500, marginTop: 4 }}>
-              Impact: {Math.round(categoryContributions.get(tooltipData.key) ?? 0)}% of total
-              variation
-            </div>
-          )}
-        </TooltipWithBounds>
-      )}
+          <span style={{ fontSize: 10 }}>{expanded ? '▲' : '▼'}</span>
+          Stats
+        </button>
 
-      {/* In-Place Label Editor Popover */}
-      {isEditingLabel && (
-        <AxisEditor
-          title="Edit Axis & Categorles"
-          originalName={factor}
-          alias={alias}
-          values={data.map(d => d.key)}
-          valueLabels={factorLabels}
-          onSave={handleSaveAlias}
-          onClose={() => setIsEditingLabel(false)}
-          style={{ bottom: 10, left: margin.left + width / 2 - 120 }}
-        />
+        {/* Tooltip */}
+        {tooltipOpen && tooltipData && (
+          <TooltipWithBounds
+            left={margin.left + (tooltipLeft ?? 0)}
+            top={margin.top + (tooltipTop ?? 0)}
+            style={{
+              ...defaultStyles,
+              backgroundColor: chrome.tooltipBg,
+              color: chrome.tooltipText,
+              border: `1px solid ${chrome.tooltipBorder}`,
+              borderRadius: 6,
+              padding: '8px 12px',
+              fontSize: fonts.tooltipText,
+            }}
+          >
+            <div>
+              <strong>{factorLabels[tooltipData.key] || tooltipData.key}</strong>
+            </div>
+            <div>Median: {tooltipData.median.toFixed(2)}</div>
+            <div>Q1: {tooltipData.q1.toFixed(2)}</div>
+            <div>Q3: {tooltipData.q3.toFixed(2)}</div>
+            <div>n: {tooltipData.values?.length ?? 0}</div>
+            {categoryContributions && categoryContributions.has(tooltipData.key) && (
+              <div style={{ color: '#f87171', fontWeight: 500, marginTop: 4 }}>
+                Impact: {Math.round(categoryContributions.get(tooltipData.key) ?? 0)}% of total
+                variation
+              </div>
+            )}
+          </TooltipWithBounds>
+        )}
+
+        {/* In-Place Label Editor Popover */}
+        {isEditingLabel && (
+          <AxisEditor
+            title="Edit Axis & Categorles"
+            originalName={factor}
+            alias={alias}
+            values={data.map(d => d.key)}
+            valueLabels={factorLabels}
+            onSave={handleSaveAlias}
+            onClose={() => setIsEditingLabel(false)}
+            style={{ bottom: 10, left: margin.left + width / 2 - 120 }}
+          />
+        )}
+      </div>
+
+      {/* Expandable Stats Table */}
+      {expanded && (
+        <div className="flex-1 overflow-auto px-2">
+          <BoxplotStatsTable
+            data={boxplotGroupData}
+            specs={specs}
+            categoryContributions={categoryContributions}
+          />
+        </div>
       )}
     </div>
   );

@@ -16,10 +16,12 @@ import {
   calculateStatsByStage,
   sortDataByStage,
   determineStageOrder,
+  calculateChannelPerformance,
   type DataRow,
   type StatsResult,
   type StagedStatsResult,
   type StageOrderMode,
+  type ChannelPerformanceData,
 } from '@variscout/core';
 import type {
   AnalysisState,
@@ -86,6 +88,13 @@ export interface DataState {
   // Y-axis lock feature
   fullDataYDomain: { min: number; max: number } | null;
   yDomainForCharts: { min: number; max: number } | undefined;
+
+  // Performance mode (multi-measure analysis)
+  isPerformanceMode: boolean;
+  measureColumns: string[];
+  measureLabel: string;
+  selectedMeasure: string | null;
+  performanceResult: ChannelPerformanceData | null;
 }
 
 export interface DataActions {
@@ -115,6 +124,12 @@ export interface DataActions {
   // Stage setters
   setStageColumn: (col: string | null) => void;
   setStageOrderMode: (mode: StageOrderMode) => void;
+
+  // Performance mode setters
+  setPerformanceMode: (enabled: boolean) => void;
+  setMeasureColumns: (columns: string[]) => void;
+  setMeasureLabel: (label: string) => void;
+  setSelectedMeasure: (measureId: string | null) => void;
 
   // Persistence methods
   saveProject: (name: string) => Promise<SavedProject>;
@@ -204,6 +219,12 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
   const [separateParetoData, setSeparateParetoData] = useState<ParetoRow[] | null>(null);
   const [separateParetoFilename, setSeparateParetoFilename] = useState<string | null>(null);
 
+  // Performance mode (multi-measure analysis)
+  const [isPerformanceMode, setPerformanceMode] = useState(false);
+  const [measureColumns, setMeasureColumns] = useState<string[]>([]);
+  const [measureLabel, setMeasureLabel] = useState('Measure');
+  const [selectedMeasure, setSelectedMeasure] = useState<string | null>(null);
+
   const isInitialized = useRef(false);
 
   // ---------------------------------------------------------------------------
@@ -278,6 +299,18 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
 
     return calculateStatsByStage(filteredData, outcome, stageColumn, specs, undefined, grades);
   }, [filteredData, outcome, stageColumn, specs, grades]);
+
+  // Performance result - calculated for all measures in performance mode
+  const performanceResult = useMemo(() => {
+    if (!isPerformanceMode || measureColumns.length === 0 || rawData.length === 0) {
+      return null;
+    }
+    // Only calculate if specs are defined (need at least one spec for Cpk)
+    if (specs.usl === undefined && specs.lsl === undefined) {
+      return null;
+    }
+    return calculateChannelPerformance(rawData, measureColumns, specs);
+  }, [isPerformanceMode, rawData, measureColumns, specs]);
 
   // ---------------------------------------------------------------------------
   // State getter for persistence
@@ -479,6 +512,11 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
     // Reset stage state
     setStageColumn(null);
     setStageOrderMode('auto');
+    // Reset performance mode
+    setPerformanceMode(false);
+    setMeasureColumns([]);
+    setMeasureLabel('Measure');
+    setSelectedMeasure(null);
     persistence.clearAutoSave();
   }, [persistence]);
 
@@ -516,6 +554,11 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       separateParetoFilename,
       fullDataYDomain,
       yDomainForCharts,
+      isPerformanceMode,
+      measureColumns,
+      measureLabel,
+      selectedMeasure,
+      performanceResult,
     }),
     [
       rawData,
@@ -546,6 +589,11 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       separateParetoFilename,
       fullDataYDomain,
       yDomainForCharts,
+      isPerformanceMode,
+      measureColumns,
+      measureLabel,
+      selectedMeasure,
+      performanceResult,
     ]
   );
 
@@ -570,6 +618,10 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       setSeparateParetoFilename,
       setStageColumn,
       setStageOrderMode,
+      setPerformanceMode,
+      setMeasureColumns,
+      setMeasureLabel,
+      setSelectedMeasure,
       saveProject,
       loadProject,
       listProjects,
@@ -599,6 +651,10 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       setSeparateParetoFilename,
       setStageColumn,
       setStageOrderMode,
+      setPerformanceMode,
+      setMeasureColumns,
+      setMeasureLabel,
+      setSelectedMeasure,
       saveProject,
       loadProject,
       listProjects,

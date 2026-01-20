@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { useStorage } from '../services/storage';
 import { useData } from '../context/DataContext';
 import { useDataIngestion } from '../hooks/useDataIngestion';
@@ -18,8 +18,26 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
     currentProjectLocation,
     hasUnsavedChanges,
     outcome,
+    setOutcome,
     saveProject,
   } = useData();
+
+  // State for drill navigation from Performance Mode to standard I-Chart
+  const [drillFromPerformance, setDrillFromPerformance] = useState<string | null>(null);
+
+  // Handle drilling from Performance Mode to standard I-Chart for a specific measure
+  const handleDrillToMeasure = useCallback(
+    (measureId: string) => {
+      setDrillFromPerformance(measureId);
+      setOutcome(measureId);
+    },
+    [setOutcome]
+  );
+
+  // Handle returning to Performance Mode from drilled I-Chart
+  const handleBackToPerformance = useCallback(() => {
+    setDrillFromPerformance(null);
+  }, []);
   const { handleFileUpload } = useDataIngestion();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -120,7 +138,11 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
           </div>
         ) : outcome ? (
           // Dashboard with charts
-          <Dashboard />
+          <Dashboard
+            drillFromPerformance={drillFromPerformance}
+            onBackToPerformance={handleBackToPerformance}
+            onDrillToMeasure={handleDrillToMeasure}
+          />
         ) : (
           // Data loaded but no outcome selected
           <div className="flex-1 flex flex-col items-center justify-center p-8">

@@ -8,6 +8,7 @@ import {
 } from '@variscout/charts';
 import { getSample, getCachedComputedData } from '@variscout/data';
 import ChartContainer from './ChartContainer';
+import PerformanceDemo from './PerformanceDemo';
 
 interface ToolChartIslandProps {
   toolSlug: string;
@@ -17,7 +18,14 @@ interface ToolChartIslandProps {
 }
 
 // Map tool slugs to chart types
-type ChartType = 'ichart' | 'boxplot' | 'pareto' | 'capability' | 'scatter' | 'gage-rr';
+type ChartType =
+  | 'ichart'
+  | 'boxplot'
+  | 'pareto'
+  | 'capability'
+  | 'scatter'
+  | 'gage-rr'
+  | 'performance';
 
 const TOOL_CHART_MAP: Record<string, ChartType> = {
   'i-chart': 'ichart',
@@ -26,6 +34,7 @@ const TOOL_CHART_MAP: Record<string, ChartType> = {
   capability: 'capability',
   regression: 'scatter',
   'gage-rr': 'gage-rr',
+  performance: 'performance',
 };
 
 /**
@@ -62,6 +71,11 @@ export default function ToolChartIsland({
         Unknown tool type: {toolSlug}
       </div>
     );
+  }
+
+  // Performance demo has its own ChartContainer, render directly
+  if (chartType === 'performance') {
+    return <PerformanceDemo sampleKey={sampleKey} height={height} showBranding={showBranding} />;
   }
 
   return (

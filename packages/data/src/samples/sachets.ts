@@ -68,8 +68,8 @@ const generateSachetData = (): Record<string, unknown>[] => {
   return data;
 };
 
-// Channel column names (filling heads)
-const channelColumns = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8'];
+// Measure column names (filling heads)
+const measureColumns = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8'];
 
 export const sachets: SampleDataset = {
   name: 'Case: Sachet Performance',
@@ -86,6 +86,6 @@ export const sachets: SampleDataset = {
       usl: 10.5,
     },
     performanceMode: true,
-    channelColumns,
+    measureColumns,
   },
 };

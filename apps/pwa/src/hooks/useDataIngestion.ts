@@ -7,13 +7,20 @@ import {
   validateData,
   parseParetoFile,
 } from '../logic/parser';
+import { detectWideFormat, type WideFormatDetection } from '@variscout/core';
 import { SampleDataset } from '../data/sampleData';
 
 // Performance thresholds
 const ROW_WARNING_THRESHOLD = 5000;
 const ROW_HARD_LIMIT = 50000;
 
-export const useDataIngestion = () => {
+interface UseDataIngestionOptions {
+  /** Callback when wide-format (multi-measure) data is detected */
+  onWideFormatDetected?: (result: WideFormatDetection) => void;
+}
+
+export const useDataIngestion = (options?: UseDataIngestionOptions) => {
+  const { onWideFormatDetected } = options || {};
   const {
     setRawData,
     setOutcome,
@@ -26,6 +33,9 @@ export const useDataIngestion = () => {
     setParetoMode,
     setSeparateParetoData,
     setSeparateParetoFilename,
+    setPerformanceMode,
+    setMeasureColumns,
+    setMeasureLabel,
   } = useData();
 
   const handleFileUpload = useCallback(
@@ -68,6 +78,15 @@ export const useDataIngestion = () => {
           const report = validateData(data, detected.outcome);
           setDataQualityReport(report);
 
+          // Check for wide format (multi-measure) data
+          const wideFormat = detectWideFormat(data);
+          if (wideFormat.isWideFormat && wideFormat.channels.length >= 3) {
+            // Use callback if provided, otherwise auto-enable silently for sample-like data
+            if (onWideFormatDetected) {
+              onWideFormatDetected(wideFormat);
+            }
+          }
+
           return true;
         }
         return false;
@@ -77,7 +96,14 @@ export const useDataIngestion = () => {
         return false;
       }
     },
-    [setRawData, setDataFilename, setOutcome, setFactors, setDataQualityReport]
+    [
+      setRawData,
+      setDataFilename,
+      setOutcome,
+      setFactors,
+      setDataQualityReport,
+      onWideFormatDetected,
+    ]
   );
 
   // Handle separate Pareto file upload
@@ -120,6 +146,14 @@ export const useDataIngestion = () => {
       setParetoMode('derived');
       setSeparateParetoData(null);
       setSeparateParetoFilename(null);
+      // Handle performance mode samples
+      if (sample.config.performanceMode && sample.config.measureColumns) {
+        setMeasureColumns(sample.config.measureColumns);
+        setPerformanceMode(true);
+      } else {
+        setMeasureColumns([]);
+        setPerformanceMode(false);
+      }
     },
     [
       setRawData,
@@ -132,6 +166,8 @@ export const useDataIngestion = () => {
       setParetoMode,
       setSeparateParetoData,
       setSeparateParetoFilename,
+      setMeasureColumns,
+      setPerformanceMode,
     ]
   );
 
@@ -147,6 +183,10 @@ export const useDataIngestion = () => {
     setParetoMode('derived');
     setSeparateParetoData(null);
     setSeparateParetoFilename(null);
+    // Reset performance mode
+    setMeasureColumns([]);
+    setMeasureLabel('Measure');
+    setPerformanceMode(false);
   }, [
     setRawData,
     setDataFilename,
@@ -159,6 +199,9 @@ export const useDataIngestion = () => {
     setParetoMode,
     setSeparateParetoData,
     setSeparateParetoFilename,
+    setMeasureColumns,
+    setMeasureLabel,
+    setPerformanceMode,
   ]);
 
   return {

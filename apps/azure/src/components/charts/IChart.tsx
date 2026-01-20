@@ -16,7 +16,11 @@ import AxisEditor from '../AxisEditor';
 import YAxisPopover from '../YAxisPopover';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 import ChartSignature from './ChartSignature';
-import { getStageBoundaries, type StageBoundary } from '@variscout/core';
+import {
+  getStageBoundaries,
+  getNelsonRule2ViolationPoints,
+  type StageBoundary,
+} from '@variscout/core';
 import { chartColors, useChartTheme } from '@variscout/charts';
 
 interface IChartProps {
@@ -112,6 +116,47 @@ const IChart = ({ parentWidth, parentHeight, onPointClick }: IChartProps) => {
     }
   };
 
+  // Compute Nelson Rule 2 violations (9+ consecutive points on same side of mean)
+  const nelsonRule2Violations = useMemo(() => {
+    if (!outcome || data.length === 0) return new Set<number>();
+    if (grades && grades.length > 0) {
+      // Skip Nelson Rule 2 for graded data
+      return new Set<number>();
+    }
+
+    const isStaged = !!stageColumn && !!stagedStats;
+
+    if (isStaged && stagedStats) {
+      // For staged mode, compute violations per stage
+      const allViolations = new Set<number>();
+
+      stageBoundaries.forEach(boundary => {
+        const stageData = data.filter((d: any) => d.stage === boundary.name);
+        const stageValues = stageData.map((d: any) => d.y);
+        const stageViolations = getNelsonRule2ViolationPoints(stageValues, boundary.stats.mean);
+
+        // Map stage-local indices to global indices
+        let stageLocalIdx = 0;
+        data.forEach((d: any, globalIdx: number) => {
+          if (d.stage === boundary.name) {
+            if (stageViolations.has(stageLocalIdx)) {
+              allViolations.add(globalIdx);
+            }
+            stageLocalIdx++;
+          }
+        });
+      });
+      return allViolations;
+    }
+
+    if (stats) {
+      const values = data.map((d: any) => d.y);
+      return getNelsonRule2ViolationPoints(values, stats.mean);
+    }
+
+    return new Set<number>();
+  }, [data, outcome, stats, stageColumn, stagedStats, stageBoundaries, grades]);
+
   if (!outcome || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-slate-500 italic">
@@ -120,19 +165,39 @@ const IChart = ({ parentWidth, parentHeight, onPointClick }: IChartProps) => {
     );
   }
 
-  // Helper to get color for a value
-  const getPointColor = (val: number) => {
+  const isStaged = !!stageColumn && !!stagedStats;
+
+  // Helper to get color for a value using Minitab-style 2-color scheme
+  // Blue = in-control, Red = any violation
+  const getPointColor = (val: number, index: number) => {
+    // Graded data uses grade colors
     if (grades && grades.length > 0) {
       const grade = grades.find(g => val <= g.max);
       if (!grade) return grades[grades.length - 1].color;
       return grade.color;
     }
-    if (
-      (specs.usl !== undefined && val > specs.usl) ||
-      (specs.lsl !== undefined && val < specs.lsl)
-    ) {
-      return chartColors.fail;
+
+    // Spec limit violations -> Red
+    if (specs.usl !== undefined && val > specs.usl) return chartColors.fail;
+    if (specs.lsl !== undefined && val < specs.lsl) return chartColors.fail;
+
+    // Control limit violations -> Red (use stage-specific limits if staged)
+    if (isStaged && stagedStats) {
+      const point = data[index];
+      const stageStats = point?.stage ? stagedStats.stages.get(point.stage) : null;
+      if (stageStats) {
+        if (val > stageStats.ucl) return chartColors.fail;
+        if (val < stageStats.lcl) return chartColors.fail;
+      }
+    } else if (stats) {
+      if (val > stats.ucl) return chartColors.fail;
+      if (val < stats.lcl) return chartColors.fail;
     }
+
+    // Nelson Rule 2 violations -> Red
+    if (nelsonRule2Violations.has(index)) return chartColors.fail;
+
+    // In-control -> Blue (Minitab-style)
     return chartColors.mean;
   };
 
@@ -324,7 +389,7 @@ const IChart = ({ parentWidth, parentHeight, onPointClick }: IChartProps) => {
               cx={xScale(d.x as any)}
               cy={yScale(d.y)}
               r={4}
-              fill={getPointColor(d.y)}
+              fill={getPointColor(d.y, i)}
               stroke={chrome.pointStroke}
               strokeWidth={1}
               className={onPointClick ? 'cursor-pointer' : ''}

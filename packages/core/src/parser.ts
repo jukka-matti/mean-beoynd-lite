@@ -1,6 +1,7 @@
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import type { DataRow, DataCellValue } from './types';
+import * as d3 from 'd3';
+import type { DataRow, DataCellValue, ChannelInfo, WideFormatDetection } from './types';
 import { toNumericValue } from './types';
 
 // ============================================================================
@@ -477,4 +478,245 @@ export async function parseParetoFile(file: File): Promise<ParetoRow[]> {
     .sort((a, b) => b.count - a.count);
 
   return paretoData;
+}
+
+// ============================================================================
+// Wide Format / Channel Detection
+// ============================================================================
+
+/**
+ * Patterns that indicate a column is a channel/measurement point
+ * Matches: V1, V2, Valve_1, Channel_1, Head1, Nozzle_01, etc.
+ */
+const CHANNEL_PATTERNS = [
+  /^v\d+$/i, // V1, V2, V140
+  /^valve[_\s-]?\d+$/i, // Valve_1, Valve-1, Valve 1
+  /^channel[_\s-]?\d+$/i, // Channel_1, Channel-1
+  /^head[_\s-]?\d+$/i, // Head_1, Head1
+  /^nozzle[_\s-]?\d+$/i, // Nozzle_1
+  /^station[_\s-]?\d+$/i, // Station_1
+  /^pos(ition)?[_\s-]?\d+$/i, // Pos1, Position_1
+  /^port[_\s-]?\d+$/i, // Port_1
+  /^lane[_\s-]?\d+$/i, // Lane_1
+  /^cavity[_\s-]?\d+$/i, // Cavity_1 (injection molding)
+  /^die[_\s-]?\d+$/i, // Die_1
+  /^spindle[_\s-]?\d+$/i, // Spindle_1
+  /^cell[_\s-]?\d+$/i, // Cell_1
+  /^unit[_\s-]?\d+$/i, // Unit_1
+  /^sensor[_\s-]?\d+$/i, // Sensor_1
+  /^ch\d+$/i, // CH1, CH2
+  /^\d+$/, // Just numbers: 1, 2, 3...
+];
+
+/**
+ * Patterns for metadata columns (non-channel columns)
+ */
+const METADATA_PATTERNS = [
+  /^(date|time|timestamp|datetime)$/i,
+  /^(batch|lot|run|sample)([_\s-]?(id|num(ber)?|no))?$/i,
+  /^(operator|tech(nician)?|inspector)$/i,
+  /^(shift|line|machine)$/i,
+  /^(product|part|sku|item)([_\s-]?(id|num(ber)?|no|name))?$/i,
+  /^(id|row|index|record)$/i,
+  /^(comment|note|remark)s?$/i,
+];
+
+/**
+ * Check if a column name matches channel patterns
+ */
+function matchesChannelPattern(colName: string): boolean {
+  return CHANNEL_PATTERNS.some(pattern => pattern.test(colName.trim()));
+}
+
+/**
+ * Check if a column name matches metadata patterns
+ */
+function matchesMetadataPattern(colName: string): boolean {
+  return METADATA_PATTERNS.some(pattern => pattern.test(colName.trim()));
+}
+
+/**
+ * Options for channel detection
+ */
+export interface DetectChannelsOptions {
+  /** Minimum percentage of numeric values to consider a column as numeric (default: 0.9) */
+  numericThreshold?: number;
+  /** Minimum number of valid values required (default: 2) */
+  minValidValues?: number;
+}
+
+/**
+ * Detect channel columns from wide format data
+ *
+ * Identifies columns that appear to be measurement channels (parallel outputs)
+ * based on naming patterns and data characteristics.
+ *
+ * @param data - Array of data rows
+ * @param options - Detection options
+ * @returns Array of ChannelInfo for detected channels
+ *
+ * @example
+ * // Data with columns: Date, Batch, V1, V2, V3, V4
+ * const channels = detectChannelColumns(data);
+ * // Returns: [{ id: 'V1', ... }, { id: 'V2', ... }, ...]
+ */
+export function detectChannelColumns(
+  data: DataRow[],
+  options: DetectChannelsOptions = {}
+): ChannelInfo[] {
+  const { numericThreshold = 0.9, minValidValues = 2 } = options;
+
+  if (data.length === 0) return [];
+
+  const columns = Object.keys(data[0]);
+  const channels: ChannelInfo[] = [];
+
+  for (const colName of columns) {
+    // Skip known metadata columns
+    if (matchesMetadataPattern(colName)) continue;
+
+    // Extract values and check if numeric
+    const values = data.map(row => row[colName]);
+    const numericValues: number[] = [];
+
+    for (const val of values) {
+      const num = toNumericValue(val);
+      if (num !== undefined) {
+        numericValues.push(num);
+      }
+    }
+
+    // Check if column is sufficiently numeric
+    const numericRatio = numericValues.length / values.length;
+    if (numericRatio < numericThreshold || numericValues.length < minValidValues) {
+      continue;
+    }
+
+    // This is a numeric column - check if it matches channel pattern
+    const matchedPattern = matchesChannelPattern(colName);
+
+    // Calculate preview stats
+    const mean = d3.mean(numericValues) || 0;
+    const min = d3.min(numericValues) || 0;
+    const max = d3.max(numericValues) || 0;
+
+    channels.push({
+      id: colName,
+      label: colName,
+      n: numericValues.length,
+      preview: { min, max, mean },
+      matchedPattern,
+    });
+  }
+
+  return channels;
+}
+
+/**
+ * Options for wide format detection
+ */
+export interface DetectWideFormatOptions extends DetectChannelsOptions {
+  /** Minimum number of similar numeric columns to consider wide format (default: 3) */
+  minChannels?: number;
+  /** Minimum percentage of channels with matching pattern for high confidence (default: 0.5) */
+  patternMatchThreshold?: number;
+}
+
+/**
+ * Auto-detect if data is in wide format (multiple channels)
+ *
+ * Wide format detection looks for:
+ * 1. Multiple numeric columns with similar characteristics
+ * 2. Column names that follow channel naming patterns
+ * 3. Consistent data ranges across potential channels
+ *
+ * @param data - Array of data rows
+ * @param options - Detection options
+ * @returns WideFormatDetection with detection result and confidence
+ *
+ * @example
+ * const detection = detectWideFormat(data);
+ * if (detection.isWideFormat && detection.confidence === 'high') {
+ *   // Automatically switch to performance mode
+ *   setPerformanceMode(true);
+ *   setChannelColumns(detection.channels.map(c => c.id));
+ * }
+ */
+export function detectWideFormat(
+  data: DataRow[],
+  options: DetectWideFormatOptions = {}
+): WideFormatDetection {
+  const { minChannels = 3, patternMatchThreshold = 0.5 } = options;
+
+  if (data.length === 0) {
+    return {
+      isWideFormat: false,
+      channels: [],
+      metadataColumns: [],
+      confidence: 'low',
+      reason: 'No data provided',
+    };
+  }
+
+  // Detect potential channel columns
+  const potentialChannels = detectChannelColumns(data, options);
+
+  // Get all columns
+  const allColumns = Object.keys(data[0]);
+
+  // Identify metadata columns (non-channel)
+  const channelIds = new Set(potentialChannels.map(c => c.id));
+  const metadataColumns = allColumns.filter(col => !channelIds.has(col));
+
+  // Check if we have enough potential channels
+  if (potentialChannels.length < minChannels) {
+    return {
+      isWideFormat: false,
+      channels: potentialChannels,
+      metadataColumns,
+      confidence: 'low',
+      reason: `Only ${potentialChannels.length} numeric columns found (need at least ${minChannels})`,
+    };
+  }
+
+  // Count how many channels match naming patterns
+  const patternMatchCount = potentialChannels.filter(c => c.matchedPattern).length;
+  const patternMatchRatio = patternMatchCount / potentialChannels.length;
+
+  // Check for similar data ranges across channels (indicates same measurement type)
+  const ranges = potentialChannels.map(c => c.preview.max - c.preview.min);
+  const meanRange = d3.mean(ranges) || 0;
+  const rangeStdDev = d3.deviation(ranges) || 0;
+  const rangeCV = meanRange > 0 ? rangeStdDev / meanRange : Infinity;
+  const hasConsistentRanges = rangeCV < 1.0; // Coefficient of variation < 100%
+
+  // Determine confidence and result
+  let isWideFormat = false;
+  let confidence: 'high' | 'medium' | 'low' = 'low';
+  let reason = '';
+
+  if (patternMatchRatio >= patternMatchThreshold) {
+    // High confidence: most columns match channel patterns
+    isWideFormat = true;
+    confidence = 'high';
+    reason = `${patternMatchCount}/${potentialChannels.length} columns match channel naming patterns`;
+  } else if (hasConsistentRanges && potentialChannels.length >= 5) {
+    // Medium confidence: consistent data ranges across many numeric columns
+    isWideFormat = true;
+    confidence = 'medium';
+    reason = `${potentialChannels.length} numeric columns with consistent data ranges`;
+  } else if (potentialChannels.length >= minChannels) {
+    // Low confidence: meets minimum but no strong pattern
+    isWideFormat = false;
+    confidence = 'low';
+    reason = `${potentialChannels.length} numeric columns found but no clear channel pattern`;
+  }
+
+  return {
+    isWideFormat,
+    channels: potentialChannels,
+    metadataColumns,
+    confidence,
+    reason,
+  };
 }

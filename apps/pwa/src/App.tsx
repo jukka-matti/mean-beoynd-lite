@@ -18,8 +18,10 @@ import { useEmbedMessaging } from './hooks/useEmbedMessaging';
 import { useAutoSave } from './hooks/useAutoSave';
 import { SAMPLES } from './data/sampleData';
 import type { ExclusionReason } from './logic/parser';
+import PerformanceDetectedModal from './components/PerformanceDetectedModal';
+import type { WideFormatDetection } from '@variscout/core';
 
-type AnalysisView = 'dashboard' | 'regression' | 'gagerr';
+type AnalysisView = 'dashboard' | 'regression' | 'gagerr' | 'performance';
 
 // Breakpoint for desktop panel (vs modal on mobile)
 const DESKTOP_BREAKPOINT = 1024;
@@ -42,16 +44,32 @@ function App() {
     setOutcome,
     setFactors,
     setFilters,
+    setMeasureColumns,
+    setMeasureLabel,
+    setPerformanceMode,
     factors,
     columnAliases,
   } = useData();
+
+  // State for performance mode auto-detection
+  const [wideFormatDetection, setWideFormatDetection] = useState<WideFormatDetection | null>(null);
+  const [isPerformanceSetupOpen, setIsPerformanceSetupOpen] = useState(false);
+  // State for drill navigation from Performance Mode to standard I-Chart
+  const [drillFromPerformance, setDrillFromPerformance] = useState<string | null>(null);
+  // Callback for wide format detection
+  const handleWideFormatDetected = useCallback((result: WideFormatDetection) => {
+    setWideFormatDetection(result);
+  }, []);
+
   const {
     handleFileUpload: ingestFile,
     handleParetoFileUpload,
     clearParetoFile,
     loadSample,
     clearData,
-  } = useDataIngestion();
+  } = useDataIngestion({
+    onWideFormatDetected: handleWideFormatDetected,
+  });
   const [isMapping, setIsMapping] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
@@ -217,7 +235,8 @@ function App() {
 
       // Escape: close any open modal
       if (e.key === 'Escape') {
-        if (showSaveInput) setShowSaveInput(false);
+        if (wideFormatDetection) setWideFormatDetection(null);
+        else if (showSaveInput) setShowSaveInput(false);
         else if (showResetConfirm) setShowResetConfirm(false);
         else if (isSettingsOpen) setIsSettingsOpen(false);
         else if (isProjectsOpen) setIsProjectsOpen(false);
@@ -249,6 +268,7 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
+    wideFormatDetection,
     showSaveInput,
     showResetConfirm,
     isSettingsOpen,
@@ -423,6 +443,44 @@ function App() {
     setActiveView(view);
   }, []);
 
+  // Handle enabling performance mode from detection modal
+  const handleEnablePerformanceMode = useCallback(
+    (columns: string[], label: string) => {
+      setMeasureColumns(columns);
+      setMeasureLabel(label);
+      setPerformanceMode(true);
+      setWideFormatDetection(null);
+      setActiveView('performance');
+    },
+    [setMeasureColumns, setMeasureLabel, setPerformanceMode]
+  );
+
+  // Handle declining performance mode from detection modal
+  const handleDeclinePerformanceMode = useCallback(() => {
+    setWideFormatDetection(null);
+  }, []);
+
+  // Handle opening performance setup from settings
+  const handleConfigurePerformance = useCallback(() => {
+    setActiveView('performance');
+  }, []);
+
+  // Handle drilling from Performance Mode to standard I-Chart for a specific measure
+  const handleDrillToMeasure = useCallback(
+    (measureId: string) => {
+      setDrillFromPerformance(measureId);
+      setOutcome(measureId);
+      setActiveView('dashboard');
+    },
+    [setOutcome]
+  );
+
+  // Handle returning to Performance Mode from drilled I-Chart
+  const handleBackToPerformance = useCallback(() => {
+    setDrillFromPerformance(null);
+    setActiveView('performance');
+  }, []);
+
   // Render only FunnelWindow in popout mode
   if (isFunnelPopoutMode) {
     return <FunnelWindow />;
@@ -570,6 +628,9 @@ function App() {
               onSpecEditorOpened={() => setOpenSpecEditorRequested(false)}
               activeView={activeView}
               highlightedPointIndex={highlightedChartPoint}
+              drillFromPerformance={drillFromPerformance}
+              onBackToPerformance={handleBackToPerformance}
+              onDrillToMeasure={handleDrillToMeasure}
             />
           )}
         </div>
@@ -602,6 +663,7 @@ function App() {
           handleResetRequest();
         }}
         onSaveProject={handleSaveToBrowser}
+        onConfigurePerformance={handleConfigurePerformance}
         isSaving={isSavingAny}
         hasUnsavedChanges={hasUnsavedChanges}
       />
@@ -633,6 +695,15 @@ function App() {
       {/* Hide footer in embed mode */}
       {!isEmbedMode && (
         <AppFooter filteredCount={filteredData.length} totalCount={rawData.length} />
+      )}
+
+      {/* Performance Mode Detection Modal */}
+      {wideFormatDetection && (
+        <PerformanceDetectedModal
+          detection={wideFormatDetection}
+          onEnable={handleEnablePerformanceMode}
+          onDecline={handleDeclinePerformanceMode}
+        />
       )}
     </div>
   );

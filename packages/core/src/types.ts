@@ -370,3 +370,113 @@ export interface StageBoundary {
   /** Stats for this stage */
   stats: StatsResult;
 }
+
+// ============================================================================
+// Performance Module Types - Multi-channel process analysis
+// ============================================================================
+
+/**
+ * Channel health classification based on Cpk thresholds
+ * - critical: Cpk < 1.0 (process is not capable)
+ * - warning: 1.0 <= Cpk < 1.33 (process barely capable)
+ * - capable: 1.33 <= Cpk < 1.67 (process is capable)
+ * - excellent: Cpk >= 1.67 (process is highly capable)
+ */
+export type ChannelHealth = 'critical' | 'warning' | 'capable' | 'excellent';
+
+/**
+ * Channel detection result for wide format data
+ */
+export interface ChannelInfo {
+  /** Column name (channel identifier) */
+  id: string;
+  /** Display label (may be aliased) */
+  label: string;
+  /** Number of valid measurements */
+  n: number;
+  /** Quick preview stats */
+  preview: {
+    min: number;
+    max: number;
+    mean: number;
+  };
+  /** Whether column name matches channel patterns (V1, Valve_1, etc.) */
+  matchedPattern: boolean;
+}
+
+/**
+ * Per-channel statistics result
+ */
+export interface ChannelResult {
+  /** Column name (channel identifier) */
+  id: string;
+  /** Display label */
+  label: string;
+  /** Sample size */
+  n: number;
+  /** Mean value */
+  mean: number;
+  /** Standard deviation */
+  stdDev: number;
+  /** Process capability index (if both specs defined) */
+  cp?: number;
+  /** Process capability index accounting for centering */
+  cpk?: number;
+  /** Minimum value */
+  min: number;
+  /** Maximum value */
+  max: number;
+  /** Health classification based on Cpk */
+  health: ChannelHealth;
+  /** Percentage of values outside specification limits */
+  outOfSpecPercentage: number;
+  /** Raw measurement values for detailed analysis */
+  values: number[];
+}
+
+/**
+ * Summary statistics across all channels
+ */
+export interface PerformanceSummary {
+  /** Total number of channels analyzed */
+  totalChannels: number;
+  /** Count by health classification */
+  healthCounts: Record<ChannelHealth, number>;
+  /** Overall statistics across all channels */
+  overall: {
+    meanCpk: number;
+    minCpk: number;
+    maxCpk: number;
+    stdDevCpk: number;
+  };
+  /** Channels that need attention (critical + warning) */
+  needsAttentionCount: number;
+}
+
+/**
+ * Complete performance analysis result
+ */
+export interface ChannelPerformanceData {
+  /** Per-channel results */
+  channels: ChannelResult[];
+  /** Summary statistics */
+  summary: PerformanceSummary;
+  /** Specification limits used */
+  specs: SpecLimits;
+}
+
+/**
+ * Wide format detection result
+ */
+export interface WideFormatDetection {
+  /** Whether data appears to be wide format (multiple channels) */
+  isWideFormat: boolean;
+  /** Detected channel columns */
+  channels: ChannelInfo[];
+  /** Non-channel columns (metadata like date, batch, etc.) */
+  metadataColumns: string[];
+  /** Detection confidence */
+  confidence: 'high' | 'medium' | 'low';
+  /** Reason for classification */
+  reason: string;
+}

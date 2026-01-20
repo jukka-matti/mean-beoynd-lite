@@ -25,6 +25,10 @@ export interface SampleConfig {
   specs: SpecLimits;
   /** Optional grade definitions (e.g., coffee quality grades) */
   grades?: GradeDefinition[];
+  /** Enable performance mode (multi-measure Cpk analysis) */
+  performanceMode?: boolean;
+  /** Column names for measure variables (wide format data) */
+  measureColumns?: string[];
 }
 
 export interface SpecLimits {

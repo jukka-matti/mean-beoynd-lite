@@ -10,6 +10,7 @@ import { chartColors, chromeColors } from './colors';
 import { useChartLayout, useChartTooltip, useSelectionState } from './hooks';
 import { interactionStyles } from './styles/interactionStyles';
 import { getBoxplotA11yProps } from './utils/accessibility';
+import { BoxplotStatsTable } from './components/BoxplotStatsTable';
 
 /** Default threshold for high variation highlight (50%) */
 const DEFAULT_VARIATION_THRESHOLD = 50;
@@ -35,6 +36,8 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
   variationThreshold = DEFAULT_VARIATION_THRESHOLD,
   categoryContributions,
   showContributionLabels = false,
+  expanded = false,
+  onToggleExpand,
 }) => {
   // Determine if this factor should be highlighted as a drill target
   const isHighVariation = variationPct !== undefined && variationPct >= variationThreshold;
@@ -98,270 +101,337 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
 
   const totalSampleSize = sampleSize ?? data.reduce((sum, d) => sum + d.values.length, 0);
 
+  // Calculate the n label vertical offset based on whether contribution labels are shown
+  const nLabelOffset =
+    showContributionLabels && categoryContributions
+      ? parentWidth < 400
+        ? 36
+        : 42
+      : parentWidth < 400
+        ? 24
+        : 28;
+
   return (
-    <>
-      <svg width={parentWidth} height={parentHeight}>
-        <Group left={margin.left} top={margin.top}>
-          {/* Spec Lines */}
-          {specs.usl !== undefined && (
-            <line
-              x1={0}
-              x2={width}
-              y1={yScale(specs.usl)}
-              y2={yScale(specs.usl)}
-              stroke={chartColors.spec}
-              strokeWidth={2}
-              strokeDasharray="4,4"
-            />
-          )}
-          {specs.lsl !== undefined && (
-            <line
-              x1={0}
-              x2={width}
-              y1={yScale(specs.lsl)}
-              y2={yScale(specs.lsl)}
-              stroke={chartColors.spec}
-              strokeWidth={2}
-              strokeDasharray="4,4"
-            />
-          )}
-          {specs.target !== undefined && (
-            <line
-              x1={0}
-              x2={width}
-              y1={yScale(specs.target)}
-              y2={yScale(specs.target)}
-              stroke={chartColors.target}
-              strokeWidth={1}
-              strokeDasharray="4,4"
-            />
-          )}
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
+      <div style={{ position: 'relative', flex: expanded ? '0 0 auto' : 1 }}>
+        <svg width={parentWidth} height={expanded ? Math.min(parentHeight, 300) : parentHeight}>
+          <Group left={margin.left} top={margin.top}>
+            {/* Spec Lines */}
+            {specs.usl !== undefined && (
+              <line
+                x1={0}
+                x2={width}
+                y1={yScale(specs.usl)}
+                y2={yScale(specs.usl)}
+                stroke={chartColors.spec}
+                strokeWidth={2}
+                strokeDasharray="4,4"
+              />
+            )}
+            {specs.lsl !== undefined && (
+              <line
+                x1={0}
+                x2={width}
+                y1={yScale(specs.lsl)}
+                y2={yScale(specs.lsl)}
+                stroke={chartColors.spec}
+                strokeWidth={2}
+                strokeDasharray="4,4"
+              />
+            )}
+            {specs.target !== undefined && (
+              <line
+                x1={0}
+                x2={width}
+                y1={yScale(specs.target)}
+                y2={yScale(specs.target)}
+                stroke={chartColors.target}
+                strokeWidth={1}
+                strokeDasharray="4,4"
+              />
+            )}
 
-          {/* Boxplots */}
-          {data.map((d, i) => {
-            const x = xScale(d.key) || 0;
-            const barWidth = xScale.bandwidth();
+            {/* Boxplots */}
+            {data.map((d, i) => {
+              const x = xScale(d.key) || 0;
+              const barWidth = xScale.bandwidth();
 
-            return (
-              <Group
-                key={i}
-                onClick={() => onBoxClick?.(d.key)}
-                onMouseOver={() => showTooltipAtCoords(x + barWidth, yScale(d.median), d)}
-                onMouseLeave={hideTooltip}
-                className={onBoxClick ? interactionStyles.clickable : ''}
-                opacity={getOpacity(d.key)}
-                {...getBoxplotA11yProps(
-                  d.key,
-                  d.median,
-                  d.values.length,
-                  onBoxClick ? () => onBoxClick(d.key) : undefined
-                )}
-              >
-                {/* Transparent capture rect for better clickability */}
-                <rect x={x - 5} y={0} width={barWidth + 10} height={height} fill="transparent" />
+              return (
+                <Group
+                  key={i}
+                  onClick={() => onBoxClick?.(d.key)}
+                  onMouseOver={() => showTooltipAtCoords(x + barWidth, yScale(d.median), d)}
+                  onMouseLeave={hideTooltip}
+                  className={onBoxClick ? interactionStyles.clickable : ''}
+                  opacity={getOpacity(d.key)}
+                  {...getBoxplotA11yProps(
+                    d.key,
+                    d.median,
+                    d.values.length,
+                    onBoxClick ? () => onBoxClick(d.key) : undefined
+                  )}
+                >
+                  {/* Transparent capture rect for better clickability */}
+                  <rect x={x - 5} y={0} width={barWidth + 10} height={height} fill="transparent" />
 
-                {/* Whisker Line */}
-                <line
-                  x1={x + barWidth / 2}
-                  x2={x + barWidth / 2}
-                  y1={yScale(d.min)}
-                  y2={yScale(d.max)}
-                  stroke={chromeColors.whisker}
-                  strokeWidth={1}
-                />
-
-                {/* Min whisker cap */}
-                <line
-                  x1={x + barWidth / 4}
-                  x2={x + (3 * barWidth) / 4}
-                  y1={yScale(d.min)}
-                  y2={yScale(d.min)}
-                  stroke={chromeColors.whisker}
-                  strokeWidth={1}
-                />
-
-                {/* Max whisker cap */}
-                <line
-                  x1={x + barWidth / 4}
-                  x2={x + (3 * barWidth) / 4}
-                  y1={yScale(d.max)}
-                  y2={yScale(d.max)}
-                  stroke={chromeColors.whisker}
-                  strokeWidth={1}
-                />
-
-                {/* Box */}
-                <rect
-                  x={x}
-                  y={yScale(d.q3)}
-                  width={barWidth}
-                  height={Math.abs(yScale(d.q1) - yScale(d.q3))}
-                  fill={isSelected(d.key) ? chartColors.selected : chromeColors.boxDefault}
-                  stroke={isSelected(d.key) ? chartColors.selectedBorder : chromeColors.boxBorder}
-                  rx={2}
-                />
-
-                {/* Median Line */}
-                <line
-                  x1={x}
-                  x2={x + barWidth}
-                  y1={yScale(d.median)}
-                  y2={yScale(d.median)}
-                  stroke={chartColors.cumulative}
-                  strokeWidth={2}
-                />
-
-                {/* Outliers */}
-                {d.outliers.map((o, j) => (
-                  <circle
-                    key={j}
-                    cx={x + barWidth / 2}
-                    cy={yScale(o)}
-                    r={3}
-                    fill={chartColors.fail}
-                    opacity={0.6}
+                  {/* Whisker Line */}
+                  <line
+                    x1={x + barWidth / 2}
+                    x2={x + barWidth / 2}
+                    y1={yScale(d.min)}
+                    y2={yScale(d.max)}
+                    stroke={chromeColors.whisker}
+                    strokeWidth={1}
                   />
-                ))}
-              </Group>
-            );
-          })}
 
-          {/* Y-Axis */}
-          <AxisLeft
-            scale={yScale}
-            stroke={chromeColors.axisPrimary}
-            tickStroke={chromeColors.axisPrimary}
-            tickLabelProps={() => ({
-              fill: chromeColors.labelPrimary,
-              fontSize: fonts.tickLabel,
-              textAnchor: 'end',
-              dx: -4,
-              dy: 3,
-              fontFamily: 'monospace',
+                  {/* Min whisker cap */}
+                  <line
+                    x1={x + barWidth / 4}
+                    x2={x + (3 * barWidth) / 4}
+                    y1={yScale(d.min)}
+                    y2={yScale(d.min)}
+                    stroke={chromeColors.whisker}
+                    strokeWidth={1}
+                  />
+
+                  {/* Max whisker cap */}
+                  <line
+                    x1={x + barWidth / 4}
+                    x2={x + (3 * barWidth) / 4}
+                    y1={yScale(d.max)}
+                    y2={yScale(d.max)}
+                    stroke={chromeColors.whisker}
+                    strokeWidth={1}
+                  />
+
+                  {/* Box */}
+                  <rect
+                    x={x}
+                    y={yScale(d.q3)}
+                    width={barWidth}
+                    height={Math.abs(yScale(d.q1) - yScale(d.q3))}
+                    fill={isSelected(d.key) ? chartColors.selected : chromeColors.boxDefault}
+                    stroke={isSelected(d.key) ? chartColors.selectedBorder : chromeColors.boxBorder}
+                    rx={2}
+                  />
+
+                  {/* Median Line */}
+                  <line
+                    x1={x}
+                    x2={x + barWidth}
+                    y1={yScale(d.median)}
+                    y2={yScale(d.median)}
+                    stroke={chartColors.cumulative}
+                    strokeWidth={2}
+                  />
+
+                  {/* Outliers */}
+                  {d.outliers.map((o, j) => (
+                    <circle
+                      key={j}
+                      cx={x + barWidth / 2}
+                      cy={yScale(o)}
+                      r={3}
+                      fill={chartColors.fail}
+                      opacity={0.6}
+                    />
+                  ))}
+                </Group>
+              );
             })}
-          />
 
-          {/* Y-Axis Label */}
-          <text
-            x={parentWidth < 400 ? -25 : parentWidth < 768 ? -40 : -50}
-            y={height / 2}
-            transform={`rotate(-90 ${parentWidth < 400 ? -25 : parentWidth < 768 ? -40 : -50} ${height / 2})`}
-            textAnchor="middle"
-            fill={chromeColors.labelPrimary}
-            fontSize={fonts.axisLabel}
-            fontWeight={500}
-          >
-            {yAxisLabel}
-          </text>
+            {/* Y-Axis */}
+            <AxisLeft
+              scale={yScale}
+              stroke={chromeColors.axisPrimary}
+              tickStroke={chromeColors.axisPrimary}
+              tickLabelProps={() => ({
+                fill: chromeColors.labelPrimary,
+                fontSize: fonts.tickLabel,
+                textAnchor: 'end',
+                dx: -4,
+                dy: 3,
+                fontFamily: 'monospace',
+              })}
+            />
 
-          {/* X-Axis */}
-          <AxisBottom
-            top={height}
-            scale={xScale}
-            stroke={chromeColors.axisPrimary}
-            tickStroke={chromeColors.axisPrimary}
-            tickLabelProps={() => ({
-              fill: chromeColors.labelSecondary,
-              fontSize: fonts.tickLabel,
-              textAnchor: 'middle',
-              dy: 2,
-            })}
-          />
+            {/* Y-Axis Label */}
+            <text
+              x={parentWidth < 400 ? -25 : parentWidth < 768 ? -40 : -50}
+              y={height / 2}
+              transform={`rotate(-90 ${parentWidth < 400 ? -25 : parentWidth < 768 ? -40 : -50} ${height / 2})`}
+              textAnchor="middle"
+              fill={chromeColors.labelPrimary}
+              fontSize={fonts.axisLabel}
+              fontWeight={500}
+            >
+              {yAxisLabel}
+            </text>
 
-          {/* Contribution Labels (below X-axis) */}
-          {showContributionLabels &&
-            categoryContributions &&
-            data.map(d => {
-              const contribution = categoryContributions.get(d.key);
-              if (contribution === undefined) return null;
+            {/* X-Axis */}
+            <AxisBottom
+              top={height}
+              scale={xScale}
+              stroke={chromeColors.axisPrimary}
+              tickStroke={chromeColors.axisPrimary}
+              tickLabelProps={() => ({
+                fill: chromeColors.labelSecondary,
+                fontSize: fonts.tickLabel,
+                textAnchor: 'middle',
+                dy: 2,
+              })}
+            />
+
+            {/* Contribution Labels (below X-axis) */}
+            {showContributionLabels &&
+              categoryContributions &&
+              data.map(d => {
+                const contribution = categoryContributions.get(d.key);
+                if (contribution === undefined) return null;
+                const x = xScale(d.key) || 0;
+                const barWidth = xScale.bandwidth();
+                return (
+                  <text
+                    key={`contrib-${d.key}`}
+                    x={x + barWidth / 2}
+                    y={height + (parentWidth < 400 ? 24 : 28)}
+                    textAnchor="middle"
+                    fill={
+                      contribution >= variationThreshold ? '#f87171' : chromeColors.labelSecondary
+                    }
+                    fontSize={fonts.statLabel}
+                    fontWeight={contribution >= variationThreshold ? 600 : 400}
+                  >
+                    {Math.round(contribution)}%
+                  </text>
+                );
+              })}
+
+            {/* n Labels (always visible below contribution labels or below x-axis) */}
+            {data.map(d => {
               const x = xScale(d.key) || 0;
               const barWidth = xScale.bandwidth();
               return (
                 <text
-                  key={`contrib-${d.key}`}
+                  key={`n-${d.key}`}
                   x={x + barWidth / 2}
-                  y={height + (parentWidth < 400 ? 24 : 28)}
+                  y={height + nLabelOffset}
                   textAnchor="middle"
-                  fill={
-                    contribution >= variationThreshold ? '#f87171' : chromeColors.labelSecondary
-                  }
-                  fontSize={fonts.statLabel}
-                  fontWeight={contribution >= variationThreshold ? 600 : 400}
+                  fill={chromeColors.labelMuted}
+                  fontSize={fonts.statLabel - 1}
                 >
-                  {Math.round(contribution)}%
+                  n={d.values.length}
                 </text>
               );
             })}
 
-          {/* X-Axis Label with Variation Indicator */}
-          <text
-            x={width / 2}
-            y={height + (parentWidth < 400 ? 35 : 50)}
-            textAnchor="middle"
-            fill={isHighVariation ? '#f87171' : chromeColors.labelSecondary}
-            fontSize={fonts.axisLabel}
-            fontWeight={isHighVariation ? 600 : 500}
-          >
-            {xAxisLabel}
-            {variationPct !== undefined && ` (${Math.round(variationPct)}%)`}
-          </text>
-          {/* Drill suggestion indicator */}
-          {isHighVariation && (
+            {/* X-Axis Label with Variation Indicator */}
             <text
               x={width / 2}
-              y={height + (parentWidth < 400 ? 35 : 50) + 14}
+              y={height + (parentWidth < 400 ? 35 : 50)}
               textAnchor="middle"
-              fill="#f87171"
-              fontSize={fonts.statLabel}
+              fill={isHighVariation ? '#f87171' : chromeColors.labelSecondary}
+              fontSize={fonts.axisLabel}
+              fontWeight={isHighVariation ? 600 : 500}
             >
-              ↓ drill here
+              {xAxisLabel}
+              {variationPct !== undefined && ` (${Math.round(variationPct)}%)`}
             </text>
-          )}
+            {/* Drill suggestion indicator */}
+            {isHighVariation && (
+              <text
+                x={width / 2}
+                y={height + (parentWidth < 400 ? 35 : 50) + 14}
+                textAnchor="middle"
+                fill="#f87171"
+                fontSize={fonts.statLabel}
+              >
+                ↓ drill here
+              </text>
+            )}
 
-          {/* Source Bar (branding) */}
-          {showBranding && (
-            <ChartSourceBar
-              width={width}
-              top={height + margin.bottom - sourceBarHeight}
-              n={totalSampleSize}
-              brandingText={brandingText}
-              fontSize={fonts.brandingText}
-            />
-          )}
-        </Group>
-      </svg>
+            {/* Source Bar (branding) */}
+            {showBranding && (
+              <ChartSourceBar
+                width={width}
+                top={height + margin.bottom - sourceBarHeight}
+                n={totalSampleSize}
+                brandingText={brandingText}
+                fontSize={fonts.brandingText}
+              />
+            )}
+          </Group>
+        </svg>
 
-      {/* Tooltip */}
-      {tooltipOpen && tooltipData && (
-        <TooltipWithBounds
-          left={margin.left + (tooltipLeft ?? 0)}
-          top={margin.top + (tooltipTop ?? 0)}
-          style={{
-            ...defaultStyles,
-            backgroundColor: chromeColors.tooltipBg,
-            color: chromeColors.tooltipText,
-            border: `1px solid ${chromeColors.tooltipBorder}`,
-            borderRadius: 6,
-            padding: '8px 12px',
-            fontSize: fonts.tooltipText,
-          }}
-        >
-          <div>
-            <strong>{tooltipData.key}</strong>
-          </div>
-          <div>Median: {tooltipData.median.toFixed(2)}</div>
-          <div>Q1: {tooltipData.q1.toFixed(2)}</div>
-          <div>Q3: {tooltipData.q3.toFixed(2)}</div>
-          <div>n: {tooltipData.values.length}</div>
-          {categoryContributions && categoryContributions.has(tooltipData.key) && (
-            <div style={{ color: '#f87171', fontWeight: 500, marginTop: 4 }}>
-              Impact: {Math.round(categoryContributions.get(tooltipData.key) ?? 0)}% of total
-              variation
+        {/* Expand Toggle Icon */}
+        {onToggleExpand && (
+          <button
+            onClick={onToggleExpand}
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              background: 'transparent',
+              border: `1px solid ${chromeColors.labelMuted}`,
+              borderRadius: 4,
+              padding: '4px 8px',
+              cursor: 'pointer',
+              color: chromeColors.labelSecondary,
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+            title={expanded ? 'Collapse stats' : 'Expand stats'}
+          >
+            <span style={{ fontSize: 10 }}>{expanded ? '▲' : '▼'}</span>
+            Stats
+          </button>
+        )}
+
+        {/* Tooltip */}
+        {tooltipOpen && tooltipData && (
+          <TooltipWithBounds
+            left={margin.left + (tooltipLeft ?? 0)}
+            top={margin.top + (tooltipTop ?? 0)}
+            style={{
+              ...defaultStyles,
+              backgroundColor: chromeColors.tooltipBg,
+              color: chromeColors.tooltipText,
+              border: `1px solid ${chromeColors.tooltipBorder}`,
+              borderRadius: 6,
+              padding: '8px 12px',
+              fontSize: fonts.tooltipText,
+            }}
+          >
+            <div>
+              <strong>{tooltipData.key}</strong>
             </div>
-          )}
-        </TooltipWithBounds>
+            <div>Median: {tooltipData.median.toFixed(2)}</div>
+            <div>Q1: {tooltipData.q1.toFixed(2)}</div>
+            <div>Q3: {tooltipData.q3.toFixed(2)}</div>
+            <div>n: {tooltipData.values.length}</div>
+            {categoryContributions && categoryContributions.has(tooltipData.key) && (
+              <div style={{ color: '#f87171', fontWeight: 500, marginTop: 4 }}>
+                Impact: {Math.round(categoryContributions.get(tooltipData.key) ?? 0)}% of total
+                variation
+              </div>
+            )}
+          </TooltipWithBounds>
+        )}
+      </div>
+
+      {/* Expandable Stats Table */}
+      {expanded && (
+        <div style={{ flex: 1, overflow: 'auto', padding: '0 8px' }}>
+          <BoxplotStatsTable
+            data={data}
+            specs={specs}
+            categoryContributions={categoryContributions}
+          />
+        </div>
       )}
-    </>
+    </div>
   );
 };
 

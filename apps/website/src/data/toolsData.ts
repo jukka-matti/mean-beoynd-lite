@@ -426,6 +426,75 @@ export const TOOLS: ToolData[] = [
     nextTools: ['i-chart', 'capability'],
     relatedLearn: ['eda-philosophy'],
   },
+  {
+    slug: 'performance',
+    name: 'Performance Analysis',
+    pillar: null,
+    color: '#06b6d4',
+    colorClass: 'text-cyan-500',
+    hero: {
+      title: 'See which filling heads need attention',
+      subtitle:
+        'Compare Cpk across all packaging heads at a glance. Find underperformers before they cause rejects.',
+    },
+    whenToUse: [
+      'Sachet filling machines with multiple heads',
+      'Multi-lane packaging lines',
+      'Parallel filling stations',
+      'Maintenance prioritization',
+      'Head-by-head capability comparison',
+    ],
+    dataRequirements: {
+      minimum: { count: 10, description: 'Per head - basic Cpk estimate' },
+      better: { count: 30, description: 'Per head - reliable capability' },
+      sweet: { count: 100, description: 'Per head - robust comparison' },
+    },
+    howToRead: {
+      description:
+        "Each dot represents one filling head's Cpk. Position shows capability relative to target.",
+      elements: [
+        { name: 'Head Points', description: "Each dot is one filling head's Cpk value" },
+        { name: 'Target Line (1.33)', description: 'Industry standard for capable processes' },
+        { name: 'Colors', description: 'Red=below target, Green=meets target' },
+      ],
+      quickCheck: [
+        'Any heads below the target line?',
+        'Which head has the lowest Cpk?',
+        'Are heads clustered or spread out?',
+      ],
+    },
+    patterns: [
+      {
+        name: 'Outlier Head',
+        description: 'One head far below others',
+        action: 'Check for wear, clogging, or calibration issues on that head',
+      },
+      {
+        name: 'Clustered Performance',
+        description: 'Most heads at similar Cpk level',
+        action: 'Equipment is well-tuned; focus on system-wide improvements',
+      },
+      {
+        name: 'Sequential Decline',
+        description: 'Cpk drops along the line',
+        action: 'Check for positional effects (e.g., product flow issues)',
+      },
+    ],
+    features: [
+      {
+        name: 'Auto-detect heads',
+        description: 'Upload your data and filling heads are identified automatically',
+      },
+      { name: 'Click to drill down', description: 'Click any head to see its distribution' },
+      {
+        name: 'Target reference',
+        description: 'Clear target line shows which heads need attention',
+      },
+    ],
+    sampleKey: 'sachets',
+    nextTools: ['capability', 'i-chart'],
+    relatedLearn: ['two-voices', 'four-pillars'],
+  },
 ];
 
 export function getToolBySlug(slug: string): ToolData | undefined {
