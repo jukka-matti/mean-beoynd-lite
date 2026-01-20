@@ -2,12 +2,12 @@
  * FilterBar Component for Content Add-in
  *
  * Displays active slicer filters as a breadcrumb trail with a Clear All button.
- * Uses dark theme styling to match the Content Add-in dashboard.
+ * Uses dynamic theme styling to match the Content Add-in dashboard.
  * Read-only navigation (slicers control filtering, not clicks).
  */
 
-import React from 'react';
-import { darkTheme } from '../lib/darkTheme';
+import React, { useMemo } from 'react';
+import { useContentTheme, type ThemeTokens } from './ThemeContext';
 
 export interface ActiveFilter {
   column: string;
@@ -54,9 +54,97 @@ const ChevronRight: React.FC<{ size?: number }> = ({ size = 12 }) => (
 );
 
 /**
+ * Create styles object based on theme tokens
+ */
+const createStyles = (theme: ThemeTokens): Record<string, React.CSSProperties> => ({
+  container: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacingM,
+    padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+    backgroundColor: theme.colorNeutralBackground2,
+    borderRadius: theme.borderRadiusM,
+    marginBottom: theme.spacingM,
+    minHeight: 36,
+  },
+  breadcrumbList: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacingXS,
+    flexWrap: 'wrap',
+    flex: 1,
+  },
+  rootItem: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+    borderRadius: theme.borderRadiusS,
+    fontSize: theme.fontSizeSmall,
+    color: theme.colorNeutralForeground2,
+  },
+  chevron: {
+    display: 'flex',
+    alignItems: 'center',
+    color: theme.colorNeutralForeground3,
+  },
+  filterItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacingXS,
+    padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+    backgroundColor: theme.colorNeutralBackground3,
+    borderRadius: theme.borderRadiusS,
+    fontSize: theme.fontSizeSmall,
+    color: theme.colorNeutralForeground1,
+  },
+  filterColumn: {
+    color: theme.colorNeutralForeground2,
+  },
+  filterValues: {
+    color: theme.colorNeutralForeground1,
+    fontWeight: theme.fontWeightSemibold,
+    maxWidth: 120,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  itemClose: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 14,
+    height: 14,
+    padding: 0,
+    marginLeft: theme.spacingXS,
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: theme.borderRadiusCircular,
+    color: theme.colorNeutralForeground3,
+    cursor: 'pointer',
+    fontSize: 12,
+    lineHeight: 1,
+  },
+  clearButton: {
+    padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+    backgroundColor: 'transparent',
+    border: `1px solid ${theme.colorNeutralStroke1}`,
+    borderRadius: theme.borderRadiusS,
+    color: theme.colorNeutralForeground1,
+    fontSize: theme.fontSizeSmall,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    transition: 'background-color 0.15s, border-color 0.15s',
+  },
+});
+
+/**
  * Displays active slicer filters as a breadcrumb trail
  */
 const FilterBar: React.FC<FilterBarProps> = ({ filters, onClearAll, onClearFilter }) => {
+  const { theme } = useContentTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   // Don't render if no filters active
   if (filters.length === 0) {
     return null;
@@ -102,88 +190,6 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onClearAll, onClearFilte
       </button>
     </nav>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: darkTheme.spacingM,
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-    backgroundColor: darkTheme.colorNeutralBackground2,
-    borderRadius: darkTheme.borderRadiusM,
-    marginBottom: darkTheme.spacingM,
-    minHeight: 36,
-  },
-  breadcrumbList: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: darkTheme.spacingXS,
-    flexWrap: 'wrap',
-    flex: 1,
-  },
-  rootItem: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
-    borderRadius: darkTheme.borderRadiusS,
-    fontSize: darkTheme.fontSizeSmall,
-    color: darkTheme.colorNeutralForeground2,
-  },
-  chevron: {
-    display: 'flex',
-    alignItems: 'center',
-    color: darkTheme.colorNeutralForeground3,
-  },
-  filterItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: darkTheme.spacingXS,
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
-    backgroundColor: darkTheme.colorNeutralBackground3,
-    borderRadius: darkTheme.borderRadiusS,
-    fontSize: darkTheme.fontSizeSmall,
-    color: darkTheme.colorNeutralForeground1,
-  },
-  filterColumn: {
-    color: darkTheme.colorNeutralForeground2,
-  },
-  filterValues: {
-    color: darkTheme.colorNeutralForeground1,
-    fontWeight: darkTheme.fontWeightSemibold,
-    maxWidth: 120,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  itemClose: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 14,
-    height: 14,
-    padding: 0,
-    marginLeft: darkTheme.spacingXS,
-    backgroundColor: 'transparent',
-    border: 'none',
-    borderRadius: darkTheme.borderRadiusCircular,
-    color: darkTheme.colorNeutralForeground3,
-    cursor: 'pointer',
-    fontSize: 12,
-    lineHeight: 1,
-  },
-  clearButton: {
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-    backgroundColor: 'transparent',
-    border: `1px solid ${darkTheme.colorNeutralStroke1}`,
-    borderRadius: darkTheme.borderRadiusS,
-    color: darkTheme.colorNeutralForeground1,
-    fontSize: darkTheme.fontSizeSmall,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'background-color 0.15s, border-color 0.15s',
-  },
 };
 
 export default FilterBar;

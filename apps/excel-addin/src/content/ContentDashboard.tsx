@@ -21,7 +21,7 @@ import {
 } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
-import { darkTheme } from '../lib/darkTheme';
+import { useContentTheme, type ThemeTokens } from './ThemeContext';
 import FilterBar, { type ActiveFilter } from './FilterBar';
 import AnovaResults from './AnovaResults';
 import {
@@ -42,13 +42,19 @@ interface ContentDashboardProps {
 }
 
 /**
+ * Props for ChartErrorBoundary including theme
+ */
+interface ChartErrorBoundaryProps {
+  children: React.ReactNode;
+  chartName: string;
+  theme: ThemeTokens;
+}
+
+/**
  * Simple error boundary for chart components
  */
-class ChartErrorBoundary extends React.Component<
-  { children: React.ReactNode; chartName: string },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode; chartName: string }) {
+class ChartErrorBoundary extends React.Component<ChartErrorBoundaryProps, { hasError: boolean }> {
+  constructor(props: ChartErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }
@@ -62,25 +68,26 @@ class ChartErrorBoundary extends React.Component<
   }
 
   render(): React.ReactNode {
+    const { theme } = this.props;
     if (this.state.hasError) {
       return (
         <div
           style={{
-            color: darkTheme.colorNeutralForeground2,
+            color: theme.colorNeutralForeground2,
             textAlign: 'center',
-            padding: darkTheme.spacingL,
+            padding: theme.spacingL,
           }}
         >
           <p>Chart failed to render</p>
           <button
             onClick={() => this.setState({ hasError: false })}
             style={{
-              marginTop: darkTheme.spacingS,
-              padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-              backgroundColor: darkTheme.colorNeutralBackground3,
+              marginTop: theme.spacingS,
+              padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+              backgroundColor: theme.colorNeutralBackground3,
               border: 'none',
-              borderRadius: darkTheme.borderRadiusS,
-              color: darkTheme.colorNeutralForeground1,
+              borderRadius: theme.borderRadiusS,
+              color: theme.colorNeutralForeground1,
               cursor: 'pointer',
             }}
           >
@@ -92,6 +99,260 @@ class ChartErrorBoundary extends React.Component<
     return this.props.children;
   }
 }
+
+/**
+ * Create styles object based on theme tokens
+ */
+const createStyles = (theme: ThemeTokens): Record<string, React.CSSProperties> => ({
+  container: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: theme.colorNeutralBackground1,
+    color: theme.colorNeutralForeground1,
+    padding: theme.spacingM,
+    boxSizing: 'border-box',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.spacingM,
+    padding: `${theme.spacingS}px ${theme.spacingM}px`,
+    backgroundColor: theme.colorNeutralBackground2,
+    borderRadius: theme.borderRadiusM,
+    marginBottom: theme.spacingM,
+  },
+  statsRow: {
+    display: 'flex',
+    gap: theme.spacingXL,
+  },
+  exportToolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacingS,
+  },
+  exportButton: {
+    padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+    backgroundColor: theme.colorNeutralBackground3,
+    border: 'none',
+    borderRadius: theme.borderRadiusS,
+    color: theme.colorNeutralForeground1,
+    fontSize: theme.fontSizeSmall,
+    cursor: 'pointer',
+    transition: 'background-color 0.15s',
+  },
+  exportButtonDisabled: {
+    padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+    backgroundColor: theme.colorNeutralBackground3,
+    border: 'none',
+    borderRadius: theme.borderRadiusS,
+    color: theme.colorNeutralForeground3,
+    fontSize: theme.fontSizeSmall,
+    cursor: 'not-allowed',
+    opacity: 0.5,
+  },
+  exportSuccess: {
+    fontSize: theme.fontSizeSmall,
+    color: theme.colorStatusSuccessForeground,
+    marginRight: theme.spacingXS,
+  },
+  exportError: {
+    fontSize: theme.fontSizeSmall,
+    color: theme.colorStatusDangerForeground,
+    marginRight: theme.spacingXS,
+  },
+  exportSpinner: {
+    width: 14,
+    height: 14,
+    border: `2px solid ${theme.colorNeutralStroke1}`,
+    borderTopColor: theme.colorBrandForeground1,
+    borderRadius: theme.borderRadiusCircular,
+    animation: 'spin 1s linear infinite',
+    marginRight: theme.spacingXS,
+  },
+  stat: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    cursor: 'help',
+  },
+  statLabel: {
+    fontSize: theme.fontSizeCaption,
+    color: theme.colorNeutralForeground2,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  statValue: {
+    fontSize: theme.fontSizeTitle,
+    fontWeight: theme.fontWeightSemibold,
+    fontFamily: 'monospace',
+  },
+  cpkLabel: {
+    fontSize: theme.fontSizeCaption,
+    fontWeight: 400,
+    fontFamily: 'system-ui, sans-serif',
+    opacity: 0.8,
+  },
+  topChartsRow: {
+    flex: '0 0 45%',
+    display: 'flex',
+    gap: theme.spacingM,
+    minHeight: 0,
+  },
+  factorSelector: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacingS,
+    padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+    backgroundColor: theme.colorNeutralBackground2,
+    borderRadius: theme.borderRadiusS,
+    marginBottom: theme.spacingS,
+  },
+  factorLabel: {
+    fontSize: theme.fontSizeSmall,
+    color: theme.colorNeutralForeground2,
+  },
+  factorSelect: {
+    padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+    backgroundColor: theme.colorNeutralBackground3,
+    border: `1px solid ${theme.colorNeutralStroke1}`,
+    borderRadius: theme.borderRadiusS,
+    color: theme.colorNeutralForeground1,
+    fontSize: theme.fontSizeSmall,
+    cursor: 'pointer',
+  },
+  autoSwitchLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    fontSize: theme.fontSizeCaption,
+    color: theme.colorNeutralForeground3,
+    cursor: 'pointer',
+    marginLeft: theme.spacingS,
+  },
+  autoSwitchCheckbox: {
+    cursor: 'pointer',
+  },
+  bottomChartsRow: {
+    flex: '0 0 45%',
+    display: 'flex',
+    gap: theme.spacingM,
+    minHeight: 0,
+  },
+  chartContainerWithToggle: {
+    flex: 1,
+    backgroundColor: theme.colorNeutralBackground2,
+    borderRadius: theme.borderRadiusM,
+    padding: theme.spacingS,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  toggleButton: {
+    position: 'absolute',
+    top: theme.spacingXS,
+    right: theme.spacingXS,
+    padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+    backgroundColor: theme.colorNeutralBackground3,
+    border: 'none',
+    borderRadius: theme.borderRadiusS,
+    color: theme.colorNeutralForeground2,
+    fontSize: theme.fontSizeCaption,
+    cursor: 'pointer',
+    zIndex: 1,
+  },
+  chartContainer: {
+    flex: 1,
+    backgroundColor: theme.colorNeutralBackground2,
+    borderRadius: theme.borderRadiusM,
+    padding: theme.spacingS,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loading: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    color: theme.colorNeutralForeground2,
+  },
+  spinner: {
+    width: 24,
+    height: 24,
+    border: `2px solid ${theme.colorNeutralStroke1}`,
+    borderTopColor: theme.colorBrandForeground1,
+    borderRadius: theme.borderRadiusCircular,
+    animation: 'spin 1s linear infinite',
+  },
+  empty: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    color: theme.colorNeutralForeground3,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: theme.spacingL,
+  },
+  error: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    padding: theme.spacingL,
+    textAlign: 'center',
+  },
+  errorText: {
+    color: theme.colorStatusDangerForeground,
+    fontSize: theme.fontSizeBody,
+    marginBottom: theme.spacingS,
+  },
+  errorHint: {
+    color: theme.colorNeutralForeground2,
+    fontSize: theme.fontSizeSmall,
+  },
+  drillBanner: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: `${theme.spacingS}px ${theme.spacingM}px`,
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+    borderBottom: '1px solid rgba(59, 130, 246, 0.3)',
+    marginBottom: theme.spacingS,
+  },
+  drillBannerText: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacingS,
+    fontSize: theme.fontSizeSmall,
+    color: '#93c5fd',
+  },
+  drillBannerLabel: {
+    color: '#93c5fd',
+  },
+  drillBannerMeasure: {
+    color: theme.colorNeutralForeground1,
+    fontWeight: theme.fontWeightSemibold,
+  },
+  drillBannerButton: {
+    padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: theme.borderRadiusS,
+    color: '#93c5fd',
+    fontSize: theme.fontSizeSmall,
+    fontWeight: theme.fontWeightSemibold,
+    cursor: 'pointer',
+  },
+});
 
 /**
  * Content Add-in Dashboard
@@ -106,6 +367,9 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
   drillFromPerformance,
   onBackToPerformance,
 }) => {
+  const { theme } = useContentTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const [filteredData, setFilteredData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -510,12 +774,14 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
     return (
       <div style={styles.empty}>
         <p>No data visible. This may be due to slicer filters excluding all rows.</p>
-        <p style={{ fontSize: darkTheme.fontSizeSmall, marginTop: darkTheme.spacingS }}>
+        <p style={{ fontSize: theme.fontSizeSmall, marginTop: theme.spacingS }}>
           Clear your slicer selections to see all data.
         </p>
       </div>
     );
   }
+
+  const cpkTarget = state.specs?.cpkTarget ?? 1.33;
 
   return (
     <div style={styles.container}>
@@ -549,32 +815,28 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
                 <span style={styles.statLabel}>StdDev</span>
                 <span style={styles.statValue}>{stats.stdDev.toFixed(2)}</span>
               </div>
-              {stats.cpk !== undefined &&
-                (() => {
-                  const cpkTarget = state.specs?.cpkTarget ?? 1.33;
-                  return (
-                    <div
-                      style={styles.stat}
-                      title={`Process capability index: ≥${cpkTarget} is good (green), <${cpkTarget} needs improvement (red)`}
-                    >
-                      <span style={styles.statLabel}>Cpk</span>
-                      <span
-                        style={{
-                          ...styles.statValue,
-                          color:
-                            stats.cpk >= cpkTarget
-                              ? darkTheme.colorStatusSuccessForeground
-                              : darkTheme.colorStatusDangerForeground,
-                        }}
-                      >
-                        {stats.cpk.toFixed(2)}
-                        <span style={styles.cpkLabel}>
-                          {stats.cpk >= cpkTarget ? ' (Good)' : ' (Poor)'}
-                        </span>
-                      </span>
-                    </div>
-                  );
-                })()}
+              {stats.cpk !== undefined && (
+                <div
+                  style={styles.stat}
+                  title={`Process capability index: ≥${cpkTarget} is good (green), <${cpkTarget} needs improvement (red)`}
+                >
+                  <span style={styles.statLabel}>Cpk</span>
+                  <span
+                    style={{
+                      ...styles.statValue,
+                      color:
+                        stats.cpk >= cpkTarget
+                          ? theme.colorStatusSuccessForeground
+                          : theme.colorStatusDangerForeground,
+                    }}
+                  >
+                    {stats.cpk.toFixed(2)}
+                    <span style={styles.cpkLabel}>
+                      {stats.cpk >= cpkTarget ? ' (Good)' : ' (Poor)'}
+                    </span>
+                  </span>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -619,7 +881,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
       {/* Top row: I-Chart (full width) */}
       <div style={styles.topChartsRow} ref={containerRef}>
         <div id={CHART_IDS.iChart} style={styles.chartContainer}>
-          <ChartErrorBoundary chartName="I-Chart">
+          <ChartErrorBoundary chartName="I-Chart" theme={theme}>
             <IChartBase
               data={chartData}
               stats={stats ?? null}
@@ -676,7 +938,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
         {/* Boxplot with variation % indicator */}
         {boxplotData.length > 0 && (
           <div id={CHART_IDS.boxplot} style={styles.chartContainer}>
-            <ChartErrorBoundary chartName="Boxplot">
+            <ChartErrorBoundary chartName="Boxplot" theme={theme}>
               <BoxplotBase
                 data={boxplotData}
                 specs={state.specs || {}}
@@ -694,7 +956,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
         {/* Pareto Chart */}
         {paretoData.length > 0 && (
           <div id={CHART_IDS.pareto} style={styles.chartContainer}>
-            <ChartErrorBoundary chartName="Pareto">
+            <ChartErrorBoundary chartName="Pareto" theme={theme}>
               <ParetoChartBase
                 data={paretoData}
                 totalCount={filteredData.length}
@@ -717,7 +979,10 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
             >
               {showProbabilityPlot ? 'Histogram' : 'Prob Plot'}
             </button>
-            <ChartErrorBoundary chartName={showProbabilityPlot ? 'Probability Plot' : 'Histogram'}>
+            <ChartErrorBoundary
+              chartName={showProbabilityPlot ? 'Probability Plot' : 'Histogram'}
+              theme={theme}
+            >
               {showProbabilityPlot ? (
                 <ProbabilityPlotBase
                   data={histogramData}
@@ -748,257 +1013,6 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
       )}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: darkTheme.colorNeutralBackground1,
-    color: darkTheme.colorNeutralForeground1,
-    padding: darkTheme.spacingM,
-    boxSizing: 'border-box',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: darkTheme.spacingM,
-    padding: `${darkTheme.spacingS}px ${darkTheme.spacingM}px`,
-    backgroundColor: darkTheme.colorNeutralBackground2,
-    borderRadius: darkTheme.borderRadiusM,
-    marginBottom: darkTheme.spacingM,
-  },
-  statsRow: {
-    display: 'flex',
-    gap: darkTheme.spacingXL,
-  },
-  exportToolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: darkTheme.spacingS,
-  },
-  exportButton: {
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-    backgroundColor: darkTheme.colorNeutralBackground3,
-    border: 'none',
-    borderRadius: darkTheme.borderRadiusS,
-    color: darkTheme.colorNeutralForeground1,
-    fontSize: darkTheme.fontSizeSmall,
-    cursor: 'pointer',
-    transition: 'background-color 0.15s',
-  },
-  exportButtonDisabled: {
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-    backgroundColor: darkTheme.colorNeutralBackground3,
-    border: 'none',
-    borderRadius: darkTheme.borderRadiusS,
-    color: darkTheme.colorNeutralForeground3,
-    fontSize: darkTheme.fontSizeSmall,
-    cursor: 'not-allowed',
-    opacity: 0.5,
-  },
-  exportSuccess: {
-    fontSize: darkTheme.fontSizeSmall,
-    color: darkTheme.colorStatusSuccessForeground,
-    marginRight: darkTheme.spacingXS,
-  },
-  exportError: {
-    fontSize: darkTheme.fontSizeSmall,
-    color: darkTheme.colorStatusDangerForeground,
-    marginRight: darkTheme.spacingXS,
-  },
-  exportSpinner: {
-    width: 14,
-    height: 14,
-    border: `2px solid ${darkTheme.colorNeutralStroke1}`,
-    borderTopColor: darkTheme.colorBrandForeground1,
-    borderRadius: darkTheme.borderRadiusCircular,
-    animation: 'spin 1s linear infinite',
-    marginRight: darkTheme.spacingXS,
-  },
-  stat: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    cursor: 'help',
-  },
-  statLabel: {
-    fontSize: darkTheme.fontSizeCaption,
-    color: darkTheme.colorNeutralForeground2,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  statValue: {
-    fontSize: darkTheme.fontSizeTitle,
-    fontWeight: darkTheme.fontWeightSemibold,
-    fontFamily: 'monospace',
-  },
-  cpkLabel: {
-    fontSize: darkTheme.fontSizeCaption,
-    fontWeight: 400,
-    fontFamily: 'system-ui, sans-serif',
-    opacity: 0.8,
-  },
-  topChartsRow: {
-    flex: '0 0 45%',
-    display: 'flex',
-    gap: darkTheme.spacingM,
-    minHeight: 0,
-  },
-  factorSelector: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: darkTheme.spacingS,
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-    backgroundColor: darkTheme.colorNeutralBackground2,
-    borderRadius: darkTheme.borderRadiusS,
-    marginBottom: darkTheme.spacingS,
-  },
-  factorLabel: {
-    fontSize: darkTheme.fontSizeSmall,
-    color: darkTheme.colorNeutralForeground2,
-  },
-  factorSelect: {
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
-    backgroundColor: darkTheme.colorNeutralBackground3,
-    border: `1px solid ${darkTheme.colorNeutralStroke1}`,
-    borderRadius: darkTheme.borderRadiusS,
-    color: darkTheme.colorNeutralForeground1,
-    fontSize: darkTheme.fontSizeSmall,
-    cursor: 'pointer',
-  },
-  autoSwitchLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    fontSize: darkTheme.fontSizeCaption,
-    color: darkTheme.colorNeutralForeground3,
-    cursor: 'pointer',
-    marginLeft: darkTheme.spacingS,
-  },
-  autoSwitchCheckbox: {
-    cursor: 'pointer',
-  },
-  bottomChartsRow: {
-    flex: '0 0 45%',
-    display: 'flex',
-    gap: darkTheme.spacingM,
-    minHeight: 0,
-  },
-  chartContainerWithToggle: {
-    flex: 1,
-    backgroundColor: darkTheme.colorNeutralBackground2,
-    borderRadius: darkTheme.borderRadiusM,
-    padding: darkTheme.spacingS,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  toggleButton: {
-    position: 'absolute',
-    top: darkTheme.spacingXS,
-    right: darkTheme.spacingXS,
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
-    backgroundColor: darkTheme.colorNeutralBackground3,
-    border: 'none',
-    borderRadius: darkTheme.borderRadiusS,
-    color: darkTheme.colorNeutralForeground2,
-    fontSize: darkTheme.fontSizeCaption,
-    cursor: 'pointer',
-    zIndex: 1,
-  },
-  chartContainer: {
-    flex: 1,
-    backgroundColor: darkTheme.colorNeutralBackground2,
-    borderRadius: darkTheme.borderRadiusM,
-    padding: darkTheme.spacingS,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loading: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: darkTheme.colorNeutralForeground2,
-  },
-  spinner: {
-    width: 24,
-    height: 24,
-    border: `2px solid ${darkTheme.colorNeutralStroke1}`,
-    borderTopColor: darkTheme.colorBrandForeground1,
-    borderRadius: darkTheme.borderRadiusCircular,
-    animation: 'spin 1s linear infinite',
-  },
-  empty: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: darkTheme.colorNeutralForeground3,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    padding: darkTheme.spacingL,
-  },
-  error: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    padding: darkTheme.spacingL,
-    textAlign: 'center',
-  },
-  errorText: {
-    color: darkTheme.colorStatusDangerForeground,
-    fontSize: darkTheme.fontSizeBody,
-    marginBottom: darkTheme.spacingS,
-  },
-  errorHint: {
-    color: darkTheme.colorNeutralForeground2,
-    fontSize: darkTheme.fontSizeSmall,
-  },
-  drillBanner: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: `${darkTheme.spacingS}px ${darkTheme.spacingM}px`,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    borderBottom: '1px solid rgba(59, 130, 246, 0.3)',
-    marginBottom: darkTheme.spacingS,
-  },
-  drillBannerText: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: darkTheme.spacingS,
-    fontSize: darkTheme.fontSizeSmall,
-    color: '#93c5fd',
-  },
-  drillBannerLabel: {
-    color: '#93c5fd',
-  },
-  drillBannerMeasure: {
-    color: darkTheme.colorNeutralForeground1,
-    fontWeight: darkTheme.fontWeightSemibold,
-  },
-  drillBannerButton: {
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
-    backgroundColor: 'transparent',
-    border: 'none',
-    borderRadius: darkTheme.borderRadiusS,
-    color: '#93c5fd',
-    fontSize: darkTheme.fontSizeSmall,
-    fontWeight: darkTheme.fontWeightSemibold,
-    cursor: 'pointer',
-  },
 };
 
 export default ContentDashboard;

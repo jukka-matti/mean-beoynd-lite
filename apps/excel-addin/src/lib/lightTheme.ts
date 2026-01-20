@@ -1,65 +1,66 @@
 /**
- * Dark Theme Tokens for Content Add-in
+ * Light Theme Tokens for Content Add-in
  *
  * The Content Add-in renders in an iframe without FluentProvider,
  * so it uses this custom token system matching Tailwind's slate palette.
  *
  * Token naming follows Fluent UI conventions for consistency.
+ * This is the light theme counterpart to darkTheme.ts.
  *
  * @see docs/EXCEL_ADDIN_DESIGN_SYSTEM.md
  */
 
-export const darkTheme = {
+export const lightTheme = {
   // ─────────────────────────────────────────────────────────────────
   // Backgrounds
   // ─────────────────────────────────────────────────────────────────
-  /** Main container background (slate-800) */
-  colorNeutralBackground1: '#1e293b',
-  /** Card/panel background (slate-700) */
-  colorNeutralBackground2: '#334155',
-  /** Interactive/hover background (slate-600) */
-  colorNeutralBackground3: '#475569',
+  /** Main container background (slate-50) */
+  colorNeutralBackground1: '#f8fafc',
+  /** Card/panel background (slate-100) */
+  colorNeutralBackground2: '#f1f5f9',
+  /** Interactive/hover background (slate-200) */
+  colorNeutralBackground3: '#e2e8f0',
 
   // ─────────────────────────────────────────────────────────────────
   // Foreground (Text)
   // ─────────────────────────────────────────────────────────────────
-  /** Primary text (slate-100) */
-  colorNeutralForeground1: '#f1f5f9',
-  /** Secondary text (slate-400) */
-  colorNeutralForeground2: '#94a3b8',
+  /** Primary text (slate-900) */
+  colorNeutralForeground1: '#0f172a',
+  /** Secondary text (slate-600) */
+  colorNeutralForeground2: '#475569',
   /** Tertiary/muted text (slate-500) */
   colorNeutralForeground3: '#64748b',
-  /** Disabled/faint text (slate-600) */
-  colorNeutralForeground4: '#475569',
+  /** Disabled/faint text (slate-400) */
+  colorNeutralForeground4: '#94a3b8',
 
   // ─────────────────────────────────────────────────────────────────
   // Stroke (Borders)
   // ─────────────────────────────────────────────────────────────────
-  /** Primary border (slate-600) */
-  colorNeutralStroke1: '#475569',
-  /** Subtle border (slate-700) */
-  colorNeutralStroke2: '#334155',
+  /** Primary border (slate-300) */
+  colorNeutralStroke1: '#cbd5e1',
+  /** Subtle border (slate-200) */
+  colorNeutralStroke2: '#e2e8f0',
 
   // ─────────────────────────────────────────────────────────────────
-  // Status Colors
+  // Status Colors (slightly darker for light background contrast)
   // ─────────────────────────────────────────────────────────────────
-  /** Success/pass (green-500) */
-  colorStatusSuccessForeground: '#22c55e',
-  /** Danger/fail (red-500) */
-  colorStatusDangerForeground: '#ef4444',
-  /** Warning (amber-500) */
-  colorStatusWarningForeground: '#f59e0b',
+  /** Success/pass (green-600) */
+  colorStatusSuccessForeground: '#16a34a',
+  /** Danger/fail (red-600) */
+  colorStatusDangerForeground: '#dc2626',
+  /** Warning (amber-600) */
+  colorStatusWarningForeground: '#d97706',
 
   // ─────────────────────────────────────────────────────────────────
   // Brand Colors
   // ─────────────────────────────────────────────────────────────────
-  /** Brand primary (blue-500) */
-  colorBrandForeground1: '#3b82f6',
-  /** Brand secondary (blue-400) */
-  colorBrandForeground2: '#60a5fa',
+  /** Brand primary (blue-600) */
+  colorBrandForeground1: '#2563eb',
+  /** Brand secondary (blue-500) */
+  colorBrandForeground2: '#3b82f6',
 
   // ─────────────────────────────────────────────────────────────────
-  // Spacing
+  // Spacing (same as dark theme)
   // ─────────────────────────────────────────────────────────────────
   /** Extra small spacing: 4px */
   spacingXS: 4,
@@ -73,7 +74,7 @@ export const darkTheme = {
   spacingXL: 24,
 
   // ─────────────────────────────────────────────────────────────────
-  // Border Radius
+  // Border Radius (same as dark theme)
   // ─────────────────────────────────────────────────────────────────
   /** Small radius: 4px */
   borderRadiusS: 4,
@@ -85,7 +86,7 @@ export const darkTheme = {
   borderRadiusCircular: '50%',
 
   // ─────────────────────────────────────────────────────────────────
-  // Typography
+  // Typography (same as dark theme)
   // ─────────────────────────────────────────────────────────────────
   /** Caption text: 10px */
   fontSizeCaption: 10,
@@ -104,47 +105,5 @@ export const darkTheme = {
   fontWeightBold: 700,
 } as const;
 
-/** Type for theme token values (shared between dark and light themes) */
-export interface ThemeTokens {
-  // Backgrounds
-  colorNeutralBackground1: string;
-  colorNeutralBackground2: string;
-  colorNeutralBackground3: string;
-  // Foreground (Text)
-  colorNeutralForeground1: string;
-  colorNeutralForeground2: string;
-  colorNeutralForeground3: string;
-  colorNeutralForeground4: string;
-  // Stroke (Borders)
-  colorNeutralStroke1: string;
-  colorNeutralStroke2: string;
-  // Status Colors
-  colorStatusSuccessForeground: string;
-  colorStatusDangerForeground: string;
-  colorStatusWarningForeground: string;
-  // Brand Colors
-  colorBrandForeground1: string;
-  colorBrandForeground2: string;
-  // Spacing
-  spacingXS: number;
-  spacingS: number;
-  spacingM: number;
-  spacingL: number;
-  spacingXL: number;
-  // Border Radius
-  borderRadiusS: number;
-  borderRadiusM: number;
-  borderRadiusL: number;
-  borderRadiusCircular: string;
-  // Typography
-  fontSizeCaption: number;
-  fontSizeSmall: number;
-  fontSizeBody: number;
-  fontSizeTitle: number;
-  fontSizeHeading: number;
-  fontWeightSemibold: number;
-  fontWeightBold: number;
-}
-
-/** Type for darkTheme token values (kept for backwards compatibility) */
-export type DarkThemeTokens = ThemeTokens;
+/** Type for lightTheme token values */
+export type LightThemeTokens = typeof lightTheme;

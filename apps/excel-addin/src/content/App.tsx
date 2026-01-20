@@ -1,8 +1,87 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import ContentDashboard from './ContentDashboard';
 import ContentPerformanceDashboard from './ContentPerformanceDashboard';
 import { loadAddInState, saveAddInState, updateState, type AddInState } from '../lib/stateBridge';
-import { darkTheme } from '../lib/darkTheme';
+import { useContentTheme, type ThemeTokens } from './ThemeContext';
+
+/**
+ * Create styles object based on theme tokens
+ */
+const createStyles = (theme: ThemeTokens): Record<string, React.CSSProperties> => ({
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    backgroundColor: theme.colorNeutralBackground1,
+    color: theme.colorNeutralForeground2,
+  },
+  spinner: {
+    width: 24,
+    height: 24,
+    border: `2px solid ${theme.colorNeutralStroke1}`,
+    borderTopColor: theme.colorBrandForeground1,
+    borderRadius: theme.borderRadiusCircular,
+    animation: 'spin 1s linear infinite',
+    marginBottom: theme.spacingM,
+  },
+  loadingText: {
+    fontSize: theme.fontSizeBody,
+    color: theme.colorNeutralForeground2,
+  },
+  errorContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    backgroundColor: theme.colorNeutralBackground1,
+    padding: theme.spacingL,
+    textAlign: 'center',
+  },
+  errorText: {
+    color: theme.colorStatusDangerForeground,
+    fontSize: theme.fontSizeBody,
+    marginBottom: theme.spacingS,
+  },
+  errorHint: {
+    color: theme.colorNeutralForeground2,
+    fontSize: theme.fontSizeSmall,
+  },
+  setupPrompt: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    backgroundColor: theme.colorNeutralBackground1,
+    color: theme.colorNeutralForeground1,
+    padding: theme.spacingL,
+    textAlign: 'center',
+  },
+  setupIcon: {
+    color: theme.colorBrandForeground1,
+    marginBottom: theme.spacingL,
+  },
+  setupTitle: {
+    fontSize: theme.fontSizeHeading,
+    fontWeight: theme.fontWeightSemibold,
+    marginBottom: theme.spacingS,
+  },
+  setupDescription: {
+    fontSize: theme.fontSizeBody,
+    color: theme.colorNeutralForeground2,
+    marginBottom: theme.spacingL,
+  },
+  setupSteps: {
+    textAlign: 'left',
+    fontSize: 13,
+    color: theme.colorNeutralForeground1,
+    lineHeight: 1.8,
+    paddingLeft: theme.spacingL,
+  },
+});
 
 /**
  * Content Add-in Root Component
@@ -11,6 +90,9 @@ import { darkTheme } from '../lib/darkTheme';
  * Reads configuration from Custom Document Properties (set by Task Pane).
  */
 const App: React.FC = () => {
+  const { theme } = useContentTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const [state, setState] = useState<AddInState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -159,82 +241,6 @@ const App: React.FC = () => {
   }
 
   return <ContentDashboard state={state} />;
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    backgroundColor: darkTheme.colorNeutralBackground1,
-    color: darkTheme.colorNeutralForeground2,
-  },
-  spinner: {
-    width: 24,
-    height: 24,
-    border: `2px solid ${darkTheme.colorNeutralStroke1}`,
-    borderTopColor: darkTheme.colorBrandForeground1,
-    borderRadius: darkTheme.borderRadiusCircular,
-    animation: 'spin 1s linear infinite',
-    marginBottom: darkTheme.spacingM,
-  },
-  loadingText: {
-    fontSize: darkTheme.fontSizeBody,
-    color: darkTheme.colorNeutralForeground2,
-  },
-  errorContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    backgroundColor: darkTheme.colorNeutralBackground1,
-    padding: darkTheme.spacingL,
-    textAlign: 'center',
-  },
-  errorText: {
-    color: darkTheme.colorStatusDangerForeground,
-    fontSize: darkTheme.fontSizeBody,
-    marginBottom: darkTheme.spacingS,
-  },
-  errorHint: {
-    color: darkTheme.colorNeutralForeground2,
-    fontSize: darkTheme.fontSizeSmall,
-  },
-  setupPrompt: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    backgroundColor: darkTheme.colorNeutralBackground1,
-    color: darkTheme.colorNeutralForeground1,
-    padding: darkTheme.spacingL,
-    textAlign: 'center',
-  },
-  setupIcon: {
-    color: darkTheme.colorBrandForeground1,
-    marginBottom: darkTheme.spacingL,
-  },
-  setupTitle: {
-    fontSize: darkTheme.fontSizeHeading,
-    fontWeight: darkTheme.fontWeightSemibold,
-    marginBottom: darkTheme.spacingS,
-  },
-  setupDescription: {
-    fontSize: darkTheme.fontSizeBody,
-    color: darkTheme.colorNeutralForeground2,
-    marginBottom: darkTheme.spacingL,
-  },
-  setupSteps: {
-    textAlign: 'left',
-    fontSize: 13,
-    color: darkTheme.colorNeutralForeground1,
-    lineHeight: 1.8,
-    paddingLeft: darkTheme.spacingL,
-  },
 };
 
 export default App;

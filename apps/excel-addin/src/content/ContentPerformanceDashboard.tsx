@@ -15,7 +15,7 @@ import {
 import { calculateChannelPerformance } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
-import { darkTheme } from '../lib/darkTheme';
+import { useContentTheme, type ThemeTokens } from './ThemeContext';
 
 interface ContentPerformanceDashboardProps {
   state: AddInState;
@@ -24,13 +24,19 @@ interface ContentPerformanceDashboardProps {
 }
 
 /**
+ * Props for ChartErrorBoundary including theme
+ */
+interface ChartErrorBoundaryProps {
+  children: React.ReactNode;
+  chartName: string;
+  theme: ThemeTokens;
+}
+
+/**
  * Simple error boundary for chart components
  */
-class ChartErrorBoundary extends React.Component<
-  { children: React.ReactNode; chartName: string },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode; chartName: string }) {
+class ChartErrorBoundary extends React.Component<ChartErrorBoundaryProps, { hasError: boolean }> {
+  constructor(props: ChartErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }
@@ -44,25 +50,26 @@ class ChartErrorBoundary extends React.Component<
   }
 
   render(): React.ReactNode {
+    const { theme } = this.props;
     if (this.state.hasError) {
       return (
         <div
           style={{
-            color: darkTheme.colorNeutralForeground2,
+            color: theme.colorNeutralForeground2,
             textAlign: 'center',
-            padding: darkTheme.spacingL,
+            padding: theme.spacingL,
           }}
         >
           <p>Chart failed to render</p>
           <button
             onClick={() => this.setState({ hasError: false })}
             style={{
-              marginTop: darkTheme.spacingS,
-              padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-              backgroundColor: darkTheme.colorNeutralBackground3,
+              marginTop: theme.spacingS,
+              padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+              backgroundColor: theme.colorNeutralBackground3,
               border: 'none',
-              borderRadius: darkTheme.borderRadiusS,
-              color: darkTheme.colorNeutralForeground1,
+              borderRadius: theme.borderRadiusS,
+              color: theme.colorNeutralForeground1,
               cursor: 'pointer',
             }}
           >
@@ -75,11 +82,152 @@ class ChartErrorBoundary extends React.Component<
   }
 }
 
+/**
+ * Create styles object based on theme tokens
+ */
+const createStyles = (theme: ThemeTokens): Record<string, React.CSSProperties> => ({
+  container: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: theme.colorNeutralBackground1,
+    color: theme.colorNeutralForeground1,
+    padding: theme.spacingM,
+    boxSizing: 'border-box',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.spacingM,
+    padding: `${theme.spacingS}px ${theme.spacingM}px`,
+    backgroundColor: theme.colorNeutralBackground2,
+    borderRadius: theme.borderRadiusM,
+    marginBottom: theme.spacingM,
+  },
+  statsRow: {
+    display: 'flex',
+    gap: theme.spacingXL,
+  },
+  stat: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: theme.fontSizeCaption,
+    color: theme.colorNeutralForeground2,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  statValue: {
+    fontSize: theme.fontSizeTitle,
+    fontWeight: theme.fontWeightSemibold,
+    fontFamily: 'monospace',
+  },
+  headerButtons: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacingS,
+  },
+  drillButton: {
+    padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+    backgroundColor: theme.colorBrandForeground1,
+    border: 'none',
+    borderRadius: theme.borderRadiusS,
+    color: theme.colorNeutralForeground1,
+    fontSize: theme.fontSizeSmall,
+    fontWeight: theme.fontWeightSemibold,
+    cursor: 'pointer',
+  },
+  clearButton: {
+    padding: `${theme.spacingXS}px ${theme.spacingM}px`,
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: theme.colorNeutralForeground2,
+    fontSize: theme.fontSizeSmall,
+    cursor: 'pointer',
+    textDecoration: 'underline',
+  },
+  topRow: {
+    flex: '0 0 40%',
+    display: 'flex',
+    flexDirection: 'column',
+    marginBottom: theme.spacingM,
+  },
+  bottomRow: {
+    flex: '0 0 50%',
+    display: 'flex',
+    gap: theme.spacingM,
+  },
+  chartSection: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: theme.colorNeutralBackground2,
+    borderRadius: theme.borderRadiusM,
+    overflow: 'hidden',
+  },
+  chartLabel: {
+    fontSize: theme.fontSizeCaption,
+    color: theme.colorNeutralForeground2,
+    padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+    backgroundColor: theme.colorNeutralBackground3,
+  },
+  chartContainer: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacingS,
+  },
+  loading: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    color: theme.colorNeutralForeground2,
+  },
+  spinner: {
+    width: 24,
+    height: 24,
+    border: `2px solid ${theme.colorNeutralStroke1}`,
+    borderTopColor: theme.colorBrandForeground1,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  empty: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    color: theme.colorNeutralForeground3,
+    textAlign: 'center',
+  },
+  error: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+  errorText: {
+    color: theme.colorStatusDangerForeground,
+    fontSize: theme.fontSizeBody,
+  },
+});
+
 const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = ({
   state,
   onSelectMeasure,
   onDrillToMeasure,
 }) => {
+  const { theme } = useContentTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -199,7 +347,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
     return (
       <div style={styles.empty}>
         <p>No performance data available</p>
-        <p style={{ fontSize: darkTheme.fontSizeSmall, marginTop: darkTheme.spacingS }}>
+        <p style={{ fontSize: theme.fontSizeSmall, marginTop: theme.spacingS }}>
           Check that measure columns are configured correctly.
         </p>
       </div>
@@ -218,13 +366,13 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
             <span style={styles.statValue}>{summary.totalChannels}</span>
           </div>
           {summary.healthCounts.critical > 0 && (
-            <div style={{ ...styles.stat, color: darkTheme.colorStatusDangerForeground }}>
+            <div style={{ ...styles.stat, color: theme.colorStatusDangerForeground }}>
               <span style={styles.statLabel}>Critical</span>
               <span style={styles.statValue}>{summary.healthCounts.critical}</span>
             </div>
           )}
           {summary.healthCounts.warning > 0 && (
-            <div style={{ ...styles.stat, color: darkTheme.colorStatusWarningForeground }}>
+            <div style={{ ...styles.stat, color: theme.colorStatusWarningForeground }}>
               <span style={styles.statLabel}>Warning</span>
               <span style={styles.statValue}>{summary.healthCounts.warning}</span>
             </div>
@@ -252,7 +400,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
       <div style={styles.topRow}>
         <div style={styles.chartLabel}>Cpk by {state.measureLabel || 'Measure'}</div>
         <div style={styles.chartContainer}>
-          <ChartErrorBoundary chartName="PerformanceIChart">
+          <ChartErrorBoundary chartName="PerformanceIChart" theme={theme}>
             <PerformanceIChartBase
               channels={performanceResult.channels}
               selectedMeasure={selectedMeasure}
@@ -272,7 +420,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
             {selectedMeasure ? `${selectedMeasure} Distribution` : 'Worst Channels'}
           </div>
           <div style={styles.chartContainer}>
-            <ChartErrorBoundary chartName="PerformanceBoxplot">
+            <ChartErrorBoundary chartName="PerformanceBoxplot" theme={theme}>
               <PerformanceBoxplotBase
                 channels={performanceResult.channels}
                 specs={state.specs || {}}
@@ -289,7 +437,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
         <div style={styles.chartSection}>
           <div style={styles.chartLabel}>Ranking (Worst First)</div>
           <div style={styles.chartContainer}>
-            <ChartErrorBoundary chartName="PerformancePareto">
+            <ChartErrorBoundary chartName="PerformancePareto" theme={theme}>
               <PerformanceParetoBase
                 channels={performanceResult.channels}
                 selectedMeasure={selectedMeasure}
@@ -307,7 +455,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
             {selectedMeasure ? `${selectedMeasure} Capability` : 'Select Channel'}
           </div>
           <div style={styles.chartContainer}>
-            <ChartErrorBoundary chartName="PerformanceCapability">
+            <ChartErrorBoundary chartName="PerformanceCapability" theme={theme}>
               <PerformanceCapabilityBase
                 channel={selectedChannel}
                 specs={state.specs || {}}
@@ -321,141 +469,6 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
       </div>
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: darkTheme.colorNeutralBackground1,
-    color: darkTheme.colorNeutralForeground1,
-    padding: darkTheme.spacingM,
-    boxSizing: 'border-box',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: darkTheme.spacingM,
-    padding: `${darkTheme.spacingS}px ${darkTheme.spacingM}px`,
-    backgroundColor: darkTheme.colorNeutralBackground2,
-    borderRadius: darkTheme.borderRadiusM,
-    marginBottom: darkTheme.spacingM,
-  },
-  statsRow: {
-    display: 'flex',
-    gap: darkTheme.spacingXL,
-  },
-  stat: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: darkTheme.fontSizeCaption,
-    color: darkTheme.colorNeutralForeground2,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  statValue: {
-    fontSize: darkTheme.fontSizeTitle,
-    fontWeight: darkTheme.fontWeightSemibold,
-    fontFamily: 'monospace',
-  },
-  headerButtons: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: darkTheme.spacingS,
-  },
-  drillButton: {
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-    backgroundColor: darkTheme.colorBrandForeground1,
-    border: 'none',
-    borderRadius: darkTheme.borderRadiusS,
-    color: darkTheme.colorNeutralForeground1,
-    fontSize: darkTheme.fontSizeSmall,
-    fontWeight: darkTheme.fontWeightSemibold,
-    cursor: 'pointer',
-  },
-  clearButton: {
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingM}px`,
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: darkTheme.colorNeutralForeground2,
-    fontSize: darkTheme.fontSizeSmall,
-    cursor: 'pointer',
-    textDecoration: 'underline',
-  },
-  topRow: {
-    flex: '0 0 40%',
-    display: 'flex',
-    flexDirection: 'column',
-    marginBottom: darkTheme.spacingM,
-  },
-  bottomRow: {
-    flex: '0 0 50%',
-    display: 'flex',
-    gap: darkTheme.spacingM,
-  },
-  chartSection: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: darkTheme.colorNeutralBackground2,
-    borderRadius: darkTheme.borderRadiusM,
-    overflow: 'hidden',
-  },
-  chartLabel: {
-    fontSize: darkTheme.fontSizeCaption,
-    color: darkTheme.colorNeutralForeground2,
-    padding: `${darkTheme.spacingXS}px ${darkTheme.spacingS}px`,
-    backgroundColor: darkTheme.colorNeutralBackground3,
-  },
-  chartContainer: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: darkTheme.spacingS,
-  },
-  loading: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: darkTheme.colorNeutralForeground2,
-  },
-  spinner: {
-    width: 24,
-    height: 24,
-    border: `2px solid ${darkTheme.colorNeutralStroke1}`,
-    borderTopColor: darkTheme.colorBrandForeground1,
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-  },
-  empty: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: darkTheme.colorNeutralForeground3,
-    textAlign: 'center',
-  },
-  error: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  errorText: {
-    color: darkTheme.colorStatusDangerForeground,
-    fontSize: darkTheme.fontSizeBody,
-  },
 };
 
 export default ContentPerformanceDashboard;
