@@ -14,7 +14,7 @@
 | **Mobile**           | Responsive                 | Desktop-optimized          | N/A                 |
 | **Theme**            | Light/Dark/System          | Dark only                  | Dark only           |
 | **Performance Mode** | Auto-detect + Manual entry | Auto-detect + Manual entry | Manual setup        |
-| **Pricing**          | €49/year                   | €999/year/tenant           | €49/year            |
+| **Pricing**          | €49/year                   | €1799/year/tenant          | €49/year            |
 
 ---
 

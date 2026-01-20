@@ -139,7 +139,7 @@ items:
   - id: 'azure'
     title: 'Azure'
     description: 'Self-deploy to your tenant.'
-    price: '€999'
+    price: '€1799'
     cta:
       text: 'Learn More'
       url: '/product/azure'

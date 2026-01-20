@@ -13,7 +13,7 @@ Storage:        SharePoint / OneDrive (team file sharing)
 Auth:           Azure AD (SSO with existing accounts)
 Users:          Unlimited
 Branding:       Custom logo, colors, domain
-Price:          €999/year per tenant + ~€10-20/month Azure hosting
+Price:          €1799/year per tenant + ~€10-20/month Azure hosting
 Distribution:   Azure Marketplace
 ```
 
@@ -41,7 +41,7 @@ The Azure app includes all PWA analysis features:
 ### Individual vs Azure
 
 ```
-PWA INDIVIDUAL (€49/year)          AZURE DEPLOYMENT (€999/year per tenant)
+PWA INDIVIDUAL (€49/year)          AZURE DEPLOYMENT (€1799/year per tenant)
 ─────────────────────────────────────────────────────────────────
 
 Storage:    Browser only            SharePoint/OneDrive
@@ -810,7 +810,7 @@ Storage Account                     ~€1/month
                                     ─────────────
                                     ~€15-25/month
 
-Plus: VaRiScout license             €999/year (~€83/month)
+Plus: VaRiScout license             €1799/year (~€150/month)
 
 Total: ~€100-110/month for unlimited users
 

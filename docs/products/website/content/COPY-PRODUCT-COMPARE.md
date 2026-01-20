@@ -164,7 +164,7 @@ rows:
     free: '–'
     individual: '–'
     team: '–'
-    enterprise: '€999/year (unlimited)'
+    enterprise: '€1799/year (unlimited)'
 ```
 
 ---

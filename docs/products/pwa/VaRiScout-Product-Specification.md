@@ -103,7 +103,7 @@ Same core analysis engine, same price. User picks their preferred workflow.
 | Power BI Team       | €399/year   | Up to 10  | AppSource    |
 | Power BI Department | €999/year   | Up to 50  | AppSource    |
 | Power BI Enterprise | €1,999/year | Unlimited | AppSource    |
-| VaRiScout Azure     | €999/year   | Unlimited | ARM template |
+| VaRiScout Azure     | €1799/year  | Unlimited | ARM template |
 
 ### Price Tier Logic
 
@@ -114,7 +114,8 @@ PRICING TIERS
 €0        Free (try everything, session only, watermark)
 €49       Individual (save projects, no watermark)
 €399      Team (Power BI, 10 users)
-€999      Department (Power BI 50) or Azure (unlimited self-host)
+€999      Department (Power BI 50)
+€1799     Azure (unlimited self-host)
 €1,999    Enterprise (Power BI unlimited)
 ```
 
@@ -373,7 +374,7 @@ For organizations wanting full control:
 - Custom domain (analysis.yourcompany.com)
 - Custom branding
 - Unlimited users
-- €999/year + ~€5/month Azure hosting
+- €1799/year + ~€5/month Azure hosting
 
 ### Cross-Promotion in PWA
 

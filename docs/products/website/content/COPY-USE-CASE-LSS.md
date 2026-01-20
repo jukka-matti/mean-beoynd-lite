@@ -137,7 +137,7 @@ journey:
     icon: 'briefcase'
 
   - stage: 'Teams'
-    description: 'Azure deployment for organizations (€999/year)'
+    description: 'Azure deployment for organizations (€1799/year)'
     icon: 'building'
 
 note: 'Same tool from classroom to real work — no retraining needed.'
@@ -242,7 +242,7 @@ options:
     description: 'When you need to save projects and build on your work over time.'
 
   - name: 'Organizations'
-    price: '€999/year'
+    price: '€1799/year'
     description: 'Azure deployment with custom branding, templates, and SharePoint storage.'
     url: '/products/azure'
 ```

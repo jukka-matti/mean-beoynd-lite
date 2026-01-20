@@ -11,7 +11,7 @@ Storage:        SharePoint / OneDrive (team file sharing)
 Auth:           Azure AD (SSO with existing accounts)
 Users:          Unlimited
 Branding:       Custom logo, colors, domain
-Price:          €999/year per tenant + ~€10-20/month Azure hosting
+Price:          €1799/year per tenant + ~€10-20/month Azure hosting
 Distribution:   Azure Marketplace
 ```
 
@@ -19,13 +19,13 @@ Distribution:   Azure Marketplace
 
 ## Why Azure Deployment?
 
-| PWA Individual (€49/year)     | Azure Deployment (€999/year per tenant) |
-| ----------------------------- | --------------------------------------- |
-| Storage: Browser only         | Storage: SharePoint/OneDrive            |
-| Sharing: Export .vrs manually | Sharing: Click "Share with team"        |
-| Auth: License key             | Auth: Azure AD (SSO)                    |
-| Users: 1 person               | Users: Unlimited                        |
-| Best for: Individual analysts | Best for: Teams & organizations         |
+| PWA Individual (€49/year)     | Azure Deployment (€1799/year per tenant) |
+| ----------------------------- | ---------------------------------------- |
+| Storage: Browser only         | Storage: SharePoint/OneDrive             |
+| Sharing: Export .vrs manually | Sharing: Click "Share with team"         |
+| Auth: License key             | Auth: Azure AD (SSO)                     |
+| Users: 1 person               | Users: Unlimited                         |
+| Best for: Individual analysts | Best for: Teams & organizations          |
 
 ---
 

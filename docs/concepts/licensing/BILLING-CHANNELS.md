@@ -36,7 +36,7 @@ VariScout uses a hybrid billing model with different payment processors for each
 
 | Aspect            | Details                                    |
 | ----------------- | ------------------------------------------ |
-| **Pricing**       | €999/year per tenant                       |
+| **Pricing**       | €1799/year per tenant                      |
 | **Target Users**  | Teams, departments, organizations          |
 | **Features**      | OneDrive sync, SSO, centralized management |
 | **License Scope** | Azure app with team features               |

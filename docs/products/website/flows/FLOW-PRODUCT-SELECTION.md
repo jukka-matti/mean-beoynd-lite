@@ -95,7 +95,7 @@ Helping users choose the right VaRiScout product for their needs.
 │  │ Individual    │  €49   │  €49   │    –     │   –    │       │
 │  │ Team (10)     │   –    │   –    │  €399    │   –    │       │
 │  │ Dept (50)     │   –    │   –    │  €999    │   –    │       │
-│  │ Unlimited     │   –    │   –    │ €1,999   │  €999  │       │
+│  │ Unlimited     │   –    │   –    │ €1,999   │ €1799  │       │
 │  └───────────────┴────────┴────────┴──────────┴────────┘       │
 │                                                                 │
 │  * For end users. IT deploys once.                             │
@@ -182,7 +182,7 @@ Helping users choose the right VaRiScout product for their needs.
 4. Discusses with IT
 5. Deploys to Azure
 
-**Recommendation:** Azure (€999)
+**Recommendation:** Azure (€1799)
 
 ---
 
@@ -309,7 +309,7 @@ Free Web App
     │
     ├──► Power BI Team (€399) - Need dashboards
     │
-    └──► Azure (€999) - Need org-wide
+    └──► Azure (€1799) - Need org-wide
 ```
 
 ### From Individual
@@ -319,7 +319,7 @@ Individual (€49)
     │
     ├──► Power BI Team (€399) - Add dashboard
     │
-    └──► Azure (€999) - Scale organization
+    └──► Azure (€1799) - Scale organization
 ```
 
 ### From Power BI Team
@@ -331,7 +331,7 @@ Power BI Team (€399)
     │
     ├──► Power BI Enterprise (€1,999) - Unlimited
     │
-    └──► Azure (€999) - Add self-deploy option
+    └──► Azure (€1799) - Add self-deploy option
 ```
 
 ---
