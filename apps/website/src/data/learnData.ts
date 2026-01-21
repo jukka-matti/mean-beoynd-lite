@@ -17,9 +17,17 @@ export interface LearnSection {
   title: string;
   content: string;
   visual?: {
-    type: 'comparison' | 'diagram' | 'list' | 'quote';
+    type: 'comparison' | 'diagram' | 'list' | 'quote' | 'chart';
     data: any;
   };
+}
+
+// Chart visual data structure for type safety
+export interface ChartVisualData {
+  toolSlug: 'i-chart' | 'capability' | 'boxplot';
+  sampleKey: string;
+  height?: number;
+  caption?: string;
 }
 
 export const LEARN_TOPICS: LearnTopic[] = [
@@ -543,6 +551,617 @@ export const LEARN_TOPICS: LearnTopic[] = [
     ],
     relatedTools: ['i-chart', 'capability'],
     relatedTopics: ['two-voices', 'four-pillars'],
+  },
+
+  // ===== METHODOLOGY PAGES =====
+  // These pages explain HOW we calculate things and WHY we chose our approach
+  {
+    slug: 'methodology-control-limits',
+    title: 'How We Calculate Control Limits',
+    subtitle: 'The Math Behind UCL, Mean, and LCL',
+    description:
+      'Understand how VariScout calculates control limits and why we chose the standard 3-sigma approach.',
+    color: '#3b82f6',
+    colorClass: 'text-blue-500',
+    icon: '📐',
+    sections: [
+      {
+        id: 'quick-answer',
+        title: 'Quick Answer',
+        content:
+          'VariScout calculates UCL and LCL as ±3 standard deviations from the mean. This simple method works well for most quality data and is intuitive for users familiar with basic statistics.',
+      },
+      {
+        id: 'formula',
+        title: 'The Formula',
+        content:
+          'UCL = x̄ + 3σ, LCL = x̄ - 3σ. Where x̄ (x-bar) is the mean of all data points, and σ (sigma) is the standard deviation. The center line is simply the mean (x̄).',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'UCL', description: 'Mean + 3 × Standard Deviation' },
+              { title: 'Center Line', description: 'Mean (average of all points)' },
+              { title: 'LCL', description: 'Mean - 3 × Standard Deviation' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'why-this-method',
+        title: 'Why This Method?',
+        content:
+          "We chose the standard deviation method because it's intuitive (3σ covers 99.7% of normal data), it works with any sample size, and it matches what most spreadsheet users expect. For a stable, normally distributed process, about 3 in 1000 points will naturally fall outside these limits by chance alone.",
+        visual: {
+          type: 'comparison',
+          data: {
+            left: {
+              title: 'Our Method (3σ)',
+              subtitle: 'Standard Deviation Based',
+              items: [
+                'Intuitive: ±3σ from mean',
+                'Works with any sample size',
+                'Familiar to spreadsheet users',
+                'Good for normally distributed data',
+              ],
+              color: 'blue',
+            },
+            right: {
+              title: 'Alternative (MR̄)',
+              subtitle: 'Moving Range Based',
+              items: [
+                'UCL = x̄ + 2.66 × MR̄',
+                'More robust to outliers',
+                'Preferred by some practitioners',
+                'Common in Minitab/JMP',
+              ],
+              color: 'neutral',
+            },
+          },
+        },
+      },
+      {
+        id: 'worked-example',
+        title: 'Worked Example',
+        content:
+          'Coffee fill weights: 250.1, 249.8, 250.3, 249.9, 250.2 grams. Step 1: Calculate mean (x̄) = 250.06g. Step 2: Calculate standard deviation (σ) = 0.19g. Step 3: UCL = 250.06 + (3 × 0.19) = 250.63g. LCL = 250.06 - (3 × 0.19) = 249.49g.',
+        visual: {
+          type: 'chart',
+          data: {
+            toolSlug: 'i-chart',
+            sampleKey: 'coffee',
+            height: 350,
+            caption:
+              'I-Chart showing control limits (UCL, Mean, LCL) calculated from coffee fill weight data',
+          },
+        },
+      },
+      {
+        id: 'assumptions',
+        title: 'Assumptions & Limitations',
+        content:
+          "Control limits assume: data is approximately normally distributed (check with probability plot), the process is stable (no trends or shifts during data collection), and measurements are independent (not autocorrelated). Violations don't invalidate the chart, but interpretation changes.",
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              {
+                title: 'Normality',
+                description: 'Check with probability plot; non-normal data still works',
+              },
+              {
+                title: 'Stability',
+                description: 'No trends or shifts during data collection period',
+              },
+              {
+                title: 'Independence',
+                description: 'Each measurement is independent of previous ones',
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: 'when-to-use-minitab',
+        title: 'When to Use Specialized Tools',
+        content:
+          'VariScout is designed for exploration and teaching. For formal SPC with moving range calculations, Xbar-R charts, or CUSUM charts, consider Minitab, JMP, or similar statistical software. VariScout excels at quick visual exploration and hypothesis generation.',
+      },
+    ],
+    relatedTools: ['i-chart'],
+    relatedTopics: ['two-voices', 'staged-analysis'],
+  },
+  {
+    slug: 'methodology-capability',
+    title: 'How We Calculate Capability',
+    subtitle: 'Understanding Cp, Cpk, and Process Capability',
+    description:
+      'Learn how VariScout calculates process capability indices and when to trust them.',
+    color: '#22c55e',
+    colorClass: 'text-green-500',
+    icon: '🎯',
+    sections: [
+      {
+        id: 'quick-answer',
+        title: 'Quick Answer',
+        content:
+          'Cp measures how well your process could fit within spec limits (potential capability). Cpk measures how well it actually fits, accounting for centering (actual capability). Both compare your process spread to the specification width.',
+      },
+      {
+        id: 'cp-formula',
+        title: 'Cp Formula',
+        content:
+          'Cp = (USL - LSL) / (6σ). This compares the specification width to 6 standard deviations of your process. A Cp of 1.0 means your process just fits within specs. Cp ≥ 1.33 is typically considered "capable".',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'Cp = 1.0', description: 'Process width equals spec width (just fits)' },
+              { title: 'Cp = 1.33', description: 'Spec is 33% wider than process (good)' },
+              { title: 'Cp = 2.0', description: 'Spec is twice the process width (excellent)' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'cpk-formula',
+        title: 'Cpk Formula',
+        content:
+          'Cpk = min(CPU, CPL) where CPU = (USL - mean)/(3σ) and CPL = (mean - LSL)/(3σ). Cpk penalizes off-center processes. If Cpk is much lower than Cp, your process is shifted toward one spec limit.',
+        visual: {
+          type: 'comparison',
+          data: {
+            left: {
+              title: 'Cp (Potential)',
+              subtitle: 'Ignores centering',
+              items: [
+                'Compares spread to spec width',
+                'Assumes perfect centering',
+                '"What could be possible"',
+                'Same for any mean position',
+              ],
+              color: 'green',
+            },
+            right: {
+              title: 'Cpk (Actual)',
+              subtitle: 'Accounts for centering',
+              items: [
+                'Considers where mean is located',
+                'Penalizes off-center processes',
+                '"What is actually happening"',
+                'Cpk ≤ Cp always',
+              ],
+              color: 'blue',
+            },
+          },
+        },
+      },
+      {
+        id: 'worked-example',
+        title: 'Worked Example',
+        content:
+          'Coffee fill: LSL=249g, USL=251g, mean=250.2g, σ=0.3g. Cp = (251-249)/(6×0.3) = 2/1.8 = 1.11. CPU = (251-250.2)/(3×0.3) = 0.8/0.9 = 0.89. CPL = (250.2-249)/(3×0.3) = 1.2/0.9 = 1.33. Cpk = min(0.89, 1.33) = 0.89. The process is shifted high, reducing capability.',
+        visual: {
+          type: 'chart',
+          data: {
+            toolSlug: 'capability',
+            sampleKey: 'journey-before',
+            height: 350,
+            caption:
+              'Capability histogram showing process distribution relative to specification limits (Cpk ~0.8)',
+          },
+        },
+      },
+      {
+        id: 'assumptions',
+        title: 'Critical Assumptions',
+        content:
+          'Capability indices assume your process is STABLE (in statistical control). If your I-Chart shows special causes, Cp/Cpk are meaningless—fix stability first. VariScout always shows I-Chart alongside capability for this reason.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'Stability Required', description: 'Process must be in control first' },
+              {
+                title: 'Normal Distribution',
+                description: 'Approximately normal data (check prob plot)',
+              },
+              {
+                title: 'Short-term vs Long-term',
+                description: 'Cp/Cpk are short-term; Pp/Ppk include more variation',
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: 'ppk-note',
+        title: 'Note on Pp/Ppk',
+        content:
+          'VariScout calculates Cp/Cpk (within-group variation). For long-term performance indices (Pp/Ppk), which include all sources of variation, use specialized SPC software. The difference matters when your process has between-subgroup variation.',
+      },
+    ],
+    relatedTools: ['capability', 'i-chart'],
+    relatedTopics: ['two-voices', 'methodology-control-limits'],
+  },
+  {
+    slug: 'methodology-eta-squared',
+    title: 'Understanding Eta-Squared (η²)',
+    subtitle: 'Effect Size and Cumulative Variation Explained',
+    description:
+      'How VariScout measures the strength of relationships and tracks cumulative variation through drill-down analysis.',
+    color: '#f59e0b',
+    colorClass: 'text-amber-500',
+    icon: '📊',
+    sections: [
+      {
+        id: 'quick-answer',
+        title: 'Quick Answer',
+        content:
+          'Eta-squared (η²) tells you how much of the total variation is explained by a factor. If η² = 0.67 for "Machine", then 67% of the variation in your data can be attributed to differences between machines.',
+      },
+      {
+        id: 'formula',
+        title: 'The Formula',
+        content:
+          'η² = SS_between / SS_total. Where SS_between is the variation between groups (explained by the factor), and SS_total is the total variation in the data. The result is always between 0 and 1 (or 0% to 100%).',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              {
+                title: 'SS_between',
+                description: 'Sum of squared differences between group means and overall mean',
+              },
+              {
+                title: 'SS_total',
+                description: 'Sum of squared differences between each point and overall mean',
+              },
+              { title: 'η²', description: 'Ratio of explained variation to total variation' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'interpretation',
+        title: 'How to Interpret η²',
+        content:
+          'Unlike p-values, η² tells you practical significance—how much the factor actually matters. Common thresholds: small effect (< 0.06), medium effect (0.06-0.14), large effect (> 0.14). In quality work, we often see effects > 0.20.',
+        visual: {
+          type: 'diagram',
+          data: {
+            steps: [
+              { label: 'η² < 0.06', description: 'Small effect - factor explains little' },
+              { label: '0.06 ≤ η² < 0.14', description: 'Medium effect - noticeable difference' },
+              { label: 'η² ≥ 0.14', description: 'Large effect - factor is important' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'cumulative-tracking',
+        title: 'Cumulative Variation Tracking',
+        content:
+          'As you drill down through factors, VariScout shows cumulative variation explained. If Machine explains 67% and then Shift explains 89% of what remains, the cumulative is 67% × (1 - 0.89) = still tracking toward 100% explained.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'Level 1: Machine', description: '67% explained, 33% unexplained' },
+              {
+                title: 'Level 2: Within Machine 3, Shift',
+                description: '89% of remaining explained',
+              },
+              {
+                title: 'Cumulative',
+                description: 'Drilling down narrows the unexplained variation',
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: 'vs-pvalue',
+        title: 'η² vs p-value',
+        content:
+          'P-value answers "is there a statistically significant difference?" η² answers "how big is that difference?" A tiny difference can be statistically significant with enough data. η² tells you if the difference is worth acting on.',
+        visual: {
+          type: 'comparison',
+          data: {
+            left: {
+              title: 'p-value',
+              subtitle: 'Statistical significance',
+              items: [
+                '"Is the difference real?"',
+                'Depends on sample size',
+                'p < 0.05 = significant',
+                "Doesn't tell you effect size",
+              ],
+              color: 'neutral',
+            },
+            right: {
+              title: 'η² (eta-squared)',
+              subtitle: 'Practical significance',
+              items: [
+                '"How big is the effect?"',
+                'Independent of sample size',
+                '> 0.14 = large effect',
+                'Tells you if it matters',
+              ],
+              color: 'amber',
+            },
+          },
+        },
+      },
+      {
+        id: 'in-variscout',
+        title: 'Where to See η² in VariScout',
+        content:
+          'η² appears in the ANOVA results below Boxplot charts. The Variation Funnel shows cumulative η² as you drill down. The Pareto chart ranking uses η² to order factors by explanatory power.',
+        visual: {
+          type: 'chart',
+          data: {
+            toolSlug: 'boxplot',
+            sampleKey: 'coffee',
+            height: 350,
+            caption:
+              'Boxplot comparing drying beds - the η² value shows how much variation is explained by the bed factor',
+          },
+        },
+      },
+    ],
+    relatedTools: ['boxplot', 'pareto'],
+    relatedTopics: ['four-pillars', 'eda-philosophy'],
+  },
+  {
+    slug: 'methodology-our-approach',
+    title: 'Our Approach to Quality Analysis',
+    subtitle: 'When to Use VariScout and When to Use Other Tools',
+    description:
+      'VariScout is designed for exploration and teaching. Learn when to use specialized tools instead.',
+    color: '#8b5cf6',
+    colorClass: 'text-purple-500',
+    icon: '🧭',
+    sections: [
+      {
+        id: 'quick-answer',
+        title: 'Quick Answer',
+        content:
+          'VariScout excels at visual exploration, hypothesis generation, and teaching quality concepts. For formal SPC, certification requirements, or specialized control charts, use Minitab, JMP, or similar statistical software.',
+      },
+      {
+        id: 'what-variscout-is',
+        title: 'What VariScout Is For',
+        content:
+          'VariScout is an exploration and teaching tool. It makes quality analysis accessible without statistical software expertise. The Four Pillars framework helps users ask the right questions. Cross-chart filtering enables rapid hypothesis testing.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'Quick Exploration', description: 'Paste data, see charts instantly' },
+              { title: 'Hypothesis Generation', description: 'Find where to focus investigation' },
+              { title: 'Teaching Tool', description: 'Learn Lean Six Sigma concepts visually' },
+              { title: 'Communication', description: 'Share visual insights with stakeholders' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'simpler-methods',
+        title: 'Why Simpler Calculations?',
+        content:
+          "We chose simpler calculation methods (like 3σ for control limits instead of moving range) because they're easier to explain, match what spreadsheet users expect, and work well for the exploratory use case. When exact methodology matters, use specialized tools.",
+        visual: {
+          type: 'comparison',
+          data: {
+            left: {
+              title: 'VariScout Approach',
+              subtitle: 'Simple & Accessible',
+              items: [
+                'Standard 3σ control limits',
+                'Sample standard deviation',
+                'Cp/Cpk (short-term)',
+                'One-way ANOVA with η²',
+              ],
+              color: 'purple',
+            },
+            right: {
+              title: 'Specialized SPC',
+              subtitle: 'Industry Standard',
+              items: [
+                'Moving range (MR̄) based limits',
+                'Xbar-R, Xbar-S charts',
+                'Pp/Ppk (long-term)',
+                'Multi-factor ANOVA, DOE',
+              ],
+              color: 'neutral',
+            },
+          },
+        },
+      },
+      {
+        id: 'when-specialized',
+        title: 'When to Use Specialized Tools',
+        content:
+          "Use Minitab, JMP, or similar when: formal SPC documentation is required, you need specific control chart types (Xbar-R, CUSUM, EWMA), certification audits require standard methodology, or you're doing design of experiments (DOE).",
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              {
+                title: 'Formal SPC',
+                description: 'Automotive (AIAG), aerospace, medical device requirements',
+              },
+              {
+                title: 'Specific Charts',
+                description: 'Xbar-R, Xbar-S, CUSUM, EWMA, attribute charts',
+              },
+              { title: 'Long-term Studies', description: 'Pp/Ppk with rational subgroups' },
+              { title: 'DOE', description: 'Design of experiments, full/fractional factorials' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'two-voices-innovation',
+        title: 'The Two Voices on One Chart',
+        content:
+          "Unlike most SPC software, VariScout shows both control limits (Voice of the Process) and spec limits (Voice of the Customer) on the same I-Chart. This is unconventional but helps learners understand the difference. It's teaching-first design.",
+        visual: {
+          type: 'quote',
+          data: {
+            quote:
+              'Seeing both voices together helps users understand they\'re answering different questions: "Is my process stable?" and "Does my product pass?"',
+            author: 'VariScout Design Philosophy',
+          },
+        },
+      },
+      {
+        id: 'when-variscout-shines',
+        title: 'When VariScout Shines',
+        content:
+          'VariScout is the right tool when you want to quickly explore data, teach quality concepts, share visual insights with non-statisticians, or prototype an analysis before formalizing it in statistical software.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'Paste & Explore', description: 'No data import wizard, no setup' },
+              { title: 'Train Teams', description: 'Visual learning, immediate feedback' },
+              { title: 'Share Insights', description: 'Non-statisticians understand the visuals' },
+              {
+                title: 'Prototype Analysis',
+                description: 'Find the story, then formalize in SPC software',
+              },
+            ],
+          },
+        },
+      },
+    ],
+    relatedTools: ['i-chart', 'boxplot', 'pareto', 'capability'],
+    relatedTopics: ['eda-philosophy', 'four-pillars', 'two-voices'],
+  },
+  {
+    slug: 'methodology-staged-analysis',
+    title: 'How We Calculate Staged Control Limits',
+    subtitle: 'Independent Statistics for Each Process Phase',
+    description:
+      'When you enable staged analysis, each phase gets its own control limits calculated independently, revealing improvements that combined analysis hides.',
+    color: '#3b82f6',
+    colorClass: 'text-blue-500',
+    icon: '📊',
+    sections: [
+      {
+        id: 'quick-answer',
+        title: 'Quick Answer',
+        content:
+          "Each stage gets its own mean and control limits (mean ± 3σ) calculated from only that stage's data. This reveals improvements that combined analysis hides.",
+      },
+      {
+        id: 'formula',
+        title: 'The Formulas',
+        content:
+          'For each stage independently: Mean_stage = Σ(values) / n, σ_stage = standard deviation of stage values, UCL_stage = Mean_stage + 3σ_stage, LCL_stage = Mean_stage - 3σ_stage. Each stage is treated as a separate process.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'Mean per stage', description: 'Average of values within that stage only' },
+              {
+                title: 'σ per stage',
+                description: "Standard deviation of that stage's values only",
+              },
+              {
+                title: 'UCL/LCL per stage',
+                description: "Mean ± 3σ using that stage's statistics",
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: 'worked-example',
+        title: 'Worked Example: Before/After Maintenance',
+        content:
+          'Coffee fill weights. Before maintenance (40 samples): mean = 251.0g, σ = 3.2g, UCL = 260.6g, LCL = 241.4g. After maintenance (40 samples): mean = 250.0g, σ = 1.2g, UCL = 253.6g, LCL = 246.4g. Combined would show: mean = 250.5g, σ = 2.8g - hiding the 63% reduction in variation!',
+        visual: {
+          type: 'chart',
+          data: {
+            toolSlug: 'i-chart',
+            sampleKey: 'journey-before',
+            height: 350,
+            caption:
+              'I-Chart showing process variation before improvement (Cpk ~0.8) - with staged analysis, you could compare this directly to the improved state',
+          },
+        },
+      },
+      {
+        id: 'why-matters',
+        title: 'Why This Matters',
+        content:
+          'Combined control limits average the before and after performance. If your "after" data is much better, the combined limits won\'t show it. Staged limits let you see each phase independently - proving whether improvements actually worked.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'Prove Improvements', description: 'Show reduced variation after a change' },
+              { title: 'Detect Shifts', description: 'See when the process mean moved' },
+              { title: 'Compare Batches', description: 'Different materials or suppliers' },
+              { title: 'Track Progress', description: 'Before/after each improvement cycle' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'in-variscout',
+        title: 'Using Staged Analysis in VariScout',
+        content:
+          'In VariScout, staged analysis is activated by selecting a Stage column. The I-Chart then shows separate control limit bands for each stage value, with vertical dividers marking stage boundaries.',
+        visual: {
+          type: 'diagram',
+          data: {
+            steps: [
+              {
+                label: 'Add Stage Column',
+                description: 'Your data needs a column like "Before"/"After"',
+              },
+              {
+                label: 'Select in Dashboard',
+                description: 'Choose the stage column from the dropdown',
+              },
+              {
+                label: 'View Separate Limits',
+                description: 'Each stage gets its own UCL, Mean, LCL',
+              },
+              { label: 'Compare Phases', description: 'Tighter limits = less variation' },
+            ],
+          },
+        },
+      },
+      {
+        id: 'assumptions',
+        title: 'Assumptions & Best Practices',
+        content:
+          'Each stage should have enough data (10+ points) for meaningful control limits. Stages should represent real process changes, not arbitrary splits. Order matters - stages are displayed in the order they appear in your data.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              { title: 'Minimum 10 points', description: 'Each stage needs sufficient data' },
+              {
+                title: 'Meaningful boundaries',
+                description: 'Stages should represent real changes',
+              },
+              {
+                title: 'Independence',
+                description: 'Data within each stage should be independent',
+              },
+            ],
+          },
+        },
+      },
+    ],
+    relatedTools: ['i-chart'],
+    relatedTopics: ['staged-analysis', 'methodology-control-limits', 'two-voices'],
   },
 ];
 
