@@ -231,6 +231,30 @@ export const glossaryTerms: GlossaryTerm[] = [
     learnMorePath: '/tools/gage-rr',
     relatedTerms: ['grr', 'repeatability'],
   },
+
+  // Methodology
+  {
+    id: 'stagedAnalysis',
+    label: 'Staged Analysis',
+    definition:
+      'Analysis approach that calculates separate control limits for distinct process phases (e.g., before/after improvement).',
+    description:
+      'Staged analysis reveals improvements that combined data hides. Each stage gets its own mean and control limits calculated independently, letting you see shifts in both center and variation.',
+    category: 'methodology',
+    learnMorePath: '/learn/staged-analysis',
+    relatedTerms: ['ucl', 'lcl', 'mean', 'stdDev'],
+  },
+  {
+    id: 'probabilityPlot',
+    label: 'Probability Plot',
+    definition:
+      'Normal probability plot showing data points against expected normal percentiles. Points on the line indicate normal distribution.',
+    description:
+      "A graphical method for assessing whether data follows a normal distribution. Uses Benard's Median Rank formula to calculate expected percentiles. If data is normal, points fall close to the fitted line. Deviations reveal skewness, outliers, or multiple populations.",
+    category: 'methodology',
+    learnMorePath: '/tools/probability-plot',
+    relatedTerms: ['mean', 'stdDev', 'cp', 'cpk'],
+  },
 ];
 
 /**

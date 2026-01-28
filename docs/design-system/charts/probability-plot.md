@@ -128,7 +128,7 @@ Uses `calculateProbabilityPlotData()` from `@variscout/core`:
 ```typescript
 // For each data point:
 // 1. Sort data ascending
-// 2. Calculate expected percentile using (i - 0.5) / n formula
+// 2. Calculate expected percentile using Benard formula: (i - 0.3) / (n + 0.4)
 // 3. Return { value, expectedPercentile }
 ```
 
