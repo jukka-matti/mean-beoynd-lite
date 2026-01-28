@@ -66,12 +66,14 @@ interface MetricCardProps {
 
 ### Status Colors
 
-| Status    | Color Class      | Usage                              |
-| --------- | ---------------- | ---------------------------------- |
-| `good`    | `text-green-500` | Cp/Cpk ≥1.33, Pass Rate ≥99%       |
-| `warning` | `text-amber-500` | Cp/Cpk 1.0-1.33, Pass Rate 95-99%  |
-| `poor`    | `text-red-400`   | Cp/Cpk <1.0, Pass Rate <95%        |
-| (none)    | `text-white`     | Neutral metrics (Mean, Std Dev, n) |
+| Status    | Color Class      | Usage                                       |
+| --------- | ---------------- | ------------------------------------------- |
+| `good`    | `text-green-500` | Pass Rate ≥99%                              |
+| `warning` | `text-amber-500` | Pass Rate 95-99%                            |
+| `poor`    | `text-red-400`   | Pass Rate <95%                              |
+| (none)    | `text-white`     | Neutral metrics (Cp, Cpk, Mean, Std Dev, n) |
+
+> **Note:** Cp/Cpk values display without status indicators. VariScout respects that each organization's definition of "capable" varies — users set their own Cpk targets in Performance Mode rather than using fixed AIAG thresholds.
 
 ### Grid Layout
 
@@ -80,8 +82,8 @@ Used in StatsPanel Summary tab as 2x3 grid:
 ```tsx
 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
   <MetricCard label="Pass Rate" value="98.5" unit="%" status="good" />
-  <MetricCard label="Cp" value="1.45" status="good" />
-  <MetricCard label="Cpk" value="1.12" status="warning" />
+  <MetricCard label="Cp" value="1.45" />
+  <MetricCard label="Cpk" value="1.12" />
   <MetricCard label="Mean" value="50.2" />
   <MetricCard label="Std Dev" value="2.3" />
   <MetricCard label="Samples" value="n=250" />
