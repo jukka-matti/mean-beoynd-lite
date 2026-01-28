@@ -70,6 +70,9 @@ See [Colors](./tokens/colors.md) for the complete mapping.
 - [Cards](./components/cards.md) - Cards and panels
 - [Modals](./components/modals.md) - Modal patterns
 - [Forms](./components/forms.md) - Form elements
+- [VariationFunnel](./components/variation-funnel.md) - Factor ranking with category breakdown
+- [What-If Simulator](./components/what-if-simulator.md) - Process improvement exploration
+- [VariationBar](./components/variation-bar.md) - Visual variation progress indicator
 
 ### Patterns
 
