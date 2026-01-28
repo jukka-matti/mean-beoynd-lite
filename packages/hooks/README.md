@@ -21,11 +21,11 @@ All hooks use the **context injection pattern** for portability across apps. Rat
 ```tsx
 // In PWA app
 const { filters, setFilters, columnAliases } = useData();
-const { drillDown, breadcrumbs } = useDrillDown({ filters, setFilters, columnAliases });
+const { applyFilter, breadcrumbs } = useFilterNavigation({ filters, setFilters, columnAliases });
 
 // Same hook works in Azure app with different context
 const { filters, setFilters, columnAliases } = useData();
-const { drillDown, breadcrumbs } = useDrillDown({ filters, setFilters, columnAliases });
+const { applyFilter, breadcrumbs } = useFilterNavigation({ filters, setFilters, columnAliases });
 ```
 
 ---
@@ -65,18 +65,19 @@ const [state, actions] = useDataState({
 
 ### Navigation
 
-#### `useDrillDown`
+#### `useFilterNavigation`
 
-Manages drill-down navigation with breadcrumb trail, toggle behavior, and optional browser history/URL sync.
+Manages filter navigation with breadcrumb trail, toggle behavior, and optional browser history/URL sync.
 
 ```tsx
-const { drillDown, drillUp, drillTo, breadcrumbs, clearDrill, hasDrills } = useDrillDown(
-  { filters, setFilters, columnAliases },
-  { enableHistory: true, enableUrlSync: true }
-);
+const { applyFilter, removeFilter, navigateTo, breadcrumbs, clearFilters, hasFilters } =
+  useFilterNavigation(
+    { filters, setFilters, columnAliases },
+    { enableHistory: true, enableUrlSync: true }
+  );
 
-// Drill into a Pareto category
-drillDown({
+// Filter into a Pareto category
+applyFilter({
   type: 'filter',
   source: 'pareto',
   factor: 'DefectType',
@@ -84,31 +85,31 @@ drillDown({
 });
 
 // Go back one level
-drillUp();
+removeFilter();
 
 // Navigate to specific breadcrumb
-drillTo('action-id');
+navigateTo('action-id');
 ```
 
 **Options:**
 
-| Option          | Type      | Default | Description                               |
-| --------------- | --------- | ------- | ----------------------------------------- |
-| `enableHistory` | `boolean` | `false` | Push/pop browser history on drill changes |
-| `enableUrlSync` | `boolean` | `false` | Sync filters to URL parameters            |
+| Option          | Type      | Default | Description                                |
+| --------------- | --------- | ------- | ------------------------------------------ |
+| `enableHistory` | `boolean` | `false` | Push/pop browser history on filter changes |
+| `enableUrlSync` | `boolean` | `false` | Sync filters to URL parameters             |
 
 **Returns:**
 
 | Property           | Type                     | Description                         |
 | ------------------ | ------------------------ | ----------------------------------- |
-| `drillStack`       | `DrillAction[]`          | Current navigation stack            |
+| `filterStack`      | `FilterAction[]`         | Current navigation stack            |
 | `breadcrumbs`      | `BreadcrumbItem[]`       | UI-ready breadcrumb items           |
 | `currentHighlight` | `HighlightState \| null` | Currently highlighted I-Chart point |
-| `drillDown`        | `function`               | Drill into data subset              |
-| `drillUp`          | `function`               | Go back one level                   |
-| `drillTo`          | `function`               | Navigate to specific point          |
-| `clearDrill`       | `function`               | Reset all drill state               |
-| `hasDrills`        | `boolean`                | Whether any drills are active       |
+| `applyFilter`      | `function`               | Filter into data subset             |
+| `removeFilter`     | `function`               | Go back one level                   |
+| `navigateTo`       | `function`               | Navigate to specific point          |
+| `clearFilters`     | `function`               | Reset all filter state              |
+| `hasFilters`       | `boolean`                | Whether any filters are active      |
 
 ---
 
@@ -180,7 +181,7 @@ const {
   impactLevel,
   factorVariations,
   categoryContributions,
-} = useVariationTracking(rawData, drillStack, outcome, factors);
+} = useVariationTracking(rawData, filterStack, outcome, factors);
 
 // Use factorVariations to highlight high-impact factors
 const machineVariation = factorVariations.get('Machine'); // e.g., 0.67 (67%)
@@ -194,7 +195,7 @@ const machineVariation = factorVariations.get('Machine'); // e.g., 0.67 (67%)
 | `cumulativeVariationPct`   | `number \| null`                             | Total % of original variation isolated       |
 | `impactLevel`              | `'high' \| 'moderate' \| 'low' \| null`      | Impact classification                        |
 | `insightText`              | `string \| null`                             | Human-readable insight                       |
-| `factorVariations`         | `Map<string, number>`                        | η² for each factor (for drill suggestions)   |
+| `factorVariations`         | `Map<string, number>`                        | η² for each factor (for filter suggestions)  |
 | `categoryContributions`    | `Map<string, Map<string \| number, number>>` | Per-category contribution to total variation |
 
 ---
@@ -369,7 +370,7 @@ The package also exports TypeScript types for context interfaces:
 import type {
   ChartScaleContext,
   ChartScaleResult,
-  DrillDownContext,
+  FilterNavigationContext,
   VariationTrackingContext,
   DataContextInterface,
   DisplayOptions,

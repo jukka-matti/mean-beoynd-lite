@@ -10,7 +10,7 @@ Page and component layout patterns.
 ┌─────────────────────────────────────────┐
 │ Header (h-14)                           │
 ├─────────────────────────────────────────┤
-│ DrillBreadcrumb (when filters active)   │
+│ FilterBreadcrumb (when filters active)   │
 ├─────────────────────────────────────────┤
 │                                         │
 │ Main Content (flex-1)                   │
@@ -26,7 +26,7 @@ Page and component layout patterns.
 ┌─────────────────────────────────────────────────────────┐
 │ Header (h-14)                                           │
 ├─────────────────────────────────────────────────────────┤
-│ DrillBreadcrumb (when filters active)                   │
+│ FilterBreadcrumb (when filters active)                   │
 ├─────────────────────────────────┬───────────────────────┤
 │                                 │                       │
 │ Main Content (flex-1)           ║ Data Panel            │
@@ -40,7 +40,7 @@ Page and component layout patterns.
 ```jsx
 <div className="flex flex-col h-screen bg-slate-900">
   <AppHeader />
-  <DrillBreadcrumb items={breadcrumbs} onNavigate={handleNav} />
+  <FilterBreadcrumb items={breadcrumbs} onNavigate={handleNav} />
   <div className="flex flex-1 overflow-hidden">
     <main className="flex-1 overflow-hidden">{content}</main>
     {showDataPanel && <DataPanel width={dataPanelWidth} onWidthChange={setDataPanelWidth} />}

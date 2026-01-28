@@ -299,7 +299,7 @@ Standard Boxplot integrates with shared hooks:
 
 | Hook                   | Purpose                           |
 | ---------------------- | --------------------------------- |
-| `useDrillDown`         | Navigate into selected categories |
+| `useFilterNavigation`  | Navigate into selected categories |
 | `useVariationTracking` | Cumulative η² explanation         |
 | `useChartLayout`       | Consistent margins/fonts          |
 | `useChartTooltip`      | Tooltip positioning               |

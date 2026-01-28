@@ -53,7 +53,7 @@ Uses `getVariationImpactLevel()` from `@variscout/core`:
 - **Mobile:** Set `showLabels={false}` to show bar only
 
 ```tsx
-// Responsive usage in DrillBreadcrumb
+// Responsive usage in FilterBreadcrumb
 <VariationBar isolatedPct={cumulativeVariationPct} showLabels={!isMobile} className="max-w-xs" />
 ```
 
@@ -74,10 +74,10 @@ On hover, displays a tooltip with:
 
 ## Integration
 
-### In DrillBreadcrumb
+### In FilterBreadcrumb
 
 ```tsx
-// apps/pwa/src/components/DrillBreadcrumb.tsx
+// apps/pwa/src/components/FilterBreadcrumb.tsx
 {
   cumulativeVariationPct !== undefined && (
     <VariationBar isolatedPct={cumulativeVariationPct} showLabels={true} className="mt-2" />
@@ -115,6 +115,6 @@ import { getVariationImpactLevel, getVariationInsight } from '@variscout/core';
 
 ## Related Components
 
-- `DrillBreadcrumb.tsx` — Parent component that displays VariationBar
+- `FilterBreadcrumb.tsx` — Parent component that displays VariationBar
 - `VariationFunnel.tsx` — Uses same color scheme for factor bars
 - `@variscout/core` — Shared threshold constants and insight helpers

@@ -15,7 +15,7 @@ All Data → Shift (67%) → Night (89%) → Machine C (78%)
 ### Implementation
 
 ```tsx
-<DrillBreadcrumb items={breadcrumbs} onNavigate={handleNavigate} showCumulative={true} />
+<FilterBreadcrumb items={breadcrumbs} onNavigate={handleNavigate} showCumulative={true} />
 ```
 
 ### Visual Design

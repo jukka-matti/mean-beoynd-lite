@@ -12,7 +12,7 @@ variscout-lite/
 │   ├── core/              # @variscout/core - Pure logic (stats, parser, license)
 │   ├── charts/            # @variscout/charts - Props-based Visx chart components
 │   ├── data/              # @variscout/data - Sample datasets with pre-computed chart data
-│   ├── hooks/             # @variscout/hooks - Shared React hooks (drill-down, scale, tracking)
+│   ├── hooks/             # @variscout/hooks - Shared React hooks (filter navigation, scale, tracking)
 │   ├── analysis/          # @variscout/analysis - Analysis algorithms (deferred integration)
 │   └── ui/                # @variscout/ui - Shared UI utilities, colors, and hooks
 ├── apps/
@@ -81,7 +81,7 @@ variscout-lite/
 │          @variscout/hooks           │         @variscout/analysis           │
 │         (packages/hooks/)           │        (packages/analysis/)           │
 │                                     │                                       │
-│  useChartScale │ useDrillDown       │  (Deferred integration)               │
+│  useChartScale │ useFilterNavigation│  (Deferred integration)               │
 │  useVariationTracking │ useKeyboard │  Analysis algorithms                  │
 ├─────────────────────────────────────┼───────────────────────────────────────┤
 │          @variscout/ui              │          @variscout/data              │
@@ -100,7 +100,7 @@ Pure TypeScript logic with no React dependencies:
 | --------------- | -------------------------------------------------------------------------- |
 | `stats.ts`      | Mean, StdDev, UCL/LCL, Cp, Cpk, conformance, factor grouping, staged stats |
 | `parser.ts`     | CSV/Excel file parsing                                                     |
-| `navigation.ts` | Navigation types and utilities (DrillAction, BreadcrumbItem)               |
+| `navigation.ts` | Navigation types and utilities (FilterAction, BreadcrumbItem)              |
 | `variation.ts`  | Cumulative variation tracking (η² cascading, drill suggestions)            |
 | `license.ts`    | License key validation (offline)                                           |
 | `edition.ts`    | Edition configuration (community/itc/licensed)                             |
@@ -162,18 +162,18 @@ Shared UI component library for Web and Azure apps (not Excel Add-in).
 
 Shared React hooks for cross-platform functionality:
 
-| Hook                        | Purpose                                             |
-| --------------------------- | --------------------------------------------------- |
-| `useChartScale`             | Calculate Y-axis range from data, specs, and grades |
-| `useDrillDown`              | Drill-down navigation with breadcrumb trail         |
-| `useVariationTracking`      | Cumulative η² variation tracking through drill path |
-| `useKeyboardNavigation`     | Arrow key navigation and focus management           |
-| `useResponsiveChartMargins` | Dynamic chart margins based on container width      |
+| Hook                        | Purpose                                              |
+| --------------------------- | ---------------------------------------------------- |
+| `useChartScale`             | Calculate Y-axis range from data, specs, and grades  |
+| `useFilterNavigation`       | Filter navigation with breadcrumb trail              |
+| `useVariationTracking`      | Cumulative η² variation tracking through filter path |
+| `useKeyboardNavigation`     | Arrow key navigation and focus management            |
+| `useResponsiveChartMargins` | Dynamic chart margins based on container width       |
 
 **Usage:**
 
 ```typescript
-import { useDrillDown, useChartScale } from '@variscout/hooks';
+import { useFilterNavigation, useChartScale } from '@variscout/hooks';
 ```
 
 ### @variscout/analysis
@@ -192,15 +192,15 @@ Implemented using `i18next` and `react-i18next`.
 
 React application with PWA capabilities:
 
-| Module                           | Purpose                         |
-| -------------------------------- | ------------------------------- |
-| `context/DataContext.tsx`        | Centralized state management    |
-| `components/Dashboard.tsx`       | Main 3-chart layout             |
-| `components/DrillBreadcrumb.tsx` | Breadcrumb navigation component |
-| `components/Mobile*.tsx`         | Mobile-optimized components     |
-| `hooks/useDrillDown.ts`          | Drill-down navigation hook      |
-| `lib/persistence.ts`             | IndexedDB + localStorage        |
-| `hooks/useResponsive*.ts`        | Responsive sizing hooks         |
+| Module                            | Purpose                         |
+| --------------------------------- | ------------------------------- |
+| `context/DataContext.tsx`         | Centralized state management    |
+| `components/Dashboard.tsx`        | Main 3-chart layout             |
+| `components/FilterBreadcrumb.tsx` | Breadcrumb navigation component |
+| `components/Mobile*.tsx`          | Mobile-optimized components     |
+| `hooks/useFilterNavigation.ts`    | Filter navigation hook          |
+| `lib/persistence.ts`              | IndexedDB + localStorage        |
+| `hooks/useResponsive*.ts`         | Responsive sizing hooks         |
 
 ### @variscout/excel-addin
 
@@ -319,7 +319,7 @@ variscout-lite/
 │   │   ├── src/
 │   │   │   ├── index.ts         # Barrel export
 │   │   │   ├── useChartScale.ts # Y-axis scale calculation
-│   │   │   ├── useDrillDown.ts  # Drill-down navigation
+│   │   │   ├── useFilterNavigation.ts  # Filter navigation
 │   │   │   ├── useVariationTracking.ts  # Cumulative η² tracking
 │   │   │   ├── useKeyboardNavigation.ts # Keyboard navigation
 │   │   │   └── useResponsiveChartMargins.ts # Responsive margins
@@ -585,19 +585,19 @@ When drilling down through factors, variation percentages (η² / eta-squared) a
 │                   │   │                       │   │                   │
 │ useVariationTracking │ │ calculateFactorVariations │ │ useVariationTracking │
 │       ↓           │   │         ↓             │   │       ↓           │
-│ DrillBreadcrumb   │   │    BoxplotBase        │   │ DrillBreadcrumb   │
+│ FilterBreadcrumb  │   │    BoxplotBase        │   │ FilterBreadcrumb  │
 │ (cumulative %)    │   │   (variation % label) │   │ (cumulative %)    │
 └───────────────────┘   └───────────────────────┘   └───────────────────┘
 ```
 
 ### Platform-Specific Implementation
 
-| Platform  | Feature                             | Implementation                                  |
-| --------- | ----------------------------------- | ----------------------------------------------- |
-| **PWA**   | Full breadcrumb with cumulative %   | `useVariationTracking` hook → `DrillBreadcrumb` |
-| **PWA**   | Drill suggestions on boxplot        | `factorVariations` → `Boxplot.tsx`              |
-| **Excel** | Variation % on boxplot axis label   | `calculateFactorVariations` → `BoxplotBase`     |
-| **Azure** | Full breadcrumb experience (future) | Same as PWA, import shared functions            |
+| Platform  | Feature                             | Implementation                                   |
+| --------- | ----------------------------------- | ------------------------------------------------ |
+| **PWA**   | Full breadcrumb with cumulative %   | `useVariationTracking` hook → `FilterBreadcrumb` |
+| **PWA**   | Filter suggestions on boxplot       | `factorVariations` → `Boxplot.tsx`               |
+| **Excel** | Variation % on boxplot axis label   | `calculateFactorVariations` → `BoxplotBase`      |
+| **Azure** | Full breadcrumb experience (future) | Same as PWA, import shared functions             |
 
 ### Visual Indicators
 

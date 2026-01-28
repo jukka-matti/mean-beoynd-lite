@@ -26,7 +26,7 @@ variscout-lite/
 │   ├── core/          # @variscout/core - Stats, parser, license, types
 │   ├── charts/        # @variscout/charts - Visx chart components
 │   ├── data/          # @variscout/data - Sample datasets with pre-computed chart data
-│   ├── hooks/         # @variscout/hooks - Shared React hooks (drill-down, scale, tracking)
+│   ├── hooks/         # @variscout/hooks - Shared React hooks (filter navigation, scale, tracking)
 │   └── ui/            # @variscout/ui - Shared UI utilities, colors, and hooks
 ├── apps/
 │   ├── pwa/           # PWA website (React + Vite)
@@ -107,7 +107,7 @@ variscout-lite/
 | `packages/ui/src/components/ColumnMapping/`                    | Shared column mapping UI component                                 |
 | `packages/ui/src/components/MeasureColumnSelector/`            | Shared measure column selector                                     |
 | `packages/ui/src/components/PerformanceDetectedModal/`         | Shared wide-format detection modal                                 |
-| `apps/pwa/src/components/DrillBreadcrumb.tsx`                  | Breadcrumb UI component                                            |
+| `apps/pwa/src/components/FilterBreadcrumb.tsx`                 | Breadcrumb UI component                                            |
 | `apps/pwa/src/components/MobileMenu.tsx`                       | Mobile navigation hamburger menu                                   |
 | `apps/pwa/src/components/FunnelPanel.tsx`                      | Variation funnel visualization panel                               |
 | `apps/pwa/src/components/VariationFunnel.tsx`                  | Funnel chart showing drill-down progress                           |
@@ -120,7 +120,7 @@ variscout-lite/
 | `apps/azure/src/components/__tests__/`                         | Azure app component tests                                          |
 | `apps/azure/src/components/PerformanceDashboard.tsx`           | Azure Performance Mode dashboard (Cp/Cpk toggle, drill navigation) |
 | `apps/azure/src/components/DataPanel.tsx`                      | Azure data table panel (resizable, bi-directional sync)            |
-| `apps/azure/src/components/DrillBreadcrumb.tsx`                | Azure breadcrumb UI component                                      |
+| `apps/azure/src/components/FilterBreadcrumb.tsx`               | Azure breadcrumb UI component                                      |
 | `apps/azure/src/components/FilterChips.tsx`                    | Azure active filter chips display                                  |
 | `apps/excel-addin/src/content/ContentPerformanceDashboard.tsx` | Excel Performance Mode dashboard (Cp/Cpk toggle, drill navigation) |
 | `apps/excel-addin/src/lib/stateBridge.ts`                      | Excel state sync                                                   |

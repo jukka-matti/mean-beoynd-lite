@@ -50,10 +50,10 @@ Machine C         78%       46.5% of total
 ## Implementation
 
 ```typescript
-import { useDrillDown } from '@variscout/hooks';
+import { useFilterNavigation } from '@variscout/hooks';
 
-const { breadcrumbs, currentData, drillTo, goBack, cumulativeVariation } =
-  useDrillDown(initialData);
+const { breadcrumbs, currentData, navigateTo, removeFilter, cumulativeVariation } =
+  useFilterNavigation(initialData);
 ```
 
 ---

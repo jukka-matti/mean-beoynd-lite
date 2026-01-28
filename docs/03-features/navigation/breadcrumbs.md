@@ -62,7 +62,7 @@ The displayed percentages are local, but cumulative impact is calculated:
 ## Component
 
 ```typescript
-<DrillBreadcrumb
+<FilterBreadcrumb
   items={breadcrumbs}
   onNavigate={handleNavigate}
   showCumulative={true}
