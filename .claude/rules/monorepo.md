@@ -9,12 +9,15 @@ packages/
 ├── data/      # @variscout/data - Sample datasets with pre-computed chart data
 ├── hooks/     # @variscout/hooks - Shared React hooks:
 │              #   useChartScale - Y-axis scale calculation
-│              #   useDrillDown - Drill-down navigation with breadcrumbs
+│              #   useFilterNavigation - Filter navigation with breadcrumbs
 │              #   useVariationTracking - Cumulative η² tracking
 │              #   useDataState - Shared DataContext state management
+│              #   useDataIngestion - File upload and data parsing
 │              #   useKeyboardNavigation - Arrow key focus management
 │              #   useResponsiveChartMargins - Dynamic chart margins
-└── ui/        # @variscout/ui - HelpTooltip, useGlossary, colors, hooks
+└── ui/        # @variscout/ui - ChartCard, ColumnMapping, MeasureColumnSelector,
+               #   PerformanceDetectedModal, DataQualityBanner, HelpTooltip,
+               #   useGlossary, useIsMobile, colors, errorService
 
 apps/
 ├── pwa/          # @variscout/pwa - PWA website
@@ -30,7 +33,7 @@ apps/
 - `@variscout/core` has no React dependencies (exports stats, parser, glossary)
 - `@variscout/charts` depends on `@variscout/core`
 - `@variscout/hooks` depends on `@variscout/core` (for types and utilities)
-- `@variscout/ui` exports `HelpTooltip`, `useGlossary`, `useIsMobile`, `gradeColors`, `errorService`
+- `@variscout/ui` exports `ChartCard`, `ColumnMapping`, `MeasureColumnSelector`, `PerformanceDetectedModal`, `DataQualityBanner`, `HelpTooltip`, `useGlossary`, `useIsMobile`, `gradeColors`, `errorService`
 
 ## Build Commands
 

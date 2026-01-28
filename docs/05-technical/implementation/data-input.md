@@ -4,15 +4,17 @@ Technical documentation for data parsing, validation, and auto-mapping in VariSc
 
 ## File Locations
 
-| File                                            | Purpose                                             |
-| ----------------------------------------------- | --------------------------------------------------- |
-| `packages/core/src/parser.ts`                   | **Shared** parsing, validation, and detection logic |
-| `apps/pwa/src/logic/parser.ts`                  | Re-exports from @variscout/core (backwards compat)  |
-| `apps/pwa/src/hooks/useDataIngestion.ts`        | File upload handlers                                |
-| `apps/pwa/src/components/ColumnMapping.tsx`     | Column selection UI                                 |
-| `apps/pwa/src/components/DataQualityBanner.tsx` | Validation summary component                        |
-| `apps/pwa/src/components/DataTableModal.tsx`    | Data view with excluded row support                 |
-| `apps/pwa/src/context/DataContext.tsx`          | State management for data and validation            |
+| File                                                   | Purpose                                             |
+| ------------------------------------------------------ | --------------------------------------------------- |
+| `packages/core/src/parser.ts`                          | **Shared** parsing, validation, and detection logic |
+| `packages/hooks/src/useDataIngestion.ts`               | **Shared** file upload handlers                     |
+| `packages/ui/src/components/ColumnMapping/`            | **Shared** column selection UI                      |
+| `packages/ui/src/components/DataQualityBanner/`        | **Shared** validation summary component             |
+| `packages/ui/src/components/MeasureColumnSelector/`    | **Shared** measure column selector                  |
+| `packages/ui/src/components/PerformanceDetectedModal/` | **Shared** wide-format detection modal              |
+| `apps/pwa/src/hooks/useDataIngestion.ts`               | PWA wrapper (adds loadSample)                       |
+| `apps/pwa/src/components/DataTableModal.tsx`           | Data view with excluded row support                 |
+| `apps/pwa/src/context/DataContext.tsx`                 | State management for data and validation            |
 
 **Cross-platform availability**: All parser functions are in `@variscout/core` and can be used by:
 
@@ -147,7 +149,7 @@ validateData(data, outcome) → DataQualityReport
 Store in DataContext.dataQualityReport
     │
     ▼
-Show DataQualityBanner in ColumnMapping
+Show DataQualityBanner (from @variscout/ui)
     │
     ├─► "View Excluded Rows" → DataTableModal (filtered)
     │
@@ -238,9 +240,11 @@ interface ChannelInfo {
 
 ### Integration with useDataIngestion
 
-The `useDataIngestion` hook triggers wide-format detection after file upload:
+The `useDataIngestion` hook from `@variscout/hooks` triggers wide-format detection after file upload:
 
 ```typescript
+import { useDataIngestion } from '@variscout/hooks';
+
 const { handleFileUpload } = useDataIngestion({
   onWideFormatDetected: (detection: WideFormatDetection) => {
     // Show PerformanceDetectedModal to user
@@ -281,11 +285,13 @@ detectWideFormat(data)
 
 ### Components
 
-| Component                  | Purpose                                        |
-| -------------------------- | ---------------------------------------------- |
-| `PerformanceDetectedModal` | Auto-detection prompt after file upload        |
-| `PerformanceSetupPanel`    | Manual configuration (inline or modal)         |
-| `MeasureColumnSelector`    | Checkbox list with preview stats for selection |
+| Component                  | Package         | Purpose                                        |
+| -------------------------- | --------------- | ---------------------------------------------- |
+| `PerformanceDetectedModal` | `@variscout/ui` | Auto-detection prompt after file upload        |
+| `PerformanceSetupPanel`    | App-specific    | Manual configuration (inline or modal)         |
+| `MeasureColumnSelector`    | `@variscout/ui` | Checkbox list with preview stats for selection |
+| `ColumnMapping`            | `@variscout/ui` | Column selection and validation UI             |
+| `DataQualityBanner`        | `@variscout/ui` | Validation summary with excluded row info      |
 
 ### Performance Mode Features
 
@@ -439,7 +445,7 @@ The parser auto-detects:
 | 5,000 - 50,000 rows | Warning prompt (may slow performance) |
 | > 50,000 rows       | Rejected with error message           |
 
-Constants in `useDataIngestion.ts`:
+Constants in `packages/hooks/src/useDataIngestion.ts`:
 
 ```typescript
 const ROW_WARNING_THRESHOLD = 5000;
@@ -480,13 +486,14 @@ const ROW_HARD_LIMIT = 50000;
 | `detectWideFormat(data)`      | Auto-detect multi-channel wide format data      |
 | `detectChannelColumns(data)`  | Find numeric columns that appear to be channels |
 
-### useDataIngestion.ts
+### useDataIngestion (from @variscout/hooks)
 
 | Function                       | Purpose                                    |
 | ------------------------------ | ------------------------------------------ |
 | `handleFileUpload(e)`          | Main file upload handler                   |
 | `handleParetoFileUpload(file)` | Separate Pareto file handler               |
 | `clearParetoFile()`            | Reset to derived Pareto mode               |
-| `loadSample(sample)`           | Load sample dataset                        |
 | `clearData()`                  | Reset all data state                       |
 | `onWideFormatDetected`         | Callback when wide format data is detected |
+
+Note: `loadSample()` is added by the PWA-specific wrapper in `apps/pwa/src/hooks/useDataIngestion.ts`.

@@ -51,17 +51,25 @@ React + Visx chart components:
 Shared React hooks:
 
 - `useChartScale` - Y-axis scale calculation
-- `useDrillDown` - Drill-down navigation with breadcrumbs
+- `useFilterNavigation` - Filter navigation with breadcrumbs
 - `useVariationTracking` - Cumulative η² tracking
 - `useDataState` - Shared DataContext state management
+- `useDataIngestion` - File upload and data parsing
 - `useKeyboardNavigation` - Arrow key focus management
 - `useResponsiveChartMargins` - Dynamic chart margins
+- `useColumnClassification` - Column type detection
+- `useRegressionState` - Regression panel state management
 
 ### @variscout/ui
 
 Shared UI components and utilities:
 
-- HelpTooltip component
+- `ChartCard` - Reusable chart container with header, controls, and actions
+- `ColumnMapping` - Column selection UI for data setup
+- `MeasureColumnSelector` - Checkbox list for selecting measure columns
+- `PerformanceDetectedModal` - Wide-format data detection prompt
+- `DataQualityBanner` - Data validation summary display
+- `HelpTooltip` - Contextual help with glossary integration
 - `useGlossary` hook
 - `useIsMobile` responsive hook
 - Color constants (gradeColors)

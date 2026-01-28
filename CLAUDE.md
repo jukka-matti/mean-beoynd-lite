@@ -90,7 +90,8 @@ variscout-lite/
 | `packages/core/src/glossary/terms.ts`                          | Glossary content (~20 terms for capability, statistics)            |
 | `apps/excel-addin/src/components/HelpTooltip.tsx`              | Fluent UI variant of HelpTooltip for Excel Add-in                  |
 | `packages/hooks/src/useChartScale.ts`                          | Chart Y-axis scale calculation                                     |
-| `packages/hooks/src/useDrillDown.ts`                           | Drill-down navigation with breadcrumb trail                        |
+| `packages/hooks/src/useFilterNavigation.ts`                    | Filter navigation with breadcrumb trail                            |
+| `packages/hooks/src/useDataIngestion.ts`                       | Shared file upload and data parsing                                |
 | `packages/hooks/src/useVariationTracking.ts`                   | Cumulative variation tracking (η²)                                 |
 | `packages/hooks/src/useKeyboardNavigation.ts`                  | Keyboard navigation (arrow keys, focus management)                 |
 | `packages/hooks/src/useResponsiveChartMargins.ts`              | Dynamic chart margins based on container width                     |
@@ -101,15 +102,16 @@ variscout-lite/
 | `packages/charts/src/useChartTheme.ts`                         | Theme-aware chart colors hook                                      |
 | `apps/pwa/src/components/__tests__/`                           | Component tests (Dashboard, RegressionPanel, GageRRPanel)          |
 | `packages/core/src/parser.ts`                                  | CSV/Excel parsing, validation, keyword detection (shared)          |
-| `apps/pwa/src/hooks/useDataIngestion.ts`                       | File upload handlers, validation integration                       |
-| `apps/pwa/src/components/DataQualityBanner.tsx`                | Validation summary UI component                                    |
+| `apps/pwa/src/hooks/useDataIngestion.ts`                       | PWA wrapper (adds loadSample to shared hook)                       |
+| `packages/ui/src/components/DataQualityBanner/`                | Shared validation summary UI component                             |
+| `packages/ui/src/components/ColumnMapping/`                    | Shared column mapping UI component                                 |
+| `packages/ui/src/components/MeasureColumnSelector/`            | Shared measure column selector                                     |
+| `packages/ui/src/components/PerformanceDetectedModal/`         | Shared wide-format detection modal                                 |
 | `apps/pwa/src/components/DrillBreadcrumb.tsx`                  | Breadcrumb UI component                                            |
 | `apps/pwa/src/components/MobileMenu.tsx`                       | Mobile navigation hamburger menu                                   |
 | `apps/pwa/src/components/FunnelPanel.tsx`                      | Variation funnel visualization panel                               |
 | `apps/pwa/src/components/VariationFunnel.tsx`                  | Funnel chart showing drill-down progress                           |
-| `apps/pwa/src/components/MeasureColumnSelector.tsx`            | Checkbox list for selecting measure columns                        |
 | `apps/pwa/src/components/PerformanceSetupPanel.tsx`            | Setup panel for multi-measure analysis                             |
-| `apps/pwa/src/components/PerformanceDetectedModal.tsx`         | Auto-detection modal for wide-format data                          |
 | `apps/pwa/src/components/PerformanceDashboard.tsx`             | Performance Mode dashboard (Cp/Cpk toggle, drill navigation)       |
 | `apps/pwa/src/components/Dashboard.tsx`                        | Main dashboard (drillFromPerformance, onBackToPerformance)         |
 | `apps/pwa/src/components/views/`                               | Extracted view components (chart containers)                       |
