@@ -1,0 +1,149 @@
+# Monorepo Architecture
+
+VariScout uses a pnpm workspaces monorepo to share code across multiple applications.
+
+---
+
+## Structure
+
+```
+variscout-lite/
+├── packages/
+│   ├── core/          # @variscout/core - Stats, parser, license, types
+│   ├── charts/        # @variscout/charts - Visx chart components
+│   ├── data/          # @variscout/data - Sample datasets
+│   ├── hooks/         # @variscout/hooks - Shared React hooks
+│   └── ui/            # @variscout/ui - Shared UI utilities
+├── apps/
+│   ├── pwa/           # PWA website (React + Vite)
+│   ├── azure/         # Azure Team App (MSAL + OneDrive sync)
+│   ├── website/       # Marketing website (Astro + React Islands)
+│   └── excel-addin/   # Excel Add-in (Office.js + Fluent UI)
+└── docs/              # Documentation (MkDocs)
+```
+
+---
+
+## Package Responsibilities
+
+### @variscout/core
+
+Pure logic with no React dependencies:
+
+- Statistical calculations (mean, Cp, Cpk, ANOVA, GageRR)
+- CSV/Excel parsing and validation
+- License key generation and validation
+- TypeScript type definitions
+- Glossary terms and definitions
+
+### @variscout/charts
+
+React + Visx chart components:
+
+- IChart, Boxplot, ParetoChart, ScatterPlot
+- Performance charts (multi-channel analysis)
+- GageRR charts
+- Theme-aware colors via `useChartTheme`
+- Responsive utilities
+
+### @variscout/hooks
+
+Shared React hooks:
+
+- `useChartScale` - Y-axis scale calculation
+- `useDrillDown` - Drill-down navigation with breadcrumbs
+- `useVariationTracking` - Cumulative η² tracking
+- `useDataState` - Shared DataContext state management
+- `useKeyboardNavigation` - Arrow key focus management
+- `useResponsiveChartMargins` - Dynamic chart margins
+
+### @variscout/ui
+
+Shared UI components and utilities:
+
+- HelpTooltip component
+- `useGlossary` hook
+- `useIsMobile` responsive hook
+- Color constants (gradeColors)
+- Error service utilities
+
+### @variscout/data
+
+Sample datasets with pre-computed statistics:
+
+- Coffee, journey, bottleneck, sachets samples
+- Pre-computed chart data for demos
+
+---
+
+## Dependency Rules
+
+```
+apps/ ──────────────────────────────────────────────────▶
+  │
+  │ import from packages (never the reverse)
+  │
+  ▼
+packages/ ──────────────────────────────────────────────▶
+  │
+  ├── @variscout/core (no React, no external deps)
+  │     │
+  │     └── types, stats, parser, glossary
+  │
+  ├── @variscout/charts (depends on core)
+  │     │
+  │     └── React + Visx chart components
+  │
+  ├── @variscout/hooks (depends on core)
+  │     │
+  │     └── shared React hooks
+  │
+  └── @variscout/ui (depends on core)
+        │
+        └── UI utilities, HelpTooltip
+```
+
+**Rules:**
+
+- Apps import from packages: `import { calculateStats } from '@variscout/core'`
+- Packages never import from apps
+- `@variscout/core` has no React dependencies
+- Use `workspace:*` for internal package references
+
+---
+
+## Build Commands
+
+```bash
+# Build all packages and apps
+pnpm build
+
+# Build specific package/app
+pnpm --filter @variscout/pwa build
+pnpm --filter @variscout/core build
+
+# Build recursively (dependencies first)
+pnpm -r build
+
+# Development servers
+pnpm dev                               # PWA
+pnpm dev:excel                         # Excel Add-in
+pnpm --filter @variscout/azure-app dev # Azure app
+```
+
+---
+
+## Adding Dependencies
+
+| Type              | Where to Add            | Example                            |
+| ----------------- | ----------------------- | ---------------------------------- |
+| Shared tooling    | Root `devDependencies`  | TypeScript, ESLint, Vitest         |
+| Package-specific  | Package `dependencies`  | Visx in @variscout/charts          |
+| Internal packages | `workspace:*` reference | `"@variscout/core": "workspace:*"` |
+
+---
+
+## See Also
+
+- [ADR-001: Monorepo Decision](../../07-decisions/adr-001-monorepo.md)
+- [Shared Packages](shared-packages.md)

@@ -1,0 +1,118 @@
+/* VariScout Documentation Custom Styles */
+
+/* Primary accent colors matching VariScout brand */
+:root {
+  --md-primary-fg-color: #3b82f6;
+  --md-primary-fg-color--light: #60a5fa;
+  --md-primary-fg-color--dark: #2563eb;
+  --md-accent-fg-color: #3b82f6;
+}
+
+/* Status colors for documentation */
+.md-typeset .pass {
+  color: #22c55e;
+}
+
+.md-typeset .fail {
+  color: #ef4444;
+}
+
+.md-typeset .warning {
+  color: #f59e0b;
+}
+
+/* Custom admonition for capability metrics */
+.md-typeset .admonition.capability,
+.md-typeset details.capability {
+  border-color: #3b82f6;
+}
+
+.md-typeset .capability > .admonition-title,
+.md-typeset .capability > summary {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.md-typeset .capability > .admonition-title::before,
+.md-typeset .capability > summary::before {
+  background-color: #3b82f6;
+  -webkit-mask-image: var(--md-admonition-icon--info);
+  mask-image: var(--md-admonition-icon--info);
+}
+
+/* Custom admonition for methodology concepts */
+.md-typeset .admonition.methodology,
+.md-typeset details.methodology {
+  border-color: #8b5cf6;
+}
+
+.md-typeset .methodology > .admonition-title,
+.md-typeset .methodology > summary {
+  background-color: rgba(139, 92, 246, 0.1);
+}
+
+.md-typeset .methodology > .admonition-title::before,
+.md-typeset .methodology > summary::before {
+  background-color: #8b5cf6;
+  -webkit-mask-image: var(--md-admonition-icon--abstract);
+  mask-image: var(--md-admonition-icon--abstract);
+}
+
+/* Table styling for better readability */
+.md-typeset table:not([class]) {
+  font-size: 0.85rem;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-default-fg-color--lightest);
+}
+
+/* Mermaid diagram sizing */
+.mermaid {
+  text-align: center;
+}
+
+/* Journey map diagram styling */
+.md-typeset .journey-map {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Code block improvements */
+.md-typeset pre > code {
+  font-size: 0.8rem;
+}
+
+/* Persona card styling */
+.persona-card {
+  border-left: 4px solid var(--md-primary-fg-color);
+  padding-left: 1rem;
+  margin: 1rem 0;
+}
+
+/* Feature comparison tables */
+.md-typeset .comparison-table td:first-child {
+  font-weight: 600;
+}
+
+/* Chart color documentation */
+.color-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-right: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Navigation improvements */
+.md-nav__link--active {
+  font-weight: 600;
+}
+
+/* Footer customization */
+.md-footer-meta__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
