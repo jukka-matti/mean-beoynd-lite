@@ -49,6 +49,9 @@ interface MobileDashboardProps {
   onUploadPareto?: () => void;
   // Variation tracking for drill hints
   factorVariations?: Map<string, number>;
+  // Pareto aggregation
+  paretoAggregation?: 'count' | 'value';
+  onToggleParetoAggregation?: () => void;
 }
 
 const MobileDashboard: React.FC<MobileDashboardProps> = ({
@@ -74,6 +77,8 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
   onHideParetoPanel,
   onUploadPareto,
   factorVariations,
+  paretoAggregation = 'count',
+  onToggleParetoAggregation,
 }) => {
   const [activeView, setActiveView] = useState<ChartView>('ichart');
 
@@ -235,6 +240,8 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
                 onHide={onHideParetoPanel}
                 onUploadPareto={onUploadPareto}
                 availableFactors={factors}
+                aggregation={paretoAggregation}
+                onToggleAggregation={onToggleParetoAggregation}
               />
             )}
             {activeView === 'stats' && (

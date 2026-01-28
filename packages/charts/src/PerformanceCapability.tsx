@@ -107,22 +107,6 @@ export const PerformanceCapabilityBase: React.FC<PerformanceCapabilityProps> = (
     });
   }, [bins, height]);
 
-  // Get health badge color
-  const getHealthColor = (health: string): string => {
-    switch (health) {
-      case 'critical':
-        return chartColors.fail;
-      case 'warning':
-        return chartColors.warning;
-      case 'capable':
-        return chartColors.pass;
-      case 'excellent':
-        return chartColors.mean;
-      default:
-        return chrome.labelSecondary;
-    }
-  };
-
   if (!channel) {
     return (
       <div
@@ -141,8 +125,7 @@ export const PerformanceCapabilityBase: React.FC<PerformanceCapabilityProps> = (
     );
   }
 
-  const { mean, stdDev, cpk, n, health } = channel;
-  const healthColor = getHealthColor(health);
+  const { mean, stdDev, cpk, n } = channel;
 
   return (
     <div style={{ position: 'relative' }}>
@@ -286,7 +269,7 @@ export const PerformanceCapabilityBase: React.FC<PerformanceCapabilityProps> = (
             x={0}
             y={0}
             width={110}
-            height={95}
+            height={75}
             fill={chrome.tooltipBg}
             fillOpacity={0.9}
             rx={4}
@@ -300,26 +283,14 @@ export const PerformanceCapabilityBase: React.FC<PerformanceCapabilityProps> = (
           >
             {channel.label}
           </text>
-          <rect x={8} y={24} width={50} height={16} fill={healthColor} fillOpacity={0.2} rx={2} />
-          <text
-            x={33}
-            y={36}
-            fill={healthColor}
-            fontSize={10}
-            textAnchor="middle"
-            style={{ textTransform: 'capitalize' }}
-          >
-            {health}
-          </text>
-
-          <text x={8} y={54} fill={chrome.labelSecondary} fontSize={10}>
+          <text x={8} y={38} fill={chrome.labelSecondary} fontSize={10}>
             n = {n}
           </text>
-          <text x={8} y={68} fill={chrome.labelSecondary} fontSize={10}>
+          <text x={8} y={52} fill={chrome.labelSecondary} fontSize={10}>
             σ = {stdDev.toFixed(3)}
           </text>
           {cpk !== undefined && (
-            <text x={8} y={82} fill={chrome.labelPrimary} fontSize={11} fontWeight="bold">
+            <text x={8} y={66} fill={chrome.labelPrimary} fontSize={11} fontWeight="bold">
               Cpk = {cpk.toFixed(2)}
             </text>
           )}

@@ -52,6 +52,8 @@ export interface DataState {
   factors: string[];
   timeColumn: string | null;
   specs: { usl?: number; lsl?: number; target?: number };
+  /** Per-measure spec overrides for Performance Mode (keyed by measure column name) */
+  measureSpecs: Record<string, { usl?: number; lsl?: number; target?: number }>;
   grades: { max: number; label: string; color: string }[];
   stats: StatsResult | null;
 
@@ -80,6 +82,7 @@ export interface DataState {
 
   // Pareto support
   paretoMode: ParetoMode;
+  paretoAggregation: 'count' | 'value';
   separateParetoData: ParetoRow[] | null;
   separateParetoFilename: string | null;
 
@@ -95,6 +98,9 @@ export interface DataState {
   performanceResult: ChannelPerformanceData | null;
   /** User-defined Cpk target for Performance Mode (default: 1.33) */
   cpkTarget: number;
+
+  /** Helper to get effective specs for a measure (per-measure override or global) */
+  getSpecsForMeasure: (measureId: string) => { usl?: number; lsl?: number; target?: number };
 }
 
 export interface DataActions {
@@ -104,6 +110,15 @@ export interface DataActions {
   setFactors: (cols: string[]) => void;
   setTimeColumn: (col: string | null) => void;
   setSpecs: (specs: { usl?: number; lsl?: number; target?: number }) => void;
+  /** Set per-measure spec overrides for Performance Mode */
+  setMeasureSpecs: (
+    measureSpecs: Record<string, { usl?: number; lsl?: number; target?: number }>
+  ) => void;
+  /** Update specs for a single measure (merges with existing measureSpecs) */
+  setMeasureSpec: (
+    measureId: string,
+    specs: { usl?: number; lsl?: number; target?: number }
+  ) => void;
   setGrades: (grades: { max: number; label: string; color: string }[]) => void;
   setFilters: (filters: Record<string, (string | number)[]>) => void;
   setAxisSettings: (settings: { min?: number; max?: number; scaleMode?: ScaleMode }) => void;
@@ -118,6 +133,7 @@ export interface DataActions {
 
   // Pareto setters
   setParetoMode: (mode: ParetoMode) => void;
+  setParetoAggregation: (mode: 'count' | 'value') => void;
   setSeparateParetoData: (data: ParetoRow[] | null) => void;
   setSeparateParetoFilename: (filename: string | null) => void;
 
@@ -168,6 +184,9 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
   const [factors, setFactors] = useState<string[]>([]);
   const [timeColumn, setTimeColumn] = useState<string | null>(null);
   const [specs, setSpecs] = useState<{ usl?: number; lsl?: number; target?: number }>({});
+  const [measureSpecs, setMeasureSpecs] = useState<
+    Record<string, { usl?: number; lsl?: number; target?: number }>
+  >({});
   const [grades, setGrades] = useState<{ max: number; label: string; color: string }[]>([]);
   const [filters, setFilters] = useState<Record<string, (string | number)[]>>({});
   const [axisSettings, setAxisSettings] = useState<{
@@ -195,6 +214,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
 
   // Pareto support
   const [paretoMode, setParetoMode] = useState<ParetoMode>('derived');
+  const [paretoAggregation, setParetoAggregation] = useState<'count' | 'value'>('count');
   const [separateParetoData, setSeparateParetoData] = useState<ParetoRow[] | null>(null);
   const [separateParetoFilename, setSeparateParetoFilename] = useState<string | null>(null);
 
@@ -294,12 +314,35 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
   // State getter for persistence
   // ---------------------------------------------------------------------------
 
+  // Helper to set specs for a single measure (merges with existing)
+  const setMeasureSpec = useCallback(
+    (measureId: string, measureSpec: { usl?: number; lsl?: number; target?: number }) => {
+      setMeasureSpecs(prev => ({
+        ...prev,
+        [measureId]: measureSpec,
+      }));
+    },
+    []
+  );
+
+  /**
+   * Get the effective specs for a measure in Performance Mode
+   * Returns per-measure override if defined, otherwise global specs
+   */
+  const getSpecsForMeasure = useCallback(
+    (measureId: string): { usl?: number; lsl?: number; target?: number } => {
+      return measureSpecs[measureId] ?? specs;
+    },
+    [measureSpecs, specs]
+  );
+
   const getCurrentState = useCallback(
     (): Omit<AnalysisState, 'version'> => ({
       rawData,
       outcome,
       factors,
       specs,
+      measureSpecs: Object.keys(measureSpecs).length > 0 ? measureSpecs : undefined,
       grades,
       filters,
       axisSettings,
@@ -312,6 +355,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       outcome,
       factors,
       specs,
+      measureSpecs,
       grades,
       filters,
       axisSettings,
@@ -345,6 +389,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
         setOutcome(state.outcome);
         setFactors(state.factors);
         setSpecs(state.specs);
+        setMeasureSpecs(state.measureSpecs || {});
         setGrades(state.grades);
         setFilters(state.filters);
         setAxisSettings(state.axisSettings);
@@ -417,6 +462,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
     setFactors([]);
     setTimeColumn(null);
     setSpecs({});
+    setMeasureSpecs({});
     setGrades([]);
     setFilters({});
     setAxisSettings({});
@@ -431,6 +477,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
     // Reset validation and Pareto
     setDataQualityReport(null);
     setParetoMode('derived');
+    setParetoAggregation('count');
     setSeparateParetoData(null);
     setSeparateParetoFilename(null);
     // Reset stage state
@@ -456,6 +503,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       factors,
       timeColumn,
       specs,
+      measureSpecs,
       grades,
       stats,
       stageColumn,
@@ -474,6 +522,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       dataFilename,
       dataQualityReport,
       paretoMode,
+      paretoAggregation,
       separateParetoData,
       separateParetoFilename,
       fullDataYDomain,
@@ -484,6 +533,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       selectedMeasure,
       performanceResult,
       cpkTarget,
+      getSpecsForMeasure,
     }),
     [
       rawData,
@@ -492,6 +542,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       factors,
       timeColumn,
       specs,
+      measureSpecs,
       grades,
       stats,
       stageColumn,
@@ -510,6 +561,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       dataFilename,
       dataQualityReport,
       paretoMode,
+      paretoAggregation,
       separateParetoData,
       separateParetoFilename,
       fullDataYDomain,
@@ -520,6 +572,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       selectedMeasure,
       performanceResult,
       cpkTarget,
+      getSpecsForMeasure,
     ]
   );
 
@@ -530,6 +583,8 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       setFactors,
       setTimeColumn,
       setSpecs,
+      setMeasureSpecs,
+      setMeasureSpec,
       setGrades,
       setFilters,
       setAxisSettings,
@@ -540,6 +595,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       setDataFilename,
       setDataQualityReport,
       setParetoMode,
+      setParetoAggregation,
       setSeparateParetoData,
       setSeparateParetoFilename,
       setStageColumn,
@@ -564,6 +620,8 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       setFactors,
       setTimeColumn,
       setSpecs,
+      setMeasureSpecs,
+      setMeasureSpec,
       setGrades,
       setFilters,
       setAxisSettings,
@@ -574,6 +632,7 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       setDataFilename,
       setDataQualityReport,
       setParetoMode,
+      setParetoAggregation,
       setSeparateParetoData,
       setSeparateParetoFilename,
       setStageColumn,

@@ -15,7 +15,6 @@ import {
   sortDataByStage,
   determineStageOrder,
   groupDataByFactor,
-  calculateAnova,
   calculateFactorVariations,
   getNextDrillFactor,
   type StagedStatsResult,
@@ -24,7 +23,6 @@ import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
 import { useContentTheme, type ThemeTokens } from './ThemeContext';
 import FilterBar, { type ActiveFilter } from './FilterBar';
-import AnovaResults from './AnovaResults';
 import {
   CHART_IDS,
   copyChartsToClipboard,
@@ -376,6 +374,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 800, height: 300 });
   const [showProbabilityPlot, setShowProbabilityPlot] = useState(false);
+  const [paretoAggregation, setParetoAggregation] = useState<'count' | 'value'>('count');
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
   const [exportStatus, setExportStatus] = useState<ExportStatus>('idle');
   // Factor selection with auto-switch support
@@ -536,18 +535,29 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
   const paretoData = useMemo((): ParetoDataPoint[] => {
     if (!filteredData.length || !selectedFactor) return [];
 
-    // Count occurrences per category
-    const counts = new Map<string, number>();
-    filteredData.forEach(row => {
-      const category = String(row[selectedFactor] ?? 'Unknown');
-      counts.set(category, (counts.get(category) || 0) + 1);
-    });
+    let sorted: [string, number][];
 
-    // Sort by count descending
-    const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+    if (paretoAggregation === 'value' && state.outcomeColumn) {
+      // Sum outcome values per category
+      const sums = new Map<string, number>();
+      filteredData.forEach(row => {
+        const category = String(row[selectedFactor] ?? 'Unknown');
+        const value = Number(row[state.outcomeColumn]) || 0;
+        sums.set(category, (sums.get(category) || 0) + value);
+      });
+      sorted = Array.from(sums.entries()).sort((a, b) => b[1] - a[1]);
+    } else {
+      // Count occurrences per category
+      const counts = new Map<string, number>();
+      filteredData.forEach(row => {
+        const category = String(row[selectedFactor] ?? 'Unknown');
+        counts.set(category, (counts.get(category) || 0) + 1);
+      });
+      sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+    }
 
     // Build Pareto data with cumulative values
-    const total = filteredData.length;
+    const total = sorted.reduce((sum, [_, v]) => sum + v, 0);
     let cumulative = 0;
 
     return sorted.map(([key, value]) => {
@@ -559,7 +569,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
         cumulativePercentage: (cumulative / total) * 100,
       };
     });
-  }, [filteredData, selectedFactor]);
+  }, [filteredData, selectedFactor, paretoAggregation, state.outcomeColumn]);
 
   // Prepare histogram data (raw numeric values)
   const histogramData = useMemo(() => {
@@ -620,31 +630,6 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
     selectedFactorIndex,
     state.factorColumns,
   ]);
-
-  // Calculate ANOVA for factor comparison
-  const anovaResult = useMemo(() => {
-    if (!filteredData.length || !state.factorColumns?.[0] || !state.outcomeColumn) {
-      return null;
-    }
-
-    const factor = state.factorColumns[0];
-
-    // Need at least 2 groups with 2+ samples each for valid ANOVA
-    const groupCounts = new Map<string, number>();
-    filteredData.forEach(d => {
-      const g = String(d[factor]);
-      groupCounts.set(g, (groupCounts.get(g) || 0) + 1);
-    });
-    const validGroups = Array.from(groupCounts.values()).filter(c => c >= 2);
-    if (validGroups.length < 2) return null;
-
-    try {
-      return calculateAnova(filteredData, state.outcomeColumn, factor);
-    } catch (e) {
-      console.warn('ANOVA calculation failed:', e);
-      return null;
-    }
-  }, [filteredData, state.outcomeColumn, state.factorColumns]);
 
   // Load active slicer filters
   useEffect(() => {
@@ -956,14 +941,31 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
 
         {/* Pareto Chart */}
         {paretoData.length > 0 && (
-          <div id={CHART_IDS.pareto} style={styles.chartContainer}>
+          <div id={CHART_IDS.pareto} style={styles.chartContainerWithToggle}>
+            {state.outcomeColumn && (
+              <button
+                onClick={() => setParetoAggregation(prev => (prev === 'count' ? 'value' : 'count'))}
+                style={styles.toggleButton}
+                title={paretoAggregation === 'count' ? 'Show sum of values' : 'Show count'}
+              >
+                {paretoAggregation === 'count' ? 'Count' : state.outcomeColumn}
+              </button>
+            )}
             <ChartErrorBoundary chartName="Pareto" theme={theme}>
               <ParetoChartBase
                 data={paretoData}
-                totalCount={filteredData.length}
+                totalCount={
+                  paretoAggregation === 'count'
+                    ? filteredData.length
+                    : paretoData.reduce((s, d) => s + d.value, 0)
+                }
                 xAxisLabel={selectedFactor || 'Category'}
+                yAxisLabel={paretoAggregation === 'count' ? 'Count' : state.outcomeColumn}
                 parentWidth={Math.max(120, (containerSize.width - 48) / 3)}
-                parentHeight={Math.max(100, (containerSize.height - 100) * 0.45)}
+                parentHeight={Math.max(
+                  100,
+                  (containerSize.height - 100) * 0.45 - (state.outcomeColumn ? 28 : 0)
+                )}
                 showBranding={false}
               />
             </ChartErrorBoundary>
@@ -1008,12 +1010,7 @@ const ContentDashboard: React.FC<ContentDashboardProps> = ({
         )}
       </div>
 
-      {/* ANOVA Results - shows when factor column exists */}
-      {anovaResult && state.factorColumns?.[0] && (
-        <AnovaResults result={anovaResult} factorLabel={state.factorColumns[0]} />
-      )}
-
-      {/* Boxplot Stats Table (compact, below ANOVA) */}
+      {/* Boxplot Stats Table */}
       {boxplotData.length > 0 && boxplotData.length <= 8 && (
         <div style={{ marginTop: theme.spacingS }}>
           <BoxplotStatsTable data={boxplotData} compact />

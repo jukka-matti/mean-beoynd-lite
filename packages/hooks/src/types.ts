@@ -114,6 +114,13 @@ export interface ChartTitles {
 export type ParetoMode = 'derived' | 'separate';
 
 /**
+ * Pareto chart aggregation mode
+ * - 'count': Count occurrences per category (default)
+ * - 'value': Sum of outcome values per category (e.g., total duration per reason)
+ */
+export type ParetoAggregation = 'count' | 'value';
+
+/**
  * Saved analysis state
  */
 export interface AnalysisState {
@@ -122,6 +129,8 @@ export interface AnalysisState {
   outcome: string | null;
   factors: string[];
   specs: { usl?: number; lsl?: number; target?: number };
+  /** Per-measure spec overrides for Performance Mode (keyed by measure column name) */
+  measureSpecs?: Record<string, { usl?: number; lsl?: number; target?: number }>;
   grades: { max: number; label: string; color: string }[];
   filters: Record<string, (string | number)[]>;
   axisSettings: { min?: number; max?: number; scaleMode?: ScaleMode };

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AnimationDemo from "../components/AnimationDemo";
+import ScrollAnimationDemo from "../components/ScrollAnimationDemo";
 import { ui } from "../i18n/ui";
 
 // Mock language for layout
@@ -40,23 +41,7 @@ const lang = "en";
           </div>
         </section>
 
-        <!-- SECTION 2: CHAOS -->
-        <section>
-          <div class="flex items-center gap-4 mb-6">
-            <div class="w-12 h-12 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xl border border-purple-500/30">B</div>
-            <div>
-              <h2 class="text-2xl font-bold">The Chaos Breakout</h2>
-              <p class="text-neutral-500">Drill-down via particle explosion</p>
-            </div>
-          </div>
 
-          <AnimationDemo client:load concept="chaos" />
-
-          <div class="mt-6 p-4 bg-neutral-900/50 rounded-lg border border-neutral-800 text-sm text-neutral-400">
-            <strong>Pros:</strong> High "Wow" factor. Visually demonstrates "data is made of points". <br/>
-            <strong>Cons:</strong> More aggressive. Losing the bar shape completely might be disorienting for some.
-          </div>
-        </section>
 
       </div>
 

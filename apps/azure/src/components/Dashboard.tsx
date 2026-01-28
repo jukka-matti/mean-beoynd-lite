@@ -29,11 +29,11 @@ import {
   Minimize2,
   ChevronLeft,
   ChevronRight,
-  HelpCircle,
   Layers,
   Gauge,
   ArrowLeft,
 } from 'lucide-react';
+import { HelpTooltip, useGlossary } from '@variscout/ui';
 import type { StageOrderMode } from '@variscout/core';
 
 type DashboardTab = 'analysis' | 'regression' | 'gagerr' | 'performance';
@@ -73,7 +73,10 @@ const Dashboard = ({
     stagedStats,
     setStageColumn,
     setStageOrderMode,
+    paretoAggregation,
+    setParetoAggregation,
   } = useData();
+  const { getTerm } = useGlossary();
 
   const [activeTab, setActiveTab] = useState<DashboardTab>('analysis');
 
@@ -555,42 +558,16 @@ const Dashboard = ({
                       <div className="flex gap-4 text-sm bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
                         <span className="text-slate-400 flex items-center gap-1">
                           UCL: <span className="text-white font-mono">{stats.ucl.toFixed(2)}</span>
-                          <span className="tooltip-wrapper">
-                            <HelpCircle
-                              size={12}
-                              className="text-slate-500 hover:text-slate-300 cursor-help"
-                            />
-                            <span className="tooltip">
-                              Upper Control Limit. Points above this indicate special cause
-                              variation.
-                            </span>
-                          </span>
+                          <HelpTooltip term={getTerm('ucl')} iconSize={12} />
                         </span>
                         <span className="text-slate-400 flex items-center gap-1">
                           Mean:{' '}
                           <span className="text-white font-mono">{stats.mean.toFixed(2)}</span>
-                          <span className="tooltip-wrapper">
-                            <HelpCircle
-                              size={12}
-                              className="text-slate-500 hover:text-slate-300 cursor-help"
-                            />
-                            <span className="tooltip">
-                              Process average. The center line on the I-Chart.
-                            </span>
-                          </span>
+                          <HelpTooltip term={getTerm('mean')} iconSize={12} />
                         </span>
                         <span className="text-slate-400 flex items-center gap-1">
                           LCL: <span className="text-white font-mono">{stats.lcl.toFixed(2)}</span>
-                          <span className="tooltip-wrapper">
-                            <HelpCircle
-                              size={12}
-                              className="text-slate-500 hover:text-slate-300 cursor-help"
-                            />
-                            <span className="tooltip">
-                              Lower Control Limit. Points below this indicate special cause
-                              variation.
-                            </span>
-                          </span>
+                          <HelpTooltip term={getTerm('lcl')} iconSize={12} />
                         </span>
                       </div>
                     )
@@ -642,9 +619,6 @@ const Dashboard = ({
                         )}
                       </ErrorBoundary>
                     </div>
-                    {anovaResult && (
-                      <AnovaResults result={anovaResult} factorLabel={boxplotFactor} />
-                    )}
                   </div>
 
                   <div className="flex-1 min-h-[280px] bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 min-w-[300px] flex flex-col">
@@ -676,6 +650,12 @@ const Dashboard = ({
                             onDrillDown={handleDrillDown}
                             showComparison={showParetoComparison}
                             onToggleComparison={() => setShowParetoComparison(prev => !prev)}
+                            aggregation={paretoAggregation}
+                            onToggleAggregation={() =>
+                              setParetoAggregation(
+                                paretoAggregation === 'count' ? 'value' : 'count'
+                              )
+                            }
                           />
                         )}
                       </ErrorBoundary>
@@ -825,6 +805,10 @@ const Dashboard = ({
                           onDrillDown={handleDrillDown}
                           showComparison={showParetoComparison}
                           onToggleComparison={() => setShowParetoComparison(prev => !prev)}
+                          aggregation={paretoAggregation}
+                          onToggleAggregation={() =>
+                            setParetoAggregation(paretoAggregation === 'count' ? 'value' : 'count')
+                          }
                         />
                       )}
                     </ErrorBoundary>

@@ -14,7 +14,7 @@ import {
 import AxisEditor from '../AxisEditor';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
 import ChartSignature from './ChartSignature';
-import { Edit2, Info, Eye, EyeOff } from 'lucide-react';
+import { Edit2, Info, Eye, EyeOff, Hash, Sigma } from 'lucide-react';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { chartColors, useChartTheme } from '@variscout/charts';
 
@@ -27,6 +27,10 @@ interface ParetoChartProps {
   showComparison?: boolean;
   /** Callback to toggle comparison view */
   onToggleComparison?: () => void;
+  /** Aggregation mode: 'count' (occurrences) or 'value' (sum of outcome) */
+  aggregation?: 'count' | 'value';
+  /** Callback to toggle aggregation mode */
+  onToggleAggregation?: () => void;
 }
 
 const ParetoChart = ({
@@ -36,6 +40,8 @@ const ParetoChart = ({
   onDrillDown,
   showComparison = false,
   onToggleComparison,
+  aggregation = 'count',
+  onToggleAggregation,
 }: ParetoChartProps) => {
   const { chrome } = useChartTheme();
   const {
@@ -93,19 +99,36 @@ const ParetoChart = ({
 
     if (usingSeparateData && separateParetoData) {
       // Use pre-aggregated separate Pareto data
+      // Prefer value column if available in value mode
       sorted = separateParetoData
-        .map(row => ({ key: row.category, value: row.count }))
+        .map(row => ({
+          key: row.category,
+          value: aggregation === 'value' && row.value !== undefined ? row.value : row.count,
+        }))
         .sort((a, b) => b.value - a.value);
     } else {
-      // Derive from filtered data (default behavior)
-      const counts = d3.rollup(
-        filteredData,
-        (v: any) => v.length,
-        (d: any) => d[factor]
-      );
-      sorted = Array.from(counts, ([key, value]: any) => ({ key, value })).sort(
-        (a: any, b: any) => b.value - a.value
-      );
+      // Derive from filtered data
+      if (aggregation === 'value' && outcome) {
+        // Sum outcome values per category
+        const sums = d3.rollup(
+          filteredData,
+          (rows: any) => d3.sum(rows, (d: any) => Number(d[outcome]) || 0),
+          (d: any) => d[factor]
+        );
+        sorted = Array.from(sums, ([key, value]: any) => ({ key, value })).sort(
+          (a, b) => b.value - a.value
+        );
+      } else {
+        // Count occurrences (existing behavior)
+        const counts = d3.rollup(
+          filteredData,
+          (v: any) => v.length,
+          (d: any) => d[factor]
+        );
+        sorted = Array.from(counts, ([key, value]: any) => ({ key, value })).sort(
+          (a: any, b: any) => b.value - a.value
+        );
+      }
     }
 
     const total = d3.sum(sorted, d => d.value);
@@ -116,7 +139,7 @@ const ParetoChart = ({
     });
 
     return { data: withCumulative, totalCount: total };
-  }, [filteredData, factor, usingSeparateData, separateParetoData]);
+  }, [filteredData, factor, aggregation, outcome, usingSeparateData, separateParetoData]);
 
   const width = Math.max(0, parentWidth - margin.left - margin.right);
   const height = Math.max(0, parentHeight - margin.top - margin.bottom);
@@ -195,9 +218,35 @@ const ParetoChart = ({
             </foreignObject>
           )}
 
-          {/* Toggle button for comparison (positioned in top right) */}
-          {hasActiveFilters && !usingSeparateData && onToggleComparison && (
+          {/* Toggle button for aggregation mode (count/value) */}
+          {onToggleAggregation && outcome && !usingSeparateData && (
             <foreignObject x={width - 30} y={-margin.top + 4} width={26} height={26}>
+              <button
+                onClick={onToggleAggregation}
+                className={`p-1 rounded transition-colors ${
+                  aggregation === 'value'
+                    ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
+                    : 'bg-slate-700/50 text-slate-500 hover:text-slate-300 hover:bg-slate-700'
+                }`}
+                title={
+                  aggregation === 'value'
+                    ? `Showing sum of ${columnAliases[outcome] || outcome}`
+                    : 'Showing counts'
+                }
+              >
+                {aggregation === 'value' ? <Sigma size={14} /> : <Hash size={14} />}
+              </button>
+            </foreignObject>
+          )}
+
+          {/* Toggle button for comparison (positioned in top right, after aggregation) */}
+          {hasActiveFilters && !usingSeparateData && onToggleComparison && (
+            <foreignObject
+              x={width - (onToggleAggregation && outcome ? 60 : 30)}
+              y={-margin.top + 4}
+              width={26}
+              height={26}
+            >
               <button
                 onClick={onToggleComparison}
                 className={`p-1 rounded transition-colors ${
@@ -334,9 +383,14 @@ const ParetoChart = ({
           {/* Y-Axis Label (Affordance) */}
           {(() => {
             const yLabelOffset = parentWidth < 400 ? -25 : parentWidth < 768 ? -40 : -50;
+            // Dynamic Y-axis label based on aggregation mode
+            const yAxisLabel =
+              aggregation === 'value' && outcome ? columnAliases[outcome] || outcome : 'Count';
             return (
               <Group
-                onClick={() => handleAxisClick(outcome || 'Frequency')}
+                onClick={() =>
+                  handleAxisClick(aggregation === 'value' ? outcome || 'Count' : 'Count')
+                }
                 className="cursor-pointer group/label"
               >
                 <text
@@ -349,7 +403,7 @@ const ParetoChart = ({
                   fontWeight={500}
                   className="group-hover/label:fill-blue-400 transition-colors"
                 >
-                  {outcome ? columnAliases[outcome] || outcome : 'Frequency'}
+                  {yAxisLabel}
                 </text>
                 <foreignObject
                   x={yLabelOffset - 8}
@@ -463,7 +517,10 @@ const ParetoChart = ({
           }}
         >
           <div className="font-semibold">{tooltipData.key}</div>
-          <div>Count: {tooltipData.value}</div>
+          <div>
+            {aggregation === 'value' && outcome ? columnAliases[outcome] || outcome : 'Count'}:{' '}
+            {aggregation === 'value' ? tooltipData.value.toFixed(1) : tooltipData.value}
+          </div>
           <div>Cumulative: {tooltipData.cumulativePercentage?.toFixed(1)}%</div>
           {tooltipData.showComparison && (
             <>

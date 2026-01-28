@@ -3,6 +3,7 @@ import {
   calculateDrillVariation,
   calculateFactorVariations,
   calculateCategoryContributions,
+  calculateCategoryTotalSS,
   shouldHighlightDrill,
   applyFilters,
 } from '../variation';
@@ -566,5 +567,54 @@ describe('calculateCategoryContributions', () => {
     // Bed_3 should have the highest contribution
     const bed3Contrib = result!.contributions.get('Bed_3')!;
     expect(bed3Contrib).toBeGreaterThan(50); // Should be > 50% of total variation
+  });
+});
+
+// =============================================================================
+// calculateCategoryTotalSS() Tests - Basic tests (detailed tests in categoryStats.test.ts)
+// =============================================================================
+
+describe('calculateCategoryTotalSS', () => {
+  it('should return Total SS contributions that sum to 100%', () => {
+    const result = calculateCategoryTotalSS(highVariationData, 'Shift', 'Weight');
+
+    expect(result).not.toBeNull();
+
+    let totalContribution = 0;
+    for (const contrib of result!.contributions.values()) {
+      totalContribution += contrib;
+    }
+
+    // Sum should be 100% (total variation fully partitioned)
+    expect(totalContribution).toBeCloseTo(100, 5);
+  });
+
+  it('should capture spread contribution (not just mean shift)', () => {
+    // Create data where both categories have same mean but different spreads
+    const spreadData = [
+      { Category: 'Tight', Value: 99 },
+      { Category: 'Tight', Value: 101 },
+      { Category: 'Wide', Value: 80 },
+      { Category: 'Wide', Value: 120 },
+    ];
+
+    const result = calculateCategoryTotalSS(spreadData, 'Category', 'Value');
+
+    expect(result).not.toBeNull();
+
+    const tightContrib = result!.contributions.get('Tight')!;
+    const wideContrib = result!.contributions.get('Wide')!;
+
+    // Both should be non-zero (unlike between-group which would be 0 when means equal)
+    expect(tightContrib).toBeGreaterThan(0);
+    expect(wideContrib).toBeGreaterThan(0);
+
+    // Wide category contributes more due to higher spread
+    expect(wideContrib).toBeGreaterThan(tightContrib);
+  });
+
+  it('should return null for insufficient data', () => {
+    expect(calculateCategoryTotalSS([], 'Shift', 'Weight')).toBeNull();
+    expect(calculateCategoryTotalSS([{ Shift: 'Day', Weight: 100 }], 'Shift', 'Weight')).toBeNull();
   });
 });

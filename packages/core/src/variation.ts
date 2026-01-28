@@ -425,6 +425,110 @@ export interface CategoryContributionResult {
 }
 
 /**
+ * Result of Total SS contribution calculation per category
+ */
+export interface CategoryTotalSSResult {
+  /**
+   * Map from category value to percentage of total SS
+   * This captures both mean shift AND spread (within-group variation)
+   */
+  contributions: Map<string | number, number>;
+
+  /**
+   * Total SS for reference
+   */
+  ssTotal: number;
+}
+
+/**
+ * Calculate each category's Total Sum of Squares contribution
+ *
+ * This captures BOTH mean shift AND spread (within-group variation), unlike
+ * the between-group only metric from calculateCategoryContributions.
+ *
+ * From an MBB perspective, this better answers: "Which categories should I focus on?"
+ * A category with high variation but mean near overall mean now shows non-zero impact.
+ *
+ * Formula:
+ * - Category Total SS = Σ (x_ij - overall_mean)² for all values in category
+ * - Category % = (Category Total SS / Total SS) × 100
+ *
+ * Note: Sum of all category %s = 100% (total variation is fully partitioned)
+ *
+ * @param data - Array of data rows
+ * @param factor - Column name for the grouping variable
+ * @param outcome - Column name for the numeric outcome variable
+ * @returns CategoryTotalSSResult with map of category -> % of total SS
+ *
+ * @example
+ * const result = calculateCategoryTotalSS(data, 'Machine', 'Weight');
+ * // result.contributions.get('Machine_A') = 23
+ * // Even if Machine_A's mean equals overall mean, its spread contributes to total variation
+ */
+export function calculateCategoryTotalSS(
+  data: DataRow[],
+  factor: string,
+  outcome: string
+): CategoryTotalSSResult | null {
+  if (data.length < 2) {
+    return null;
+  }
+
+  // Extract all numeric outcome values
+  const outcomeValues = data
+    .map(d => toNumericValue(d[outcome]))
+    .filter((v): v is number => v !== undefined);
+
+  if (outcomeValues.length < 2) {
+    return null;
+  }
+
+  const overallMean = outcomeValues.reduce((a, b) => a + b, 0) / outcomeValues.length;
+
+  // Calculate SS_total
+  const ssTotal = outcomeValues.reduce((sum, val) => sum + Math.pow(val - overallMean, 2), 0);
+
+  if (ssTotal === 0) {
+    return null;
+  }
+
+  // Group data by factor
+  const groups = new Map<string | number, number[]>();
+
+  for (const row of data) {
+    const factorValue = row[factor];
+    const outcomeValue = toNumericValue(row[outcome]);
+
+    if (factorValue !== undefined && factorValue !== null && outcomeValue !== undefined) {
+      const key = factorValue as string | number;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(outcomeValue);
+    }
+  }
+
+  // Calculate Total SS contribution for each category
+  const contributions = new Map<string | number, number>();
+
+  for (const [categoryValue, values] of groups) {
+    if (values.length === 0) continue;
+
+    // Sum of squared deviations from OVERALL mean for this category
+    const categorySS = values.reduce((sum, val) => sum + Math.pow(val - overallMean, 2), 0);
+
+    // Convert to percentage of total SS
+    const contributionPct = (categorySS / ssTotal) * 100;
+    contributions.set(categoryValue, contributionPct);
+  }
+
+  return {
+    contributions,
+    ssTotal,
+  };
+}
+
+/**
  * Calculate how much each category within a factor contributes to TOTAL variation
  *
  * This provides insight into which specific category (e.g., Bed_3 vs Bed_1)
@@ -435,6 +539,8 @@ export interface CategoryContributionResult {
  * - Category % of total = (category_contribution / SS_total) × 100
  *
  * Note: Sum of all category %s = factor η² (since SS_between = Σ category_contributions)
+ *
+ * @deprecated Use calculateCategoryTotalSS for boxplot tooltips, which captures both mean shift + spread
  *
  * @param data - Array of data rows
  * @param factor - Column name for the grouping variable

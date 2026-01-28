@@ -19,6 +19,8 @@ export interface PresentationViewProps {
   factorVariations: Map<string, number>;
   showParetoComparison: boolean;
   onToggleParetoComparison: () => void;
+  paretoAggregation?: 'count' | 'value';
+  onToggleParetoAggregation?: () => void;
   chartTitles: {
     ichart?: string;
     boxplot?: string;
@@ -43,6 +45,8 @@ const PresentationView: React.FC<PresentationViewProps> = ({
   factorVariations,
   showParetoComparison,
   onToggleParetoComparison,
+  paretoAggregation = 'count',
+  onToggleParetoAggregation,
   chartTitles,
   onChartTitleChange,
   onSpecClick,
@@ -105,6 +109,8 @@ const PresentationView: React.FC<PresentationViewProps> = ({
                   showComparison={showParetoComparison}
                   onToggleComparison={onToggleParetoComparison}
                   availableFactors={factors}
+                  aggregation={paretoAggregation}
+                  onToggleAggregation={onToggleParetoAggregation}
                 />
               )}
             </ErrorBoundary>

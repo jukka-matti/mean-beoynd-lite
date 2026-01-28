@@ -125,12 +125,59 @@ export interface GradeCount {
 }
 
 /**
+ * Quality characteristic type for process capability interpretation
+ * - 'nominal': Both limits exist, target is ideal (e.g., fill weight)
+ * - 'smaller': Only USL exists, smaller is better (e.g., defects, cycle time)
+ * - 'larger': Only LSL exists, larger is better (e.g., yield, strength)
+ */
+export type CharacteristicType = 'nominal' | 'smaller' | 'larger';
+
+/**
  * Specification limits
  */
 export interface SpecLimits {
   usl?: number;
   lsl?: number;
   target?: number;
+  /** Quality characteristic type (inferred from specs if not set) */
+  characteristicType?: CharacteristicType;
+}
+
+/**
+ * Infer quality characteristic type from specification limits
+ *
+ * @param specs - Specification limits
+ * @returns CharacteristicType based on which specs are present:
+ *   - 'nominal' if both USL and LSL are defined
+ *   - 'smaller' if only USL is defined (smaller-is-better)
+ *   - 'larger' if only LSL is defined (larger-is-better)
+ *   - 'nominal' as fallback if no specs are defined
+ *
+ * @example
+ * inferCharacteristicType({ usl: 100, lsl: 90 })  // 'nominal'
+ * inferCharacteristicType({ usl: 5 })              // 'smaller'
+ * inferCharacteristicType({ lsl: 80 })             // 'larger'
+ * inferCharacteristicType({})                      // 'nominal'
+ */
+export function inferCharacteristicType(specs: SpecLimits): CharacteristicType {
+  // If explicitly set, use that value
+  if (specs.characteristicType) {
+    return specs.characteristicType;
+  }
+
+  const hasUSL = specs.usl !== undefined;
+  const hasLSL = specs.lsl !== undefined;
+
+  if (hasUSL && hasLSL) {
+    return 'nominal';
+  } else if (hasUSL && !hasLSL) {
+    return 'smaller';
+  } else if (!hasUSL && hasLSL) {
+    return 'larger';
+  }
+
+  // Default fallback when no specs defined
+  return 'nominal';
 }
 
 /**

@@ -5,7 +5,7 @@
 
 // Types - Data Row (foundation for type-safe data handling)
 export type { DataCellValue, DataRow } from './types';
-export { isNumericValue, isStringValue, toNumericValue } from './types';
+export { isNumericValue, isStringValue, toNumericValue, inferCharacteristicType } from './types';
 
 // Types - Statistics and Analysis
 export type {
@@ -13,6 +13,7 @@ export type {
   GradeTier,
   GradeCount,
   SpecLimits,
+  CharacteristicType,
   ProbabilityPlotPoint,
   DisplayOptions,
   ConformanceResult,
@@ -172,6 +173,7 @@ export type {
   DrillLevelVariation,
   OptimalFactorResult,
   CategoryContributionResult,
+  CategoryTotalSSResult,
   CategoryStats,
   ProjectedStats,
   DirectAdjustmentParams,
@@ -182,6 +184,7 @@ export {
   calculateDrillVariation,
   calculateFactorVariations,
   calculateCategoryContributions,
+  calculateCategoryTotalSS,
   getCategoryStats,
   calculateProjectedStats,
   shouldHighlightDrill,

@@ -19,6 +19,7 @@ export type {
   DisplayOptions,
   ChartTitles,
   ParetoMode,
+  ParetoAggregation,
   AnalysisState,
   SavedProject,
   PersistenceAdapter,

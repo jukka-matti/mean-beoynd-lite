@@ -54,11 +54,11 @@ interface WhatIfSimulatorProps {
 }
 
 /**
- * Get Cpk color based on value thresholds
+ * Get Cpk color based on value thresholds (Azure palette)
  */
 function getCpkColor(cpk: number): string {
-  if (cpk >= 1.33) return 'text-green-400';
-  if (cpk >= 1.0) return 'text-amber-400';
+  if (cpk >= 1.33) return 'text-green-500';
+  if (cpk >= 1.0) return 'text-amber-500';
   return 'text-red-400';
 }
 
@@ -69,16 +69,6 @@ function formatNumber(value: number, decimals: number = 2): string {
   return value.toFixed(decimals);
 }
 
-/**
- * What-If Simulator Panel
- *
- * Allows users to explore process improvement scenarios by adjusting:
- * 1. Mean shift - Moving the process center toward a target
- * 2. Variation reduction - Reducing process spread
- *
- * Shows projected statistics including Cpk, yield, and PPM with
- * improvement percentages and color-coded capability indicators.
- */
 /**
  * Render preset icon based on type
  */
@@ -95,6 +85,16 @@ function PresetIcon({ icon }: { icon?: SimulatorPreset['icon'] }) {
   }
 }
 
+/**
+ * What-If Simulator Panel
+ *
+ * Allows users to explore process improvement scenarios by adjusting:
+ * 1. Mean shift - Moving the process center toward a target
+ * 2. Variation reduction - Reducing process spread
+ *
+ * Shows projected statistics including Cpk, yield, and PPM with
+ * improvement percentages and color-coded capability indicators.
+ */
 const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
   (
     {
@@ -240,20 +240,20 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
     };
 
     return (
-      <div className="rounded-lg border border-edge bg-surface/50 overflow-hidden">
+      <div className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden">
         {/* Collapsible header */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-surface-tertiary/30 transition-colors"
+          className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-700/30 transition-colors"
         >
           <div className="flex items-center gap-2">
             {isExpanded ? (
-              <ChevronDown size={14} className="text-content-muted" />
+              <ChevronDown size={14} className="text-slate-500" />
             ) : (
-              <ChevronRight size={14} className="text-content-muted" />
+              <ChevronRight size={14} className="text-slate-500" />
             )}
             <Beaker size={14} className="text-blue-400" />
-            <span className="text-sm font-medium text-content">What-If Simulator</span>
+            <span className="text-sm font-medium text-white">What-If Simulator</span>
           </div>
 
           {/* Show indicator when adjustment is active */}
@@ -292,8 +292,8 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
                   <button
                     key={index}
                     onClick={() => handleApplyPreset(preset)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded border border-edge
-                           bg-surface hover:bg-surface-tertiary transition-colors text-content-secondary hover:text-content"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded border border-slate-700
+                           bg-slate-800 hover:bg-slate-700 transition-colors text-slate-400 hover:text-white"
                     title={preset.description}
                   >
                     <PresetIcon icon={preset.icon} />
@@ -304,15 +304,13 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
             )}
 
             {/* Projection results panel */}
-            <div className="p-3 rounded-lg bg-surface-tertiary/50 border border-edge/50">
+            <div className="p-3 rounded-lg bg-slate-700/50 border border-slate-700/50">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-content-secondary">
-                  Current → Projected
-                </span>
+                <span className="text-xs font-medium text-slate-400">Current → Projected</span>
                 {hasAdjustment && (
                   <button
                     onClick={handleReset}
-                    className="flex items-center gap-1 text-[10px] text-content-muted hover:text-content transition-colors"
+                    className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-white transition-colors"
                     title="Reset adjustments"
                   >
                     <RotateCcw size={10} />
@@ -324,14 +322,12 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
               <div className="space-y-2 text-xs font-mono">
                 {/* Mean */}
                 <div className="flex items-center justify-between">
-                  <span className="text-content-secondary">Mean:</span>
+                  <span className="text-slate-400">Mean:</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-content-muted">{formatNumber(currentStats.mean, 1)}</span>
-                    <span className="text-content-muted">→</span>
+                    <span className="text-slate-500">{formatNumber(currentStats.mean, 1)}</span>
+                    <span className="text-slate-500">→</span>
                     <span
-                      className={
-                        hasAdjustment && meanShift !== 0 ? 'text-content' : 'text-content-muted'
-                      }
+                      className={hasAdjustment && meanShift !== 0 ? 'text-white' : 'text-slate-500'}
                     >
                       {formatNumber(projection.projectedMean, 1)}
                     </span>
@@ -340,23 +336,19 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
 
                 {/* Standard Deviation */}
                 <div className="flex items-center justify-between">
-                  <span className="text-content-secondary">σ:</span>
+                  <span className="text-slate-400">σ:</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-content-muted">
-                      {formatNumber(currentStats.stdDev, 2)}
-                    </span>
-                    <span className="text-content-muted">→</span>
+                    <span className="text-slate-500">{formatNumber(currentStats.stdDev, 2)}</span>
+                    <span className="text-slate-500">→</span>
                     <span
                       className={
-                        hasAdjustment && variationReduction !== 0
-                          ? 'text-content'
-                          : 'text-content-muted'
+                        hasAdjustment && variationReduction !== 0 ? 'text-white' : 'text-slate-500'
                       }
                     >
                       {formatNumber(projection.projectedStdDev, 2)}
                     </span>
                     {variationReduction > 0 && (
-                      <span className="text-green-400">
+                      <span className="text-green-500">
                         (-{Math.round(variationReduction * 100)}%)
                       </span>
                     )}
@@ -366,12 +358,12 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
                 {/* Cpk (only if specs available) */}
                 {currentStats.cpk !== undefined && projection.projectedCpk !== undefined && (
                   <div className="flex items-center justify-between">
-                    <span className="text-content-secondary">Cpk:</span>
+                    <span className="text-slate-400">Cpk:</span>
                     <div className="flex items-center gap-2">
                       <span className={getCpkColor(currentStats.cpk)}>
                         {formatNumber(currentStats.cpk, 2)}
                       </span>
-                      <span className="text-content-muted">→</span>
+                      <span className="text-slate-500">→</span>
                       <span className={getCpkColor(projection.projectedCpk)}>
                         {formatNumber(projection.projectedCpk, 2)}
                       </span>
@@ -379,7 +371,7 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
                         <span
                           className={
                             projection.improvements.cpkImprovementPct >= 0
-                              ? 'text-green-400'
+                              ? 'text-green-500'
                               : 'text-red-400'
                           }
                         >
@@ -394,11 +386,11 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
                 {/* Yield (only if specs available) */}
                 {currentYield !== undefined && projection.projectedYield !== undefined && (
                   <div className="flex items-center justify-between">
-                    <span className="text-content-secondary">Yield:</span>
+                    <span className="text-slate-400">Yield:</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-content-muted">{formatNumber(currentYield, 1)}%</span>
-                      <span className="text-content-muted">→</span>
-                      <span className={hasAdjustment ? 'text-content' : 'text-content-muted'}>
+                      <span className="text-slate-500">{formatNumber(currentYield, 1)}%</span>
+                      <span className="text-slate-500">→</span>
+                      <span className={hasAdjustment ? 'text-white' : 'text-slate-500'}>
                         {formatNumber(projection.projectedYield, 1)}%
                       </span>
                       {projection.improvements.yieldImprovementPct !== undefined &&
@@ -407,7 +399,7 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
                           <span
                             className={
                               projection.improvements.yieldImprovementPct >= 0
-                                ? 'text-green-400'
+                                ? 'text-green-500'
                                 : 'text-red-400'
                             }
                           >
@@ -422,7 +414,7 @@ const WhatIfSimulator = forwardRef<WhatIfSimulatorHandle, WhatIfSimulatorProps>(
             </div>
 
             {/* Helper text */}
-            <p className="text-[10px] text-content-muted leading-relaxed">
+            <p className="text-[10px] text-slate-500 leading-relaxed">
               Explore process improvement by adjusting mean (shift toward target) and reducing
               variation (tighter control). Projections assume normal distribution.
             </p>

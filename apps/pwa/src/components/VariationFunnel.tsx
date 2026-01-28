@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
 import {
   findOptimalFactors,
   getCategoryStats,
@@ -20,8 +20,12 @@ import {
   X,
   RotateCcw,
   TrendingUp,
+  Zap,
 } from 'lucide-react';
-import WhatIfSimulator from './WhatIfSimulator';
+import WhatIfSimulator, {
+  type SimulatorPreset,
+  type WhatIfSimulatorHandle,
+} from './WhatIfSimulator';
 
 interface VariationFunnelProps {
   /** Raw data for variation analysis */
@@ -125,6 +129,12 @@ const VariationFunnel: React.FC<VariationFunnelProps> = ({
     new Map()
   );
 
+  // What-If Simulator control state
+  const simulatorRef = useRef<WhatIfSimulatorHandle>(null);
+  const simulatorContainerRef = useRef<HTMLDivElement>(null);
+  const [simulatorExpanded, setSimulatorExpanded] = useState(false);
+  const [activePreset, setActivePreset] = useState<SimulatorPreset | null>(null);
+
   // Calculate current overall stats (for comparison with projections)
   const currentStats = useMemo(() => {
     const values = data
@@ -170,6 +180,82 @@ const VariationFunnel: React.FC<VariationFunnelProps> = ({
     }
     return statsMap;
   }, [data, optimalFactors, outcome]);
+
+  // Calculate presets for What-If Simulator
+  const simulatorPresets = useMemo(() => {
+    if (!currentStats || !specs) return [];
+
+    const presets: SimulatorPreset[] = [];
+
+    // 1. Center on target (always available if target exists)
+    const target =
+      specs.target ??
+      (specs.usl !== undefined && specs.lsl !== undefined
+        ? (specs.usl + specs.lsl) / 2
+        : undefined);
+
+    if (target !== undefined && Math.abs(currentStats.mean - target) > 0.001) {
+      presets.push({
+        label: 'Center on target',
+        description: `Shift mean from ${currentStats.mean.toFixed(1)} to ${target.toFixed(1)}`,
+        meanShift: target - currentStats.mean,
+        variationReduction: 0,
+        icon: 'target',
+      });
+    }
+
+    // 2. Exclude worst category (if factors have category stats)
+    const topFactor = optimalFactors[0];
+    const topFactorStats = topFactor ? factorCategoryStats.get(topFactor.factor) : null;
+
+    if (topFactorStats && topFactorStats.length > 1) {
+      const worstCategory = topFactorStats[0]; // Sorted by contribution, worst first
+      const excludeProjection = calculateProjectedStats(
+        data,
+        topFactor.factor,
+        outcome,
+        new Set([worstCategory.value]),
+        specs,
+        currentStats
+      );
+
+      if (excludeProjection) {
+        const meanShift = excludeProjection.mean - currentStats.mean;
+        const variationReduction =
+          currentStats.stdDev > 0 ? 1 - excludeProjection.stdDev / currentStats.stdDev : 0;
+
+        presets.push({
+          label: `Exclude ${String(worstCategory.value)}`,
+          description: `Remove worst category (${Math.round(worstCategory.contributionPct)}% of variation)`,
+          meanShift,
+          variationReduction: Math.max(0, Math.min(0.5, variationReduction)),
+          icon: 'x-circle',
+        });
+      }
+    }
+
+    // 3. Standardize to best (if multiple categories exist)
+    if (topFactorStats && topFactorStats.length > 1) {
+      const bestCategory = topFactorStats[topFactorStats.length - 1]; // Lowest contribution
+
+      if (bestCategory.stdDev < currentStats.stdDev && bestCategory.stdDev > 0) {
+        const reduction = 1 - bestCategory.stdDev / currentStats.stdDev;
+
+        if (reduction > 0.05) {
+          // Only show if meaningful reduction (>5%)
+          presets.push({
+            label: 'Standardize to best',
+            description: `Match ${String(bestCategory.value)}'s variation (σ = ${bestCategory.stdDev.toFixed(2)})`,
+            meanShift: 0,
+            variationReduction: Math.min(0.5, reduction),
+            icon: 'star',
+          });
+        }
+      }
+    }
+
+    return presets;
+  }, [currentStats, specs, optimalFactors, factorCategoryStats, data, outcome]);
 
   // Calculate cumulative for selected factors only
   const selectedStats = useMemo(() => {
@@ -280,6 +366,78 @@ const VariationFunnel: React.FC<VariationFunnelProps> = ({
   // Get display name for factor
   const getFactorName = (factor: string) => columnAliases[factor] || factor;
 
+  // Calculate worst category Cpk improvement for each factor
+  const worstCategoryCpkImprovements = useMemo(() => {
+    if (!currentStats?.cpk || !specs)
+      return new Map<string, { cpkImprovement: number; preset: SimulatorPreset }>();
+
+    const improvements = new Map<string, { cpkImprovement: number; preset: SimulatorPreset }>();
+
+    for (const factor of optimalFactors) {
+      const categoryStats = factorCategoryStats.get(factor.factor);
+      if (!categoryStats || categoryStats.length <= 1) continue;
+
+      const worstCategory = categoryStats[0]; // Sorted by contribution, worst first
+      if (worstCategory.contributionPct <= 20) continue; // Only show for significant contributors
+
+      const projection = calculateProjectedStats(
+        data,
+        factor.factor,
+        outcome,
+        new Set([worstCategory.value]),
+        specs,
+        currentStats
+      );
+
+      if (projection?.cpk && currentStats.cpk) {
+        const cpkImprovement = projection.cpk - currentStats.cpk;
+        if (cpkImprovement > 0.05) {
+          // Only show if meaningful improvement (>0.05)
+          const meanShift = projection.mean - currentStats.mean;
+          const variationReduction =
+            currentStats.stdDev > 0
+              ? Math.max(0, Math.min(0.5, 1 - projection.stdDev / currentStats.stdDev))
+              : 0;
+
+          improvements.set(factor.factor, {
+            cpkImprovement,
+            preset: {
+              label: `Exclude ${String(worstCategory.value)}`,
+              description: `Remove worst category (${Math.round(worstCategory.contributionPct)}% of variation)`,
+              meanShift,
+              variationReduction,
+              icon: 'x-circle',
+            },
+          });
+        }
+      }
+    }
+
+    return improvements;
+  }, [optimalFactors, factorCategoryStats, data, outcome, specs, currentStats]);
+
+  // Handle clicking inline Cpk badge - apply preset and scroll to simulator
+  const handleCpkBadgeClick = useCallback(
+    (factor: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+
+      const improvement = worstCategoryCpkImprovements.get(factor);
+      if (!improvement) return;
+
+      // Set the preset to apply
+      setActivePreset(improvement.preset);
+
+      // Expand the simulator
+      setSimulatorExpanded(true);
+
+      // Scroll to simulator after a brief delay for expansion animation
+      setTimeout(() => {
+        simulatorContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    },
+    [worstCategoryCpkImprovements]
+  );
+
   // Check if we've reached the target
   const meetsTarget = selectedStats.totalExplained >= targetPct;
 
@@ -360,7 +518,18 @@ const VariationFunnel: React.FC<VariationFunnelProps> = ({
         {/* What-If Simulator */}
         {currentStats && specs && (specs.usl !== undefined || specs.lsl !== undefined) && (
           <>
-            <WhatIfSimulator currentStats={currentStats} specs={specs} defaultExpanded={false} />
+            <div ref={simulatorContainerRef}>
+              <WhatIfSimulator
+                ref={simulatorRef}
+                currentStats={currentStats}
+                specs={specs}
+                defaultExpanded={false}
+                presets={simulatorPresets}
+                isExpanded={simulatorExpanded}
+                onExpandChange={setSimulatorExpanded}
+                initialPreset={activePreset}
+              />
+            </div>
             {/* Divider */}
             <div className="my-4 border-t border-edge" />
           </>
@@ -544,6 +713,27 @@ const VariationFunnel: React.FC<VariationFunnelProps> = ({
                                       excluded
                                     </span>
                                   )}
+                                  {/* Inline Cpk improvement badge for worst category */}
+                                  {isWorst &&
+                                    !isExcluded &&
+                                    (() => {
+                                      const improvement = worstCategoryCpkImprovements.get(
+                                        factor.factor
+                                      );
+                                      if (!improvement) return null;
+                                      return (
+                                        <button
+                                          onClick={e => handleCpkBadgeClick(factor.factor, e)}
+                                          className="ml-1 px-1.5 py-0.5 text-[10px] rounded bg-green-500/20
+                                                   text-green-400 hover:bg-green-500/30 transition-colors
+                                                   flex items-center gap-1"
+                                          title="Click to explore this scenario in What-If Simulator"
+                                        >
+                                          <Zap size={10} />+{improvement.cpkImprovement.toFixed(2)}{' '}
+                                          Cpk
+                                        </button>
+                                      );
+                                    })()}
                                 </div>
                                 <div className="flex items-center gap-3 text-content-muted font-mono">
                                   <span title="Mean" className={isExcluded ? 'opacity-50' : ''}>

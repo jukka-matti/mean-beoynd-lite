@@ -1,274 +1,341 @@
 import React, { useState } from 'react';
+import * as d3 from 'd3';
 
-type ConceptType = 'xray' | 'chaos';
-
-interface AnimationDemoProps {
-  concept: ConceptType;
-}
-
-export default function AnimationDemo({ concept }: AnimationDemoProps) {
-  if (concept === 'xray') {
-    return <XRayScanner />;
-  }
-  return <ChaosBreakout />;
+// Single Concept Demo now
+export default function AnimationDemo() {
+  return <FocusedScanner />;
 }
 
 // ==========================================
-// CONCEPT A: X-RAY SCANNER
+// CONCEPT A: FOCUSED X-RAY (SELECTIVE DRILL-DOWN)
 // ==========================================
-function XRayScanner() {
+function FocusedScanner() {
+  // viewMode phases:
+  // 'bar' (Initial) -> 'boxplot' (Reveal All) -> 'focus' (Isolate Factor B) -> 'ichart' (Expand & Chart)
+  const [viewMode, setViewMode] = useState<'bar' | 'boxplot' | 'focus' | 'ichart'>('bar');
   const [isScanning, setIsScanning] = useState(false);
-  const [revealed, setRevealed] = useState(false);
 
-  const toggleScan = () => {
-    if (isScanning) return;
+  // Single trigger for the full sequence
+  const startFullScan = () => {
+    if (isScanning || viewMode !== 'bar') return;
     setIsScanning(true);
-    setRevealed(false);
 
-    // Simulate scan duration
+    // Phase 1: Bar -> Boxplot (1.5s)
     setTimeout(() => {
-      setRevealed(true);
-      setIsScanning(false);
-    }, 2000);
+      setViewMode('boxplot');
+
+      // Phase 2: Boxplot -> Focus (Select Problem Bar)
+      setTimeout(() => {
+        setViewMode('focus');
+
+        // Phase 3: Focus -> I-Chart (Expand + Data Flow)
+        setTimeout(() => {
+          setViewMode('ichart');
+          setIsScanning(false);
+        }, 1200);
+      }, 2000);
+    }, 1500);
   };
 
   const reset = () => {
-    setRevealed(false);
+    setViewMode('bar');
     setIsScanning(false);
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-8 bg-neutral-900 rounded-2xl border border-neutral-800 shadow-2xl overflow-hidden relative">
+    <div className="w-full max-w-4xl mx-auto p-8 bg-neutral-900 rounded-2xl border border-neutral-800 shadow-2xl overflow-hidden relative min-h-[400px]">
       <div className="absolute top-4 right-4 z-20 flex gap-2">
-        <button
-          onClick={toggleScan}
-          disabled={isScanning || revealed}
-          className="px-4 py-2 bg-brand-primary text-white text-sm font-bold rounded-lg disabled:opacity-50 hover:bg-opacity-90 transition-all"
-        >
-          {isScanning ? 'Scanning...' : 'Start Scan'}
-        </button>
-        <button
-          onClick={reset}
-          disabled={!revealed && !isScanning}
-          className="px-4 py-2 bg-neutral-700 text-white text-sm font-bold rounded-lg hover:bg-neutral-600 transition-all"
-        >
-          Reset
-        </button>
+        {viewMode === 'bar' && (
+          <button
+            onClick={startFullScan}
+            disabled={isScanning}
+            className="px-4 py-2 bg-brand-primary text-white text-sm font-bold rounded-lg disabled:opacity-50 hover:bg-opacity-90 transition-all flex items-center gap-2"
+          >
+            {isScanning ? 'Scanning...' : 'Start Scan'}
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </button>
+        )}
+
+        {viewMode === 'ichart' && (
+          <button
+            onClick={reset}
+            className="px-4 py-2 bg-neutral-700 text-white text-sm font-bold rounded-lg hover:bg-neutral-600 transition-all"
+          >
+            Reset
+          </button>
+        )}
       </div>
 
-      <div className="text-center mb-12">
-        <h3 className="text-2xl font-bold text-white mb-2">Concept A: The X-Ray Scanner</h3>
-        <p className="text-neutral-400">Scan the "Average" to reveal existing variation.</p>
+      <div className="text-center mb-8 relative z-10">
+        <h3 className="text-2xl font-bold text-white mb-2">Concept A: Focused Drill-Down</h3>
+        <p className="text-neutral-400 h-6 transition-all duration-500">
+          {viewMode === 'bar' && !isScanning && 'Step 1: Observe the Averages'}
+          {isScanning && viewMode === 'bar' && 'Scanning...'}
+          {viewMode === 'boxplot' && 'Step 2: Reveal the Variation'}
+          {viewMode === 'focus' && 'Step 3: Isolate the Problem'}
+          {viewMode === 'ichart' && 'Step 4: Diagnose with I-Chart'}
+        </p>
       </div>
 
-      <div className="h-64 relative flex items-end justify-center gap-16 px-12">
+      <div className="h-80 relative flex items-end justify-center px-4 md:px-12 w-full">
         {/* Scanner Beam */}
         <div
-          className={`absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-blue-400/30 to-transparent z-30 pointer-events-none transition-all duration-[2000ms] ease-linear ${isScanning ? 'left-[120%]' : '-left-24'}`}
-          style={{ transitionTimingFunction: 'linear' }}
+          className={`absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-blue-400/30 to-transparent z-30 pointer-events-none transition-all duration-[1500ms] ease-linear ${isScanning ? 'left-[120%]' : '-left-24'}`}
         />
 
         {/* CHART BARS */}
-        {['Factor A', 'Factor B', 'Factor C'].map((label, idx) => (
-          <div
-            key={label}
-            className="flex flex-col items-center justify-end h-full w-24 relative group"
-          >
-            {/* CONTAINER FOR BOTH VIEWS */}
-            <div className="w-full h-48 relative">
-              {/* HIDDEN LAYER: DISTRIBUTION (BOXPLOT/STRIP PLOT) */}
-              <div
-                className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-1000 ${revealed ? 'opacity-100' : 'opacity-0'}`}
-              >
-                {/* Boxplot Line */}
-                <div className="absolute h-[80%] w-0.5 bg-neutral-600 top-[10%]"></div>
-                {/* Box */}
-                <div
-                  className={`absolute w-full border-2 ${idx === 1 ? 'border-red-500 bg-red-500/10' : 'border-green-500 bg-green-500/10'} h-[40%] top-[30%] left-0 right-0`}
-                ></div>
-                {/* Median */}
-                <div
-                  className={`absolute w-full h-0.5 ${idx === 1 ? 'bg-red-500' : 'bg-green-500'} top-[50%]`}
-                ></div>
+        {['Factor A', 'Factor B', 'Factor C'].map((label, idx) => {
+          const isProblem = idx === 1; // Factor B is the focus
 
-                {/* Random Dots (Jitter) */}
-                {Array.from({ length: 12 }).map((_, i) => (
+          // Layout Logic
+          let widthClass = 'w-24';
+          let opacityClass = 'opacity-100';
+          let translateClass = 'translate-x-0';
+
+          if (viewMode === 'focus' || viewMode === 'ichart') {
+            if (isProblem) {
+              widthClass = 'w-full max-w-2xl'; // Focus on B
+              translateClass = 'translate-x-0 z-10';
+            } else {
+              widthClass = 'w-0 overflow-hidden'; // Hide others
+              opacityClass = 'opacity-0';
+            }
+          }
+
+          // --- REALISTIC DATA GENERATION ---
+          // Mulberry32 seeded PRNG (deterministic, unique per point)
+          const seededRandom = (seed: number): number => {
+            let t = seed + 0x6d2b79f5;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+          };
+
+          // Box-Muller transform using seeded randoms
+          const generateNormal = (
+            mean: number,
+            stdDev: number,
+            seed1: number,
+            seed2: number
+          ): number => {
+            const u1 = seededRandom(seed1);
+            const u2 = seededRandom(seed2);
+            const z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+            return mean + z * stdDev;
+          };
+
+          // Generate data points with proper story
+          const dots = Array.from({ length: 50 }).map((_, i) => {
+            const baseSeed = idx * 10000 + i * 3;
+
+            let val: number;
+
+            if (isProblem) {
+              // Factor B Story: "The average hid a process shift"
+              // Phase 1 (First 25 points): Running high and stable
+              // Phase 2 (Last 25 points): Shifted low and more variable
+              if (i < 25) {
+                val = generateNormal(97, 1.5, baseSeed, baseSeed + 1);
+              } else {
+                val = generateNormal(85, 3.5, baseSeed, baseSeed + 1);
+              }
+            } else {
+              // Factors A & C: Stable high performance
+              val = generateNormal(96, 2.0, baseSeed, baseSeed + 1);
+            }
+
+            // Clamp to realistic range
+            val = Math.max(60, Math.min(99, val));
+
+            // Boxplot X position (horizontal jitter)
+            const boxX = 20 + seededRandom(baseSeed + 2) * 60;
+
+            // I-Chart positions
+            const chartX = (i / 50) * 100;
+            const chartY = val; // Direct mapping - Y is the value
+
+            return { id: i, boxX, val, chartX, chartY, isProblem };
+          });
+
+          // Calculate Boxplot Stats using d3 for proper quartile interpolation
+          const values = dots.map(d => d.val).sort((a, b) => a - b);
+          const q1 = d3.quantile(values, 0.25) ?? 0;
+          const median = d3.quantile(values, 0.5) ?? 0;
+          const q3 = d3.quantile(values, 0.75) ?? 0;
+          const min = values[0];
+          const max = values[values.length - 1];
+
+          // Calculate I-Chart Statistics using d3 (sample stdDev with N-1)
+          const dataMean = d3.mean(values) ?? 0;
+          const stdDev = d3.deviation(values) ?? 0;
+          const ucl = dataMean + 3 * stdDev;
+          const lcl = Math.max(60, dataMean - 3 * stdDev);
+
+          // Dynamic Y-Axis Scaling: Map data range to visual range (5%-95% of container)
+          const dataMin = Math.min(min, lcl) - 2; // Add padding
+          const dataMax = Math.max(max, ucl) + 2;
+          const scaleY = (value: number): number => {
+            // Map value from [dataMin, dataMax] to [5, 95] (visual range)
+            return 5 + ((value - dataMin) / (dataMax - dataMin)) * 90;
+          };
+
+          return (
+            <div
+              key={label}
+              className={`flex flex-col items-center justify-end h-full relative transition-all duration-1000 ease-in-out ${widthClass} ${opacityClass} ${translateClass}`}
+            >
+              {/* CONTAINER */}
+              <div className="w-full h-full relative flex flex-col justify-end">
+                {/* I-CHART CONTEXT */}
+                {isProblem && (
                   <div
-                    key={i}
-                    className={`absolute w-1.5 h-1.5 rounded-full ${idx === 1 ? 'bg-red-400' : 'bg-green-400'}`}
-                    style={{
-                      top: `${Math.random() * 80 + 10}%`,
-                      left: `${Math.random() * 60 + 20}%`,
-                      opacity: 0.8,
-                    }}
-                  />
-                ))}
-              </div>
+                    className={`absolute inset-0 border border-neutral-700 bg-neutral-800/30 rounded-lg transition-opacity duration-1000 ${viewMode === 'ichart' ? 'opacity-100' : 'opacity-0'}`}
+                  >
+                    <div className="absolute inset-0 flex flex-col justify-between py-6 px-4">
+                      {[0, 1, 2, 3, 4].map(l => (
+                        <div key={l} className="w-full h-px bg-white/5"></div>
+                      ))}
+                    </div>
+                    {/* Control Limits - Scaled to visual range */}
+                    <div
+                      className="absolute left-0 right-0 border-t border-dashed border-red-500/50 mx-4"
+                      style={{ bottom: `${scaleY(ucl)}%` }}
+                    >
+                      <span className="text-[10px] text-red-500 -mt-4 absolute">
+                        UCL ({ucl.toFixed(1)})
+                      </span>
+                    </div>
+                    <div
+                      className="absolute left-0 right-0 border-t border-blue-500/50 mx-4"
+                      style={{ bottom: `${scaleY(dataMean)}%` }}
+                    >
+                      <span className="text-[10px] text-blue-400 -mt-4 absolute">
+                        Mean ({dataMean.toFixed(1)})
+                      </span>
+                    </div>
+                    <div
+                      className="absolute left-0 right-0 border-t border-dashed border-red-500/50 mx-4"
+                      style={{ bottom: `${scaleY(lcl)}%` }}
+                    >
+                      <span className="text-[10px] text-red-500 mt-1 absolute">
+                        LCL ({lcl.toFixed(1)})
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-              {/* TOP LAYER: SOLID AVERAGE BAR */}
-              <div
-                className={`absolute bottom-0 w-full rounded-t-lg transition-all duration-700 ${revealed || isScanning ? 'opacity-10' : 'opacity-100'}`}
-                style={{
-                  height: idx === 1 ? '92%' : '96%', // Factor B is slightly lower avg
-                  backgroundColor: idx === 1 ? '#ef4444' : '#22c55e', // Red vs Green
-                }}
-              >
-                <div className="absolute top-2 w-full text-center text-white font-bold opacity-100">
-                  {idx === 1 ? '92%' : '96%'}
+                {/* VISUALIZATION LAYER */}
+                <div className="absolute inset-0 mx-4 mb-8 z-20">
+                  {/* I-Chart Line */}
+                  <svg
+                    className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-1000 ${viewMode === 'ichart' ? 'opacity-100' : 'opacity-0'}`}
+                  >
+                    <polyline
+                      points={dots.map(d => `${d.chartX},${100 - scaleY(d.chartY)}`).join(' ')}
+                      fill="none"
+                      stroke="#60a5fa"
+                      strokeWidth="2"
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+
+                  {/* DATA DOTS */}
+                  {dots.map((d, i) => (
+                    <div
+                      key={i}
+                      className={`absolute rounded-full transition-all duration-1000 ease-in-out shadow-sm
+                        ${d.isProblem ? 'bg-blue-400' : 'bg-emerald-400'}
+                        ${viewMode === 'ichart' ? 'w-2 h-2 border border-neutral-900 bg-opacity-100' : 'w-1.5 h-1.5 bg-opacity-80'}
+                    `}
+                      style={{
+                        left: viewMode === 'ichart' ? `${d.chartX}%` : `${d.boxX}%`,
+                        // Scaled Y position for both modes
+                        bottom: `${scaleY(d.val)}%`,
+                        opacity: viewMode === 'bar' ? 0 : 1,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* SOLID BAR (Initial State) */}
+                <div
+                  className={`absolute bottom-0 w-16 left-1/2 -translate-x-1/2 rounded-t-lg transition-all duration-700 z-10 ${viewMode !== 'bar' ? 'opacity-0 scale-y-0 origin-bottom' : 'opacity-100 scale-y-100'}`}
+                  style={{
+                    height: `${dataMean}%`,
+                    backgroundColor: idx === 1 ? '#ef4444' : '#22c55e',
+                  }}
+                >
+                  <div className="absolute top-2 w-full text-center text-white font-bold opacity-100">
+                    {Math.round(dataMean)}%
+                  </div>
+                </div>
+
+                {/* BOXPLOT (Actual Stats) */}
+                <div
+                  className={`absolute left-1/2 -translate-x-1/2 w-16 transition-all duration-500 z-0 ${viewMode === 'boxplot' ? 'opacity-100' : 'opacity-0'}`}
+                  style={{ height: '100%', bottom: 0 }}
+                >
+                  {/* Whiskers - Scaled */}
+                  <div
+                    className="absolute bg-white/50 w-[1px] left-1/2 -translate-x-1/2"
+                    style={{ bottom: `${scaleY(min)}%`, height: `${scaleY(q1) - scaleY(min)}%` }}
+                  ></div>
+                  <div
+                    className="absolute bg-white/50 w-[1px] left-1/2 -translate-x-1/2"
+                    style={{ bottom: `${scaleY(q3)}%`, height: `${scaleY(max) - scaleY(q3)}%` }}
+                  ></div>
+
+                  {/* Caps - Scaled */}
+                  <div
+                    className="absolute bg-white/50 h-[1px] w-4 left-1/2 -translate-x-1/2"
+                    style={{ bottom: `${scaleY(min)}%` }}
+                  ></div>
+                  <div
+                    className="absolute bg-white/50 h-[1px] w-4 left-1/2 -translate-x-1/2"
+                    style={{ bottom: `${scaleY(max)}%` }}
+                  ></div>
+
+                  {/* Box - Scaled */}
+                  <div
+                    className="absolute w-8 left-1/2 -translate-x-1/2 border border-white/60 bg-white/10"
+                    style={{ bottom: `${scaleY(q1)}%`, height: `${scaleY(q3) - scaleY(q1)}%` }}
+                  ></div>
+
+                  {/* Median - Scaled */}
+                  <div
+                    className="absolute w-8 left-1/2 -translate-x-1/2 h-[2px] bg-red-400 z-10"
+                    style={{ bottom: `${scaleY(median)}%` }}
+                  ></div>
                 </div>
               </div>
-            </div>
 
-            <span className="text-neutral-400 text-sm mt-4 font-medium">{label}</span>
-          </div>
-        ))}
+              <span
+                className={`text-neutral-400 text-sm mt-2 font-bold transition-opacity duration-500 ${viewMode === 'focus' || viewMode === 'ichart' ? (isProblem ? 'opacity-100' : 'opacity-0') : 'opacity-100'}`}
+              >
+                {label}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Story Overlay */}
       <div
-        className={`absolute bottom-4 left-0 right-0 text-center transition-all duration-500 ${revealed ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+        className={`absolute bottom-4 left-0 right-0 text-center transition-all duration-500 ${viewMode === 'ichart' ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
       >
         <p className="text-xl font-bold text-white bg-black/50 inline-block px-6 py-2 rounded-full border border-white/10 backdrop-blur-md">
-          "Stable averages hide risky distributions."
+          "The average hid a process shift."
         </p>
       </div>
-    </div>
-  );
-}
-
-// ==========================================
-// CONCEPT B: CHAOS BREAKOUT
-// ==========================================
-function ChaosBreakout() {
-  const [exploded, setExploded] = useState(false);
-
-  // Generate random data points for the "I-Chart" transformation
-  // We need 50 points.
-  // Initial state: Clustered inside the bar.
-  // Final state: Spread out horizontally (Time Series).
-  const points = React.useMemo(() => {
-    return Array.from({ length: 50 }).map((_, i) => {
-      // Target (I-Chart)
-      // Linear X spread
-      const targetX = (i / 50) * 100;
-      // Random Y around a mean (middle of chart is 50%)
-      // Add some "out of control" points if it's the "Problem" factor
-      const isOutlier = i % 10 === 0;
-      const targetY = 50 + (Math.random() - 0.5) * (isOutlier ? 80 : 30);
-
-      return { id: i, targetX, targetY };
-    });
-  }, []);
-
-  return (
-    <div className="w-full max-w-3xl mx-auto p-8 bg-neutral-900 rounded-2xl border border-neutral-800 shadow-2xl overflow-hidden min-h-[500px] flex flex-col relative">
-      <div className="absolute top-4 right-4 z-20">
-        <button
-          onClick={() => setExploded(!exploded)}
-          className="px-4 py-2 bg-brand-primary text-white text-sm font-bold rounded-lg hover:bg-opacity-90 transition-all font-mono"
-        >
-          {exploded ? 'RESET.exe' : 'EXPLODE.exe'}
-        </button>
-      </div>
-
-      <div className="text-center mb-8">
-        <h3 className="text-2xl font-bold text-white mb-2">Concept B: Chaos Breakout</h3>
-        <p className="text-neutral-400">Click to shatter the illusion of stability.</p>
-      </div>
-
-      {/* CHART AREA */}
-      <div className="flex-1 relative flex items-center justify-center">
-        {/* Background Grid (appears on explode) */}
-        <div
-          className={`absolute inset-0 px-12 py-10 transition-opacity duration-1000 ${exploded ? 'opacity-100' : 'opacity-0'}`}
-        >
-          <div className="w-full h-full border-l border-b border-neutral-700 relative">
-            {/* UCL / LCL Lines */}
-            <div className="absolute top-[10%] left-0 right-0 border-t border-dashed border-red-500/50 flex">
-              <span className="text-red-500 text-xs -mt-5 ml-auto">UCL</span>
-            </div>
-            <div className="absolute bottom-[10%] left-0 right-0 border-t border-dashed border-red-500/50">
-              <span className="text-red-500 text-xs mt-1 ml-auto">LCL</span>
-            </div>
-            <div className="absolute top-[50%] left-0 right-0 border-t border-blue-500/30"></div>
-          </div>
-        </div>
-
-        {/* The "Bar" Container */}
-        <div className="relative w-full h-64 max-w-lg">
-          {/* Label changes */}
-          <div
-            className={`absolute -bottom-8 w-full text-center transition-all duration-500 ${exploded ? 'opacity-0' : 'opacity-100'}`}
-          >
-            <span className="text-white font-bold text-lg">Factor A (94%)</span>
-            <p className="text-xs text-neutral-500">Tap bar to drill down</p>
-          </div>
-
-          {/* PARTICLES */}
-          {/* 
-            Container logic:
-            When NOT exploded: All particles are packed into a single central bar shape.
-            When EXPLODED: Particles spread to their 'targetX' and 'targetY' within the full width container.
-          */}
-          <div
-            className="absolute inset-0 cursor-pointer"
-            onClick={() => !exploded && setExploded(true)}
-          >
-            {points.map(pt => {
-              // Initial Position (Bar Shape)
-              // Center of container is 50%. Bar width approx 15%?
-              // Randomize slightly within bar bounds
-              const barX = 50 + (Math.random() - 0.5) * 10;
-              const barY = 100 - Math.random() * 90; // 0 to 90% height from bottom
-
-              return (
-                <div
-                  key={pt.id}
-                  className={`absolute rounded-full transition-all duration-[1500ms] custom-bezier
-                      ${exploded ? 'w-2 h-2 bg-blue-400 box-shadow-glow' : 'w-full h-1 bg-green-500 opacity-80'}
-                    `}
-                  style={{
-                    // Layout shift logic
-                    left: exploded ? `${pt.targetX}%` : `${barX}%`,
-                    top: exploded
-                      ? `${Math.min(95, Math.max(5, pt.targetY))}%`
-                      : `${100 - Math.random() * 94}%`, // Fill bar height randomly
-                    width: exploded ? '8px' : '60px', // Bar width vs dot size
-                    height: exploded ? '8px' : '4px', // Bar slice height vs dot size
-                    marginLeft: exploded ? '0' : '-30px', // Center the bar
-                    transform: exploded ? 'scale(1)' : 'scale(1.1)',
-                    transitionDelay: exploded ? `${Math.random() * 300}ms` : '0ms',
-                    // When in bar mode, we stack them to look solid
-                    backgroundColor: exploded
-                      ? pt.targetY < 10 || pt.targetY > 90
-                        ? '#ef4444'
-                        : '#60a5fa'
-                      : '#22c55e',
-                  }}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Text Reveal */}
-      <div
-        className={`absolute bottom-4 left-0 right-0 text-center transition-all duration-700 delay-500 ${exploded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
-      >
-        <p className="text-xl font-bold text-white bg-black/50 inline-block px-6 py-2 rounded-full border border-white/10 backdrop-blur-md">
-          "The average was 94%. <br /> The reality is chaos."
-        </p>
-      </div>
-
-      <style>{`
-        .custom-bezier {
-          transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .box-shadow-glow {
-          box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
-        }
-      `}</style>
     </div>
   );
 }

@@ -25,6 +25,8 @@ export interface EmbedFocusViewProps {
   factorVariations: Map<string, number>;
   showParetoComparison: boolean;
   onToggleParetoComparison: () => void;
+  paretoAggregation?: 'count' | 'value';
+  onToggleParetoAggregation?: () => void;
   chartTitles: {
     ichart?: string;
     boxplot?: string;
@@ -58,6 +60,8 @@ const EmbedFocusView: React.FC<EmbedFocusViewProps> = ({
   factorVariations,
   showParetoComparison,
   onToggleParetoComparison,
+  paretoAggregation = 'count',
+  onToggleParetoAggregation,
   chartTitles,
   onChartTitleChange,
   onBoxplotFactorChange,
@@ -150,6 +154,8 @@ const EmbedFocusView: React.FC<EmbedFocusViewProps> = ({
                   onSelectFactor={onSelectParetoFactor}
                   onUploadPareto={onOpenColumnMapping}
                   availableFactors={factors}
+                  aggregation={paretoAggregation}
+                  onToggleAggregation={onToggleParetoAggregation}
                 />
               )}
             </ErrorBoundary>

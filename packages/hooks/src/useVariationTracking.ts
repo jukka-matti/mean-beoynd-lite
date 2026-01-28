@@ -5,7 +5,7 @@ import {
   drillStackToFilters,
   calculateDrillVariation,
   calculateFactorVariations,
-  calculateCategoryContributions,
+  calculateCategoryTotalSS,
   applyFilters,
 } from '@variscout/core';
 
@@ -38,9 +38,11 @@ export interface VariationTrackingResult {
   factorVariations: Map<string, number>;
 
   /**
-   * Map of factor -> category contributions
-   * For each factor, shows how much each category contributes to TOTAL variation
-   * Used to show "this category alone contributes X% of total variation" in tooltips
+   * Map of factor -> category Total SS contributions
+   * For each factor, shows each category's Total Sum of Squares contribution
+   * This captures both mean shift AND spread (within-group variation)
+   * Sum of all categories = 100% (total variation fully partitioned)
+   * Used to show "Impact: X% of total variation" in boxplot tooltips
    */
   categoryContributions: Map<string, Map<string | number, number>>;
 }
@@ -106,7 +108,8 @@ export function useVariationTracking(
     return calculateFactorVariations(filteredData, factors, outcome, drilledFactors);
   }, [rawData, drillStack, outcome, factors]);
 
-  // Calculate category contributions for each factor
+  // Calculate category Total SS contributions for each factor
+  // Uses calculateCategoryTotalSS which captures both mean shift AND spread
   const categoryContributions = useMemo(() => {
     const contributions = new Map<string, Map<string | number, number>>();
 
@@ -122,9 +125,10 @@ export function useVariationTracking(
       return contributions;
     }
 
-    // Calculate contributions for each factor
+    // Calculate Total SS contributions for each factor
+    // This captures both mean shift + spread (not just between-group variance)
     for (const factor of factors) {
-      const result = calculateCategoryContributions(filteredData, factor, outcome);
+      const result = calculateCategoryTotalSS(filteredData, factor, outcome);
       if (result) {
         contributions.set(factor, result.contributions);
       }

@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Theme CSS Variables for HelpTooltip and other shared components */
+:root {
+  /* Surface colors (backgrounds) - slate palette */
+  --surface-primary: 15 23 42; /* slate-900 #0f172a */
+  --surface-secondary: 30 41 59; /* slate-800 #1e293b */
+  --surface-tertiary: 51 65 85; /* slate-700 #334155 */
+  --surface-elevated: 71 85 105; /* slate-600 #475569 */
+
+  /* Content colors (text) */
+  --content-primary: 226 232 240; /* slate-200 #e2e8f0 */
+  --content-secondary: 148 163 184; /* slate-400 #94a3b8 */
+  --content-muted: 100 116 139; /* slate-500 #64748b */
+
+  /* Edge colors (borders) */
+  --edge-primary: 51 65 85; /* slate-700 #334155 */
+  --edge-secondary: 71 85 105; /* slate-600 #475569 */
+
+  /* Accent/Brand colors */
+  --accent: 59 130 246; /* blue-500 #3b82f6 */
+
+  /* HelpTooltip link color */
+  --help-link-color: var(--accent);
+}

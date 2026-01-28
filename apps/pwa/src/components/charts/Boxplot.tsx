@@ -75,6 +75,7 @@ const Boxplot = ({
       const iqr = q3 - q1;
       const min = Math.max(v[0], q1 - 1.5 * iqr);
       const max = Math.min(v[v.length - 1], q3 + 1.5 * iqr);
+      const mean = d3.mean(v) || 0;
       return {
         key,
         q1,
@@ -82,6 +83,7 @@ const Boxplot = ({
         q3,
         min,
         max,
+        mean,
         outliers: v.filter(x => x < min || x > max),
         values: v,
       };
@@ -248,6 +250,17 @@ const Boxplot = ({
                   y2={yScale(d.median)}
                   stroke="#f97316"
                   strokeWidth={2}
+                />
+
+                {/* Mean marker (diamond) */}
+                <polygon
+                  points={`
+                    ${x + barWidth / 2},${yScale(d.mean) - 4}
+                    ${x + barWidth / 2 + 4},${yScale(d.mean)}
+                    ${x + barWidth / 2},${yScale(d.mean) + 4}
+                    ${x + barWidth / 2 - 4},${yScale(d.mean)}
+                  `}
+                  fill={chrome.labelPrimary}
                 />
 
                 {/* Outliers */}
@@ -447,6 +460,7 @@ const Boxplot = ({
             <strong>{factorLabels[tooltipData.key] || tooltipData.key}</strong>
           </div>
           <div>Median: {tooltipData.median.toFixed(2)}</div>
+          <div>Mean: {tooltipData.mean.toFixed(2)}</div>
           <div>Q1: {tooltipData.q1.toFixed(2)}</div>
           <div>Q3: {tooltipData.q3.toFixed(2)}</div>
           <div>n: {tooltipData.values?.length ?? 0}</div>

@@ -19,7 +19,9 @@ import {
   ArrowTrendingLines24Regular,
 } from '@fluentui/react-icons';
 import { calculateStats, calculateConformance } from '@variscout/core';
+import { useGlossary } from '@variscout/ui';
 import { SelectedData, highlightOutOfSpec } from '../../lib/excelData';
+import { HelpTooltip } from '../../components/HelpTooltip';
 
 const useStyles = makeStyles({
   container: {
@@ -56,6 +58,10 @@ const useStyles = makeStyles({
   statLabel: {
     fontSize: tokens.fontSizeBase200,
     color: tokens.colorNeutralForeground2,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: tokens.spacingHorizontalXS,
   },
   conformanceRow: {
     display: 'flex',
@@ -83,6 +89,7 @@ interface StatsDisplayProps {
 
 export const StatsDisplay: React.FC<StatsDisplayProps> = ({ data, specs, onSpecsChange }) => {
   const styles = useStyles();
+  const { getTerm } = useGlossary();
 
   // Local state for input values (for responsive typing)
   const [localUsl, setLocalUsl] = useState(specs.usl?.toString() || '');
@@ -198,19 +205,31 @@ export const StatsDisplay: React.FC<StatsDisplayProps> = ({ data, specs, onSpecs
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <div className={styles.statValue}>{stats.mean.toFixed(2)}</div>
-            <div className={styles.statLabel}>Mean</div>
+            <div className={styles.statLabel}>
+              Mean
+              <HelpTooltip term={getTerm('mean')} />
+            </div>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statValue}>{stats.stdDev.toFixed(3)}</div>
-            <div className={styles.statLabel}>Std Dev</div>
+            <div className={styles.statLabel}>
+              Std Dev
+              <HelpTooltip term={getTerm('stdDev')} />
+            </div>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statValue}>{stats.ucl.toFixed(2)}</div>
-            <div className={styles.statLabel}>UCL (3σ)</div>
+            <div className={styles.statLabel}>
+              UCL (3σ)
+              <HelpTooltip term={getTerm('ucl')} />
+            </div>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statValue}>{stats.lcl.toFixed(2)}</div>
-            <div className={styles.statLabel}>LCL (3σ)</div>
+            <div className={styles.statLabel}>
+              LCL (3σ)
+              <HelpTooltip term={getTerm('lcl')} />
+            </div>
           </div>
         </div>
 
@@ -221,38 +240,20 @@ export const StatsDisplay: React.FC<StatsDisplayProps> = ({ data, specs, onSpecs
             <div className={styles.statsGrid}>
               {stats.cp !== undefined && (
                 <div className={styles.statCard}>
-                  <div
-                    className={styles.statValue}
-                    style={{
-                      color:
-                        stats.cp >= 1.33
-                          ? tokens.colorPaletteGreenForeground1
-                          : stats.cp >= 1
-                            ? tokens.colorPaletteMarigoldForeground1
-                            : tokens.colorPaletteRedForeground1,
-                    }}
-                  >
-                    {stats.cp.toFixed(2)}
+                  <div className={styles.statValue}>{stats.cp.toFixed(2)}</div>
+                  <div className={styles.statLabel}>
+                    Cp
+                    <HelpTooltip term={getTerm('cp')} />
                   </div>
-                  <div className={styles.statLabel}>Cp</div>
                 </div>
               )}
               {stats.cpk !== undefined && (
                 <div className={styles.statCard}>
-                  <div
-                    className={styles.statValue}
-                    style={{
-                      color:
-                        stats.cpk >= 1.33
-                          ? tokens.colorPaletteGreenForeground1
-                          : stats.cpk >= 1
-                            ? tokens.colorPaletteMarigoldForeground1
-                            : tokens.colorPaletteRedForeground1,
-                    }}
-                  >
-                    {stats.cpk.toFixed(2)}
+                  <div className={styles.statValue}>{stats.cpk.toFixed(2)}</div>
+                  <div className={styles.statLabel}>
+                    Cpk
+                    <HelpTooltip term={getTerm('cpk')} />
                   </div>
-                  <div className={styles.statLabel}>Cpk</div>
                 </div>
               )}
             </div>

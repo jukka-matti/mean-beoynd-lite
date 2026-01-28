@@ -49,6 +49,7 @@ interface DataContextType extends Omit<DataState, 'saveProject' | 'loadProject'>
   setDataFilename: DataActions['setDataFilename'];
   setDataQualityReport: DataActions['setDataQualityReport'];
   setParetoMode: DataActions['setParetoMode'];
+  setParetoAggregation: DataActions['setParetoAggregation'];
   setSeparateParetoData: DataActions['setSeparateParetoData'];
   setSeparateParetoFilename: DataActions['setSeparateParetoFilename'];
   setStageColumn: DataActions['setStageColumn'];
@@ -168,6 +169,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dataFilename: state.dataFilename,
       dataQualityReport: state.dataQualityReport,
       paretoMode: state.paretoMode,
+      paretoAggregation: state.paretoAggregation,
       separateParetoData: state.separateParetoData,
       separateParetoFilename: state.separateParetoFilename,
       fullDataYDomain: state.fullDataYDomain,
@@ -201,6 +203,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setDataFilename: actions.setDataFilename,
       setDataQualityReport: actions.setDataQualityReport,
       setParetoMode: actions.setParetoMode,
+      setParetoAggregation: actions.setParetoAggregation,
       setSeparateParetoData: actions.setSeparateParetoData,
       setSeparateParetoFilename: actions.setSeparateParetoFilename,
       setStageColumn: actions.setStageColumn,

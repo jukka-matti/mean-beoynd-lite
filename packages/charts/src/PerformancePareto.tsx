@@ -108,22 +108,6 @@ export const PerformanceParetoBase: React.FC<PerformanceParetoProps> = ({
     [height]
   );
 
-  // Get bar color based on health
-  const getBarColor = (channel: ChannelResult): string => {
-    switch (channel.health) {
-      case 'critical':
-        return chartColors.fail;
-      case 'warning':
-        return chartColors.warning;
-      case 'capable':
-        return chartColors.pass;
-      case 'excellent':
-        return chartColors.mean;
-      default:
-        return chrome.labelSecondary;
-    }
-  };
-
   const showTooltip = (data: TooltipData, x: number, y: number) => {
     setTooltipData(data);
     setTooltipLeft(x + margin.left);
@@ -192,7 +176,7 @@ export const PerformanceParetoBase: React.FC<PerformanceParetoProps> = ({
                 y={yScale(cpk)}
                 width={xScale.bandwidth()}
                 height={Math.max(0, barHeight)}
-                fill={getBarColor(d.channel)}
+                fill={chartColors.mean}
                 fillOpacity={isSelected ? 1 : selectedMeasure ? 0.4 : 0.8}
                 stroke={isSelected ? '#fff' : undefined}
                 strokeWidth={isSelected ? 2 : 0}
@@ -328,15 +312,6 @@ export const PerformanceParetoBase: React.FC<PerformanceParetoProps> = ({
             </div>
             <div>
               n: <span style={{ fontFamily: 'monospace' }}>{tooltipData.channel.n}</span>
-            </div>
-            <div
-              style={{
-                fontSize: '0.75rem',
-                textTransform: 'capitalize',
-                color: getBarColor(tooltipData.channel),
-              }}
-            >
-              {tooltipData.channel.health}
             </div>
           </div>
         </TooltipWithBounds>

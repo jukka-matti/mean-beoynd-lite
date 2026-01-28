@@ -97,6 +97,8 @@ const Dashboard = ({
     stagedStats,
     chartTitles,
     setChartTitles,
+    paretoAggregation,
+    setParetoAggregation,
   } = useData();
 
   // Drill-down navigation with browser history and URL sync
@@ -400,6 +402,10 @@ const Dashboard = ({
         factorVariations={factorVariations}
         showParetoComparison={showParetoComparison}
         onToggleParetoComparison={() => setShowParetoComparison(prev => !prev)}
+        paretoAggregation={paretoAggregation}
+        onToggleParetoAggregation={() =>
+          setParetoAggregation(paretoAggregation === 'count' ? 'value' : 'count')
+        }
         chartTitles={chartTitles}
         onChartTitleChange={handleChartTitleChange}
         onSpecClick={() => setShowSpecEditor(true)}
@@ -423,6 +429,10 @@ const Dashboard = ({
         factorVariations={factorVariations}
         showParetoComparison={showParetoComparison}
         onToggleParetoComparison={() => setShowParetoComparison(prev => !prev)}
+        paretoAggregation={paretoAggregation}
+        onToggleParetoAggregation={() =>
+          setParetoAggregation(paretoAggregation === 'count' ? 'value' : 'count')
+        }
         chartTitles={chartTitles}
         onChartTitleChange={handleChartTitleChange}
         onBoxplotFactorChange={setBoxplotFactor}
@@ -464,6 +474,10 @@ const Dashboard = ({
           onBreadcrumbNavigate={handleBreadcrumbNavigate}
           onHideParetoPanel={() => setShowParetoPanel(false)}
           onUploadPareto={onOpenColumnMapping}
+          paretoAggregation={paretoAggregation}
+          onToggleParetoAggregation={() =>
+            setParetoAggregation(paretoAggregation === 'count' ? 'value' : 'count')
+          }
         />
       </div>
     );
@@ -715,9 +729,6 @@ const Dashboard = ({
                         )}
                       </ErrorBoundary>
                     </div>
-                    {anovaResult && (
-                      <AnovaResults result={anovaResult} factorLabel={boxplotFactor} />
-                    )}
                   </div>
 
                   {showParetoPanel && (
@@ -774,6 +785,12 @@ const Dashboard = ({
                               onSelectFactor={handleParetoSelectFactor}
                               onUploadPareto={onOpenColumnMapping}
                               availableFactors={factors}
+                              aggregation={paretoAggregation}
+                              onToggleAggregation={() =>
+                                setParetoAggregation(
+                                  paretoAggregation === 'count' ? 'value' : 'count'
+                                )
+                              }
                             />
                           )}
                         </ErrorBoundary>
@@ -825,6 +842,10 @@ const Dashboard = ({
               onNextChart={handleNextChart}
               onPrevChart={handlePrevChart}
               onExitFocus={() => setFocusedChart(null)}
+              paretoAggregation={paretoAggregation}
+              onToggleParetoAggregation={() =>
+                setParetoAggregation(paretoAggregation === 'count' ? 'value' : 'count')
+              }
             />
           )}
         </div>

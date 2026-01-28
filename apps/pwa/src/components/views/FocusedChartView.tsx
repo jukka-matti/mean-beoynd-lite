@@ -37,6 +37,8 @@ export interface FocusedChartViewProps {
   onNextChart: () => void;
   onPrevChart: () => void;
   onExitFocus: () => void;
+  paretoAggregation?: 'count' | 'value';
+  onToggleParetoAggregation?: () => void;
 }
 
 /**
@@ -69,6 +71,8 @@ const FocusedChartView: React.FC<FocusedChartViewProps> = ({
   onNextChart,
   onPrevChart,
   onExitFocus,
+  paretoAggregation = 'count',
+  onToggleParetoAggregation,
 }) => {
   return (
     <div className="flex-1 flex p-4 h-full relative group/focus">
@@ -215,6 +219,8 @@ const FocusedChartView: React.FC<FocusedChartViewProps> = ({
                   onSelectFactor={onSelectParetoFactor}
                   onUploadPareto={onOpenColumnMapping}
                   availableFactors={factors}
+                  aggregation={paretoAggregation}
+                  onToggleAggregation={onToggleParetoAggregation}
                 />
               )}
             </ErrorBoundary>

@@ -365,22 +365,16 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
             <span style={styles.statLabel}>Channels</span>
             <span style={styles.statValue}>{summary.totalChannels}</span>
           </div>
-          {summary.healthCounts.critical > 0 && (
-            <div style={{ ...styles.stat, color: theme.colorStatusDangerForeground }}>
-              <span style={styles.statLabel}>Critical</span>
-              <span style={styles.statValue}>{summary.healthCounts.critical}</span>
-            </div>
-          )}
-          {summary.healthCounts.warning > 0 && (
-            <div style={{ ...styles.stat, color: theme.colorStatusWarningForeground }}>
-              <span style={styles.statLabel}>Warning</span>
-              <span style={styles.statValue}>{summary.healthCounts.warning}</span>
-            </div>
-          )}
           <div style={styles.stat}>
             <span style={styles.statLabel}>Avg Cpk</span>
             <span style={styles.statValue}>{summary.overall.meanCpk.toFixed(2)}</span>
           </div>
+          {summary.needsAttentionCount > 0 && (
+            <div style={{ ...styles.stat, color: theme.colorStatusWarningForeground }}>
+              <span style={styles.statLabel}>Below Target</span>
+              <span style={styles.statValue}>{summary.needsAttentionCount}</span>
+            </div>
+          )}
         </div>
         <div style={styles.headerButtons}>
           {selectedMeasure && onDrillToMeasure && (

@@ -4,14 +4,9 @@ import type { StatsResult, GlossaryTerm } from '@variscout/core';
 import { HelpTooltip, useGlossary } from '@variscout/ui';
 import CapabilityHistogram from './charts/CapabilityHistogram';
 import ProbabilityPlot from './charts/ProbabilityPlot';
+import WhatIfSimulator from './WhatIfSimulator';
 
 // Status helper functions
-const getCpStatus = (value: number): 'good' | 'warning' | 'poor' => {
-  if (value >= 1.33) return 'good';
-  if (value >= 1.0) return 'warning';
-  return 'poor';
-};
-
 const getPassRateStatus = (value: number): 'good' | 'warning' | 'poor' => {
   if (value >= 99) return 'good';
   if (value >= 95) return 'warning';
@@ -160,13 +155,11 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats, specs, filteredData = []
                   label="Cp"
                   value={stats?.cp?.toFixed(2) ?? 'N/A'}
                   helpTerm={getTerm('cp')}
-                  status={stats?.cp ? getCpStatus(stats.cp) : undefined}
                 />
                 <MetricCard
                   label="Cpk"
                   value={stats?.cpk?.toFixed(2) ?? 'N/A'}
                   helpTerm={getTerm('cpk')}
-                  status={stats?.cpk ? getCpStatus(stats.cpk) : undefined}
                 />
                 <MetricCard
                   label="Mean"
@@ -179,6 +172,21 @@ const StatsPanel: React.FC<StatsPanelProps> = ({ stats, specs, filteredData = []
                   helpTerm={getTerm('stdDev')}
                 />
                 <MetricCard label="Samples" value={`n=${filteredData?.length ?? 0}`} />
+              </div>
+            )}
+
+            {/* What-If Simulator */}
+            {stats && (specs.usl !== undefined || specs.lsl !== undefined) && (
+              <div className="mt-4">
+                <WhatIfSimulator
+                  currentStats={{
+                    mean: stats.mean,
+                    stdDev: stats.stdDev,
+                    cpk: stats.cpk,
+                  }}
+                  specs={specs}
+                  defaultExpanded={false}
+                />
               </div>
             )}
           </div>
