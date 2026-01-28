@@ -6,12 +6,12 @@ Frequency analysis and ranking charts with cumulative percentage lines.
 
 VariScout provides two Pareto chart variants for different analysis contexts:
 
-| Component             | Purpose                     | Context           | Data Source         |
-| --------------------- | --------------------------- | ----------------- | ------------------- |
-| **ParetoChart**       | Category frequency analysis | Standard Analysis | `ParetoDataPoint[]` |
-| **PerformancePareto** | Channel Cpk ranking         | Performance Mode  | `ChannelResult[]`   |
+| Component             | Purpose                     | Context           | Data Source                |
+| --------------------- | --------------------------- | ----------------- | -------------------------- |
+| **ParetoChart**       | Category frequency analysis | Standard Analysis | Derived from `DataContext` |
+| **PerformancePareto** | Channel Cpk ranking         | Performance Mode  | `ChannelResult[]` (props)  |
 
-**Source:** `packages/charts/src/ParetoChart.tsx`, `packages/charts/src/PerformancePareto.tsx`
+**Source:** `apps/pwa/src/components/charts/ParetoChart.tsx` (PWA), `packages/charts/src/PerformancePareto.tsx` (shared)
 
 ---
 
@@ -22,23 +22,33 @@ Shows frequency distribution with bars sorted by count (highest first) and a cum
 ### Props Interface
 
 ```typescript
-interface ParetoChartProps extends BaseChartProps {
-  /** Pareto data with counts and cumulative percentages */
-  data: ParetoDataPoint[];
-  /** Total count for percentage calculations */
-  totalCount: number;
-  /** X-axis label (factor name) */
-  xAxisLabel?: string;
-  /** Y-axis label */
-  yAxisLabel?: string;
-  /** Currently selected bars */
-  selectedBars?: string[];
-  /** Callback when a bar is clicked */
-  onBarClick?: (key: string) => void;
+interface ParetoChartProps {
+  /** Factor column name for grouping */
+  factor: string;
+  /** Parent container width (from withParentSize) */
+  parentWidth: number;
+  /** Parent container height (from withParentSize) */
+  parentHeight: number;
+  /** Callback for drill-down on bar click */
+  onDrillDown?: (factor: string, value: string) => void;
+  /** Show ghost bars comparing filtered to full population */
+  showComparison?: boolean;
+  /** Callback to toggle comparison view */
+  onToggleComparison?: () => void;
+  /** Callback to hide the Pareto panel */
+  onHide?: () => void;
+  /** Callback to open factor selector */
+  onSelectFactor?: () => void;
+  /** Callback to open Pareto file upload dialog */
+  onUploadPareto?: () => void;
+  /** Available factors for selection (determines if "Select Factor" button shows) */
+  availableFactors?: string[];
 }
 ```
 
-### Data Structure
+### Internal Data Structure
+
+The component derives Pareto data internally from `DataContext.filteredData`:
 
 ```typescript
 interface ParetoDataPoint {
@@ -49,7 +59,7 @@ interface ParetoDataPoint {
 }
 ```
 
-Data must be pre-sorted by value (descending) with cumulative percentages calculated.
+Data is automatically sorted by value (descending) with cumulative percentages calculated.
 
 ### Display Features
 
@@ -58,41 +68,75 @@ Data must be pre-sorted by value (descending) with cumulative percentages calcul
 - **80% threshold:** Dashed orange reference line
 - **Dual Y-axes:** Count (left) and Cumulative % (right)
 
+### Panel Controls
+
+The Pareto chart includes optional control buttons in the top-right corner:
+
+| Button         | Icon       | Condition                                      | Action                           |
+| -------------- | ---------- | ---------------------------------------------- | -------------------------------- |
+| **Hide**       | EyeOff     | `onHide` provided                              | Hides the Pareto panel from view |
+| **Comparison** | Eye/EyeOff | Filters active + `onToggleComparison` provided | Toggles ghost bar comparison     |
+
+When both buttons are visible, the hide button appears to the left of the comparison toggle.
+
+### Comparison Mode
+
+When filters are active, the comparison toggle shows ghost bars representing the full population distribution:
+
+- **Ghost bars:** Dashed outline, 30% opacity, shows expected count based on overall distribution
+- **Solid bars:** Current filtered data
+- **Tooltip (with comparison):** Shows filtered %, overall %, and difference with directional arrow (↑/↓)
+
+This helps identify whether a category is over- or under-represented in the filtered subset.
+
+### Empty State
+
+When no Pareto data is available, an actionable empty state is shown with:
+
+- **Select Factor** button - visible if `availableFactors.length > 0` and `onSelectFactor` provided
+- **Upload** button - visible if `onUploadPareto` provided
+- **Hide** button - visible if `onHide` provided
+
+### Separate Pareto Data Mode
+
+When `paretoMode === 'separate'` in DataContext, the chart uses pre-aggregated data from `separateParetoData` instead of deriving counts from filtered data. An amber info banner indicates this mode: "Using separate Pareto file (not linked to filters)". Comparison mode is disabled when using separate data.
+
 ### Example
 
 ```tsx
-import ParetoChart from '@variscout/charts/ParetoChart';
+import ParetoChart from './components/charts/ParetoChart';
 
-const paretoData: ParetoDataPoint[] = [
-  { key: 'Shift A', value: 45, cumulative: 45, cumulativePercentage: 45 },
-  { key: 'Shift B', value: 30, cumulative: 75, cumulativePercentage: 75 },
-  { key: 'Shift C', value: 15, cumulative: 90, cumulativePercentage: 90 },
-  { key: 'Shift D', value: 10, cumulative: 100, cumulativePercentage: 100 },
-];
+// Basic usage - data is derived from DataContext based on factor column
+<div className="h-[400px]">
+  <ParetoChart
+    factor="Shift"
+    onDrillDown={(factor, value) => console.log('Drill:', factor, value)}
+  />
+</div>
 
-<ParetoChart
-  data={paretoData}
-  totalCount={100}
-  xAxisLabel="Shift"
-  yAxisLabel="Defect Count"
-  onBarClick={key => console.log('Selected:', key)}
-/>;
+// With panel controls and comparison
+<div className="h-[400px]">
+  <ParetoChart
+    factor="Shift"
+    onDrillDown={handleDrillDown}
+    showComparison={showComparison}
+    onToggleComparison={() => setShowComparison(prev => !prev)}
+    onHide={() => setParetoVisible(false)}
+    onSelectFactor={() => setFactorModalOpen(true)}
+    onUploadPareto={() => setParetoUploadOpen(true)}
+    availableFactors={['Shift', 'Machine', 'Operator']}
+  />
+</div>
 ```
 
-### Selection Mode
+### Selection Behavior
 
-Highlights specific bars while dimming others:
+Clicking a bar either:
 
-```tsx
-<ParetoChart
-  data={paretoData}
-  totalCount={100}
-  selectedBars={['Shift A', 'Shift B']}
-  onBarClick={key => toggleSelection(key)}
-/>
-```
+1. Calls `onDrillDown(factor, value)` if provided, or
+2. Falls back to toggling the bar in `filters[factor]` via DataContext
 
-Selection uses `useSelectionState` hook with `selectionOpacity.dimmed` (0.3) for unselected items.
+Selected bars are highlighted using `chartColors.selected`, unselected bars use `chrome.boxDefault`.
 
 ---
 
@@ -177,16 +221,19 @@ import PerformancePareto from '@variscout/charts/PerformancePareto';
 
 ## Data Flow
 
-### Standard ParetoChart
+### Standard ParetoChart (PWA)
 
 ```
-DataContext (PWA/Azure)
+DataContext
+    | filteredData, rawData, paretoMode, separateParetoData
     |
-Dashboard.tsx
-    | Calculate counts, sort, compute cumulative %
 ParetoChart (responsive wrapper)
+    | Derives counts from filteredData (or uses separateParetoData)
+    | Sorts by value (descending)
+    | Computes cumulative percentages
+    | Calculates full population comparison (if enabled)
     |
-ParetoChartBase (renders SVG)
+SVG rendering with Visx primitives
 ```
 
 ### PerformancePareto
@@ -231,6 +278,10 @@ Standard ParetoChart tooltip shows:
 - Category key
 - Count value
 - Cumulative percentage
+- **When comparison mode active:**
+  - Filtered % (current selection)
+  - Overall % (full population)
+  - Difference with directional arrow (↑/↓/→)
 
 PerformancePareto tooltip shows:
 
@@ -244,31 +295,35 @@ PerformancePareto tooltip shows:
 
 ## Cross-App Usage
 
-### PWA and Azure
+### PWA
 
-Use the responsive wrapper (auto-sizing with `withParentSize`):
+The PWA uses a custom ParetoChart component in `apps/pwa/src/components/charts/ParetoChart.tsx` that derives data from DataContext:
 
 ```tsx
-import ParetoChart from '@variscout/charts/ParetoChart';
-import PerformancePareto from '@variscout/charts/PerformancePareto';
+import ParetoChart from './components/charts/ParetoChart';
 
-// Standard Pareto
+// Data is derived from DataContext based on factor column
 <div className="h-[400px]">
   <ParetoChart
-    data={paretoData}
-    totalCount={100}
-    xAxisLabel="Category"
-    onBarClick={handleClick}
+    factor="Shift"
+    onDrillDown={handleDrillDown}
+    showComparison={showComparison}
+    onToggleComparison={() => setShowComparison(prev => !prev)}
+    onHide={() => setParetoVisible(false)}
   />
-</div>
+</div>;
+```
 
-// Performance Pareto
+### PerformancePareto (Shared)
+
+Use the responsive wrapper from `@variscout/charts` for Performance Mode:
+
+```tsx
+import PerformancePareto from '@variscout/charts/PerformancePareto';
+
 <div className="h-[300px]">
-  <PerformancePareto
-    channels={channels}
-    onChannelClick={handleClick}
-  />
-</div>
+  <PerformancePareto channels={channels} onChannelClick={handleClick} />
+</div>;
 ```
 
 ### Excel Add-in
@@ -276,23 +331,9 @@ import PerformancePareto from '@variscout/charts/PerformancePareto';
 Use the Base variant with explicit sizing:
 
 ```tsx
-import { ParetoChartBase } from '@variscout/charts/ParetoChart';
 import { PerformanceParetoBase } from '@variscout/charts/PerformancePareto';
 
-// Standard Pareto with explicit size
-<ParetoChartBase
-  parentWidth={500}
-  parentHeight={350}
-  data={paretoData}
-  totalCount={100}
-/>
-
-// Performance Pareto with explicit size
-<PerformanceParetoBase
-  parentWidth={400}
-  parentHeight={300}
-  channels={channels}
-/>
+<PerformanceParetoBase parentWidth={400} parentHeight={300} channels={channels} />;
 ```
 
 ---
@@ -318,7 +359,7 @@ const { chrome } = useChartTheme();
 // chrome.gridLine, chrome.axisPrimary, chrome.labelPrimary, etc.
 ```
 
-Standard ParetoChart uses hardcoded dark theme colors from `chromeColors`.
+Standard ParetoChart also uses `useChartTheme()` for theme-aware chrome colors.
 
 ### Cumulative Line & Reference Colors
 
@@ -345,16 +386,17 @@ X-axis labels are rotated 45 degrees when there are more than 10 categories in P
 ## Exports
 
 ```typescript
-// Responsive wrappers (auto-sizing)
-import ParetoChart from '@variscout/charts/ParetoChart';
+// PWA Standard Pareto (local component, derives data from DataContext)
+import ParetoChart from './components/charts/ParetoChart';
+
+// Shared Performance Pareto (responsive wrapper)
 import PerformancePareto from '@variscout/charts/PerformancePareto';
 
-// Base components (manual sizing)
-import { ParetoChartBase } from '@variscout/charts/ParetoChart';
+// Base component for manual sizing (Excel Add-in)
 import { PerformanceParetoBase } from '@variscout/charts/PerformancePareto';
 
 // Types
-import type { ParetoChartProps, ParetoDataPoint, PerformanceParetoProps } from '@variscout/charts';
+import type { PerformanceParetoProps } from '@variscout/charts';
 ```
 
 ---
