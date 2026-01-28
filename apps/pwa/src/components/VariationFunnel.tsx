@@ -21,6 +21,7 @@ import {
   RotateCcw,
   TrendingUp,
 } from 'lucide-react';
+import WhatIfSimulator from './WhatIfSimulator';
 
 interface VariationFunnelProps {
   /** Raw data for variation analysis */
@@ -356,6 +357,15 @@ const VariationFunnel: React.FC<VariationFunnelProps> = ({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
+        {/* What-If Simulator */}
+        {currentStats && specs && (specs.usl !== undefined || specs.lsl !== undefined) && (
+          <>
+            <WhatIfSimulator currentStats={currentStats} specs={specs} defaultExpanded={false} />
+            {/* Divider */}
+            <div className="my-4 border-t border-edge" />
+          </>
+        )}
+
         {/* Total variation baseline */}
         <div className="mb-4">
           <div className="text-xs text-content-secondary mb-1">Total Variation (100%)</div>

@@ -4,6 +4,7 @@
  * Provides pure, framework-agnostic functions for calculating:
  * - Cumulative variation through drill paths (multiplicative η²)
  * - Factor variations for drill suggestions
+ * - Direct adjustment simulations (what-if analysis)
  *
  * Used by:
  * - PWA: Full breadcrumb experience with useVariationTracking hook
@@ -782,6 +783,207 @@ export function calculateProjectedStats(
     if (currentStats.cpk !== undefined && currentStats.cpk > 0 && result.cpk !== undefined) {
       result.cpkImprovementPct = ((result.cpk - currentStats.cpk) / currentStats.cpk) * 100;
     }
+  }
+
+  return result;
+}
+
+/**
+ * Parameters for direct adjustment simulation (What-If Simulator)
+ */
+export interface DirectAdjustmentParams {
+  /** Absolute mean shift (+/- from current mean toward target) */
+  meanShift: number;
+  /** Variation reduction as decimal (0.0-0.5, meaning 0-50% reduction) */
+  variationReduction: number;
+}
+
+/**
+ * Result of direct adjustment simulation
+ */
+export interface DirectAdjustmentResult {
+  /** Projected mean after adjustment */
+  projectedMean: number;
+  /** Projected standard deviation after reduction */
+  projectedStdDev: number;
+  /** Projected Cpk (if specs provided) */
+  projectedCpk?: number;
+  /** Projected Cp (if both USL and LSL provided) */
+  projectedCp?: number;
+  /** Projected yield percentage (% in spec) */
+  projectedYield?: number;
+  /** Projected parts per million defective */
+  projectedPPM?: number;
+  /** Improvement metrics */
+  improvements: {
+    /** Percentage improvement in Cpk */
+    cpkImprovementPct?: number;
+    /** Absolute change in yield percentage */
+    yieldImprovementPct?: number;
+  };
+}
+
+/**
+ * Error function approximation using Horner's method
+ * Used for normal CDF calculation
+ *
+ * @param x - Input value
+ * @returns Approximation of erf(x)
+ */
+function erf(x: number): number {
+  // Constants for approximation
+  const a1 = 0.254829592;
+  const a2 = -0.284496736;
+  const a3 = 1.421413741;
+  const a4 = -1.453152027;
+  const a5 = 1.061405429;
+  const p = 0.3275911;
+
+  // Save the sign of x
+  const sign = x < 0 ? -1 : 1;
+  x = Math.abs(x);
+
+  // A&S formula 7.1.26
+  const t = 1 / (1 + p * x);
+  const y = 1 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+
+  return sign * y;
+}
+
+/**
+ * Standard normal cumulative distribution function
+ *
+ * @param z - Z-score (standard deviations from mean)
+ * @returns Probability P(Z <= z)
+ */
+function normalCDF(z: number): number {
+  return 0.5 * (1 + erf(z / Math.SQRT2));
+}
+
+/**
+ * Calculate yield (percentage in spec) from a normal distribution
+ *
+ * @param mean - Distribution mean
+ * @param stdDev - Distribution standard deviation
+ * @param specs - Specification limits
+ * @returns Yield percentage (0-100), or undefined if no specs
+ */
+function calculateYieldFromDistribution(
+  mean: number,
+  stdDev: number,
+  specs?: { usl?: number; lsl?: number }
+): number | undefined {
+  if (!specs || (specs.usl === undefined && specs.lsl === undefined)) {
+    return undefined;
+  }
+
+  if (stdDev === 0) {
+    // No variation - check if mean is within specs
+    const withinUSL = specs.usl === undefined || mean <= specs.usl;
+    const withinLSL = specs.lsl === undefined || mean >= specs.lsl;
+    return withinUSL && withinLSL ? 100 : 0;
+  }
+
+  // Calculate probability of being within spec limits
+  let yieldPct = 100;
+
+  if (specs.usl !== undefined && specs.lsl !== undefined) {
+    // Both limits: P(LSL <= X <= USL)
+    const zUpper = (specs.usl - mean) / stdDev;
+    const zLower = (specs.lsl - mean) / stdDev;
+    yieldPct = (normalCDF(zUpper) - normalCDF(zLower)) * 100;
+  } else if (specs.usl !== undefined) {
+    // Only upper limit: P(X <= USL)
+    const z = (specs.usl - mean) / stdDev;
+    yieldPct = normalCDF(z) * 100;
+  } else if (specs.lsl !== undefined) {
+    // Only lower limit: P(X >= LSL) = 1 - P(X < LSL)
+    const z = (specs.lsl - mean) / stdDev;
+    yieldPct = (1 - normalCDF(z)) * 100;
+  }
+
+  return Math.max(0, Math.min(100, yieldPct));
+}
+
+/**
+ * Simulate process improvement through direct mean shift and variation reduction
+ *
+ * This function enables "what-if" analysis for process improvement planning.
+ * Users can adjust:
+ * 1. Mean shift - moving the process center toward a target
+ * 2. Variation reduction - reducing process spread (e.g., through better controls)
+ *
+ * The function calculates projected Cpk, yield, and PPM based on normal distribution
+ * assumptions, showing potential improvement percentages.
+ *
+ * @param currentStats - Current process statistics (mean, stdDev, optionally cpk)
+ * @param params - Adjustment parameters (meanShift, variationReduction)
+ * @param specs - Optional specification limits for capability calculations
+ * @returns DirectAdjustmentResult with projected stats and improvements
+ *
+ * @example
+ * // Simulate shifting mean 2.5g closer to target and reducing variation by 30%
+ * const result = simulateDirectAdjustment(
+ *   { mean: 102.5, stdDev: 2.3, cpk: 0.82 },
+ *   { meanShift: -2.5, variationReduction: 0.30 },
+ *   { usl: 110, lsl: 90, target: 100 }
+ * );
+ * // result.projectedCpk ≈ 1.56
+ * // result.improvements.cpkImprovementPct ≈ 90
+ */
+export function simulateDirectAdjustment(
+  currentStats: { mean: number; stdDev: number; cpk?: number },
+  params: DirectAdjustmentParams,
+  specs?: { usl?: number; lsl?: number; target?: number }
+): DirectAdjustmentResult {
+  // Apply adjustments
+  const projectedMean = currentStats.mean + params.meanShift;
+  const projectedStdDev = currentStats.stdDev * (1 - params.variationReduction);
+
+  // Build result
+  const result: DirectAdjustmentResult = {
+    projectedMean,
+    projectedStdDev,
+    improvements: {},
+  };
+
+  // Calculate Cp and Cpk if specs provided
+  if (specs && projectedStdDev > 0) {
+    const { usl, lsl } = specs;
+
+    if (usl !== undefined && lsl !== undefined) {
+      result.projectedCp = (usl - lsl) / (6 * projectedStdDev);
+      const cpu = (usl - projectedMean) / (3 * projectedStdDev);
+      const cpl = (projectedMean - lsl) / (3 * projectedStdDev);
+      result.projectedCpk = Math.min(cpu, cpl);
+    } else if (usl !== undefined) {
+      result.projectedCpk = (usl - projectedMean) / (3 * projectedStdDev);
+    } else if (lsl !== undefined) {
+      result.projectedCpk = (projectedMean - lsl) / (3 * projectedStdDev);
+    }
+  }
+
+  // Calculate yield and PPM
+  const projectedYield = calculateYieldFromDistribution(projectedMean, projectedStdDev, specs);
+  if (projectedYield !== undefined) {
+    result.projectedYield = projectedYield;
+    result.projectedPPM = Math.round((100 - projectedYield) * 10000); // Convert % to PPM
+  }
+
+  // Calculate improvement percentages
+  if (currentStats.cpk !== undefined && currentStats.cpk > 0 && result.projectedCpk !== undefined) {
+    result.improvements.cpkImprovementPct =
+      ((result.projectedCpk - currentStats.cpk) / currentStats.cpk) * 100;
+  }
+
+  // Calculate current yield for comparison
+  const currentYield = calculateYieldFromDistribution(
+    currentStats.mean,
+    currentStats.stdDev,
+    specs
+  );
+  if (currentYield !== undefined && projectedYield !== undefined) {
+    result.improvements.yieldImprovementPct = projectedYield - currentYield;
   }
 
   return result;

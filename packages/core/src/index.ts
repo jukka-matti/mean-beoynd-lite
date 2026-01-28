@@ -162,6 +162,8 @@ export type {
   CategoryContributionResult,
   CategoryStats,
   ProjectedStats,
+  DirectAdjustmentParams,
+  DirectAdjustmentResult,
 } from './variation';
 
 export {
@@ -174,6 +176,7 @@ export {
   applyFilters,
   getNextDrillFactor,
   findOptimalFactors,
+  simulateDirectAdjustment,
   DRILL_SWITCH_THRESHOLD,
 } from './variation';
 
