@@ -1,7 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import {
   glossaryTerms,
-  glossaryMap,
   getTerm as getTermFromCore,
   hasTerm as hasTermFromCore,
   type GlossaryTerm,
