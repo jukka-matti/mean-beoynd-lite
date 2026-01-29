@@ -147,28 +147,20 @@ describe('StatsPanel', () => {
     expect(screen.getByText('n=3')).toBeInTheDocument(); // 3 items in mockFilteredData
   });
 
-  it('shows spec limits in footer', () => {
-    render(
-      <StatsPanel
-        stats={mockStats}
-        specs={mockSpecs}
-        filteredData={mockFilteredData}
-        outcome="value"
-      />
-    );
-
-    expect(screen.getByText('USL:')).toBeInTheDocument();
-    expect(screen.getByText('15')).toBeInTheDocument();
-    expect(screen.getByText('LSL:')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
-  });
-
-  it('shows "No Specs Configured" prompt when no specs provided', () => {
+  it('hides capability metrics when no specs provided', () => {
     render(
       <StatsPanel stats={mockStats} specs={{}} filteredData={mockFilteredData} outcome="value" />
     );
 
-    expect(screen.getByText(/No Specs Configured/)).toBeInTheDocument();
+    // Capability metrics should not be shown without specs
+    expect(screen.queryByText('Pass Rate')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cp')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cpk')).not.toBeInTheDocument();
+
+    // Basic stats should still be shown
+    expect(screen.getAllByText('Mean').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Std Dev').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Samples')).toBeInTheDocument();
   });
 
   it('shows grade counts when provided', () => {

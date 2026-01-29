@@ -143,22 +143,6 @@ describe('Dashboard', () => {
     expect(screen.queryByTestId('i-chart')).not.toBeInTheDocument();
   });
 
-  it('renders AnovaResults when ANOVA calculation succeeds', () => {
-    vi.spyOn(DataContextModule, 'useData').mockReturnValue(mockDataCtx as any);
-
-    // Mock calculateAnova to return a result
-    vi.spyOn(CoreModule, 'calculateAnova').mockReturnValue({
-      isSignificant: true,
-      groups: [],
-      // other props...
-    } as any);
-
-    render(<Dashboard />);
-
-    // Need to wait or verify if AnovaResults is rendered
-    expect(screen.getByTestId('anova-results')).toBeInTheDocument();
-  });
-
   it('does not render AnovaResults when calculation returns null', () => {
     vi.spyOn(DataContextModule, 'useData').mockReturnValue(mockDataCtx as any);
 

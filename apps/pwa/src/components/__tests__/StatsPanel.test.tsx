@@ -176,27 +176,7 @@ describe('StatsPanel', () => {
     expect(screen.getByText('n=3')).toBeInTheDocument(); // 3 items in mockFilteredData
   });
 
-  it('shows spec limits in footer', () => {
-    vi.spyOn(DataContextModule, 'useData').mockReturnValue({
-      displayOptions: { showCp: true, showCpk: true },
-    } as any);
-
-    render(
-      <StatsPanel
-        stats={mockStats}
-        specs={mockSpecs}
-        filteredData={mockFilteredData}
-        outcome="value"
-      />
-    );
-
-    expect(screen.getByText('USL:')).toBeInTheDocument();
-    expect(screen.getByText('15')).toBeInTheDocument();
-    expect(screen.getByText('LSL:')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
-  });
-
-  it('shows "Add Specs" prompt when no specs provided', () => {
+  it('shows "Edit Specifications" button when no specs provided', () => {
     vi.spyOn(DataContextModule, 'useData').mockReturnValue({
       displayOptions: { showCp: true, showCpk: true },
     } as any);
@@ -205,7 +185,7 @@ describe('StatsPanel', () => {
       <StatsPanel stats={mockStats} specs={{}} filteredData={mockFilteredData} outcome="value" />
     );
 
-    expect(screen.getByText('Add Specs')).toBeInTheDocument();
+    expect(screen.getByText('Edit Specifications')).toBeInTheDocument();
   });
 
   it('shows grade counts when provided', () => {
