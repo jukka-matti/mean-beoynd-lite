@@ -102,7 +102,7 @@ const YAxisPopover: React.FC<YAxisPopoverProps> = ({
   return (
     <div
       ref={popoverRef}
-      className="absolute z-50 w-48 bg-surface-secondary border border-edge rounded-lg shadow-2xl animate-fade-in"
+      className="fixed z-50 w-48 bg-surface-secondary border border-edge rounded-lg shadow-2xl animate-fade-in"
       style={{
         top: anchorPosition?.top ?? 40,
         left: anchorPosition?.left ?? 10,
