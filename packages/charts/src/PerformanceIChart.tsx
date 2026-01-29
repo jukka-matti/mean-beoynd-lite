@@ -173,18 +173,18 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
           {/* Control Limits (when available) */}
           {controlLimits && (
             <>
-              {/* UCL line */}
+              {/* UCL line - cyan for Voice of the Process */}
               <Line
                 from={{ x: 0, y: yScale(controlLimits.ucl) }}
                 to={{ x: width, y: yScale(controlLimits.ucl) }}
-                stroke={chrome.axisPrimary}
+                stroke={chartColors.control}
                 strokeWidth={1.5}
                 strokeDasharray="6,4"
               />
               <text
                 x={width - 4}
                 y={yScale(controlLimits.ucl) - 4}
-                fill={chrome.axisPrimary}
+                fill={chartColors.control}
                 fontSize={fonts.statLabel}
                 textAnchor="end"
               >
@@ -208,18 +208,18 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
                 x̄ = {controlLimits.mean.toFixed(2)}
               </text>
 
-              {/* LCL line */}
+              {/* LCL line - cyan for Voice of the Process */}
               <Line
                 from={{ x: 0, y: yScale(controlLimits.lcl) }}
                 to={{ x: width, y: yScale(controlLimits.lcl) }}
-                stroke={chrome.axisPrimary}
+                stroke={chartColors.control}
                 strokeWidth={1.5}
                 strokeDasharray="6,4"
               />
               <text
                 x={width - 4}
                 y={yScale(controlLimits.lcl) + 12}
-                fill={chrome.axisPrimary}
+                fill={chartColors.control}
                 fontSize={fonts.statLabel}
                 textAnchor="end"
               >

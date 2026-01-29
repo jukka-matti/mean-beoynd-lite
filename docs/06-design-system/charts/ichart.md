@@ -415,7 +415,7 @@ Standard IChart uses hardcoded dark theme colors from `chromeColors`.
 
 ```typescript
 // Control limits
-stroke={chartColors.control}  // slate-400 dashed
+stroke={chartColors.control}  // cyan-500 dashed
 
 // Mean line
 stroke={chartColors.mean}     // blue-500 solid

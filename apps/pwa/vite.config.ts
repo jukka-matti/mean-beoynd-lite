@@ -82,7 +82,6 @@ export default defineConfig({
             '@visx/tooltip',
             '@visx/responsive',
           ],
-          xlsx: ['xlsx'],
           vendor: ['react', 'react-dom', 'lucide-react'],
         },
       },

@@ -88,7 +88,7 @@ Nelson Rule 2 identifies when 9 or more consecutive points fall on the same side
 | USL        | `#ef4444` | Dashed (6,3) | Upper spec limit |
 | LSL        | `#f59e0b` | Dashed (6,3) | Lower spec limit |
 | Target     | `#22c55e` | Dashed (4,4) | Target value     |
-| UCL/LCL    | `#3b82f6` | Dashed (4,4) | Control limits   |
+| UCL/LCL    | `#06b6d4` | Dashed (4,4) | Control limits   |
 | Mean/CL    | `#64748b` | Solid        | Center line      |
 | Regression | `#3b82f6` | Solid        | Linear fit       |
 | Quadratic  | `#8b5cf6` | Solid        | Polynomial fit   |
