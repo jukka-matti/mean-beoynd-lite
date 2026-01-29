@@ -61,8 +61,49 @@ When using multiple predictors:
 
 ---
 
+## Interaction Effects
+
+Interactions occur when one factor's effect **depends on another factor's level**.
+
+_Example: "Machine C is only problematic on Night shift"_
+
+### Why Check for Interactions?
+
+Sequential drill-down (ANOVA) captures **main effects** only. If factors interact:
+
+- Main effects may underestimate total explained variation
+- The combination matters more than individual factors
+- Action should target the specific combination, not factors separately
+
+### Enabling Interactions in VariScout
+
+1. Switch to **Advanced (GLM)** mode in Regression Panel
+2. Select categorical predictors (factors from drill-down)
+3. Toggle **"Include interactions"** checkbox
+4. Review the ANOVA table for significant interaction terms
+
+### Coming from Variation Funnel
+
+When drilling 2+ factors, the Variation Funnel shows a guidance prompt:
+
+> "Your drill-down shows main effects. To check if factors interact,
+> use the Regression Panel with 'Include interactions'."
+
+Click **"Check Interactions →"** to navigate directly to Regression Panel.
+
+### Interpreting Interaction Terms
+
+| Term              | Meaning                                  |
+| ----------------- | ---------------------------------------- |
+| `Shift*Machine`   | Effect of Shift depends on Machine level |
+| p-value < 0.05    | Significant interaction exists           |
+| Large coefficient | Strong interaction effect                |
+
+---
+
 ## See Also
 
 - [Glossary: R²](../../glossary.md#r²)
 - [Glossary: VIF](../../glossary.md#vif)
 - [Chart Design](../../06-design-system/charts/scatter.md)
+- [Drill-Down: When to Check for Interactions](../navigation/drill-down.md#when-to-check-for-interactions)

@@ -377,6 +377,12 @@ function App() {
     setIsFunnelPanelOpen(false);
   }, []);
 
+  // Navigate to Regression Panel from funnel (for interaction analysis)
+  const handleFunnelNavigateToRegression = useCallback(() => {
+    setIsFunnelPanelOpen(false);
+    setActiveView('regression');
+  }, []);
+
   // Accumulator for funnel filters (applied one at a time, then batch-set on close)
   const pendingFunnelFiltersRef = React.useRef<Record<string, (string | number)[]>>({});
 
@@ -779,6 +785,7 @@ function App() {
           specs={specs}
           onApplyFilter={handleApplyFunnelFilter}
           onOpenPopout={handleOpenFunnelPopout}
+          onNavigateToRegression={handleFunnelNavigateToRegression}
         />
       )}
 

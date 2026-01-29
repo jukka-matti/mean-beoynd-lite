@@ -26,6 +26,7 @@ import WhatIfSimulator, {
   type SimulatorPreset,
   type WhatIfSimulatorHandle,
 } from './WhatIfSimulator';
+import InteractionGuidance from './InteractionGuidance';
 
 interface VariationFunnelProps {
   /** Raw data for variation analysis */
@@ -52,6 +53,8 @@ interface VariationFunnelProps {
   onClose?: () => void;
   /** Whether this is rendered in a popout window */
   isPopout?: boolean;
+  /** Called when user wants to navigate to Regression Panel for interaction analysis */
+  onNavigateToRegression?: () => void;
 }
 
 /**
@@ -112,6 +115,7 @@ const VariationFunnel: React.FC<VariationFunnelProps> = ({
   onOpenPopout,
   onClose,
   isPopout = false,
+  onNavigateToRegression,
 }) => {
   // Calculate optimal factors
   const optimalFactors = useMemo(() => {
@@ -929,6 +933,14 @@ const VariationFunnel: React.FC<VariationFunnelProps> = ({
                 : `Need ${Math.round(targetPct - selectedStats.totalExplained)}% more to reach target`}
           </p>
         </div>
+
+        {/* Interaction Analysis Guidance */}
+        <InteractionGuidance
+          drillFactorCount={selectedFactors.size}
+          drillFactors={Array.from(selectedFactors)}
+          columnAliases={columnAliases}
+          onNavigateToRegression={onNavigateToRegression}
+        />
       </div>
 
       {/* Footer with Apply button */}

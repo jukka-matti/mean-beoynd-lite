@@ -24,6 +24,8 @@ interface FunnelPanelProps {
   onDrillFactor?: (factor: string, value: string | number) => void;
   /** Called when user wants to open in popout window */
   onOpenPopout?: () => void;
+  /** Called when user wants to navigate to Regression Panel for interaction analysis */
+  onNavigateToRegression?: () => void;
 }
 
 /**
@@ -45,6 +47,7 @@ const FunnelPanel: React.FC<FunnelPanelProps> = ({
   onApplyFilters,
   onDrillFactor,
   onOpenPopout,
+  onNavigateToRegression,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -104,6 +107,7 @@ const FunnelPanel: React.FC<FunnelPanelProps> = ({
           onDrillFactor={onDrillFactor}
           onOpenPopout={onOpenPopout}
           onClose={onClose}
+          onNavigateToRegression={onNavigateToRegression}
         />
       </div>
     </>

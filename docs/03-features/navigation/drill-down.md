@@ -29,6 +29,47 @@ Each chip shows how much of the TOTAL variation that filter captures.
 
 ---
 
+## When to Check for Interactions
+
+The drill-down methodology captures **main effects** — how much variation each factor explains independently. But factors can also **interact**:
+
+> "Machine C is only problematic on Night shift"
+
+### The Guidance Prompt
+
+When 2+ factors are in your drill stack, the Variation Funnel shows:
+
+```
+┌────────────────────────────────────────────────┐
+│ 💡 Analyzing multiple factors?                 │
+│                                                │
+│ Your drill-down shows main effects. To check  │
+│ if factors interact, use the Regression Panel │
+│ with "Include interactions".                  │
+│                                                │
+│ [Check Interactions →]                        │
+└────────────────────────────────────────────────┘
+```
+
+### When Interactions Matter
+
+| Scenario                     | Recommendation                                                    |
+| ---------------------------- | ----------------------------------------------------------------- |
+| **<30% variation explained** | Check for interactions — combined effect may be stronger          |
+| **Factors seem related**     | Machine type + Operator experience often interact                 |
+| **Action seems ambiguous**   | "Fix Machine C" vs "Change Night process" — interaction clarifies |
+
+### Statistical Difference
+
+| Method                        | What it captures                    |
+| ----------------------------- | ----------------------------------- |
+| Sequential ANOVA (drill-down) | Main effects only (η² per factor)   |
+| GLM with interactions         | Main effects + two-way interactions |
+
+See [Regression Analysis: Interaction Effects](../analysis/regression.md#interaction-effects) for details.
+
+---
+
 ## Cumulative Impact
 
 The real power is cumulative calculation of contribution percentages:
