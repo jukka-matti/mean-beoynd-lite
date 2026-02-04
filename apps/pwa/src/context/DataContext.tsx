@@ -15,12 +15,7 @@ import {
   type DataQualityReport,
   type ParetoRow,
 } from '@variscout/hooks';
-import {
-  validateThresholds,
-  type StatsResult,
-  type StagedStatsResult,
-  type StageOrderMode,
-} from '@variscout/core';
+import { type StatsResult, type StagedStatsResult, type StageOrderMode } from '@variscout/core';
 import { pwaPersistenceAdapter } from '../lib/persistenceAdapter';
 
 // Re-export types for backwards compatibility
@@ -41,20 +36,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persistence: pwaPersistenceAdapter,
   });
 
-  // Load cpkThresholds from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem('variscout_cpk_thresholds');
-    if (stored) {
-      try {
-        const thresholds = JSON.parse(stored);
-        if (validateThresholds(thresholds)) {
-          actions.setCpkThresholds(thresholds);
-        }
-      } catch (e) {
-        console.error('Failed to load Cpk thresholds from localStorage:', e);
-      }
-    }
-  }, [actions]);
+  // cpkThresholds removed - using control-based coloring only
 
   // Combine state and actions into a memoized context value
   const value = useMemo<DataContextType>(

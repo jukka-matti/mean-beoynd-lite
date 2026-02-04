@@ -81,8 +81,12 @@ Performance Mode uses a simplified color scheme that lets users set their own Cp
 | `PerformancePareto`     | Neutral           | All bars use blue (`chartColors.mean`)      |
 | `PerformanceCapability` | Spec-based        | Histogram bars colored by spec position     |
 
-> **Note:** Users set their own Cpk target (default 1.33) in PerformanceSetupPanel.
-> The "below target" count is shown in the summary bar instead of health classification badges.
+> **Note:** Users set their own Cpk target (default 1.33):
+>
+> - **PWA/Azure**: PerformanceSetupPanel (setup phase)
+> - **Excel**: Inline input in I-Chart header (ContentPerformanceDashboard)
+>
+> Excel uses simplified control-based coloring without threshold zones. The "below target" count is shown in the summary bar.
 
 ---
 
@@ -156,6 +160,39 @@ import PerformanceIChart from '@variscout/charts/PerformanceIChart';
   capabilityMetric="cpk"
   cpkTarget={1.33}
 />;
+```
+
+### Excel Add-in: Simplified Approach
+
+Excel Add-in uses **control-based coloring only**, without Cpk threshold zones:
+
+**File**: `apps/excel-addin/src/content/ContentPerformanceDashboard.tsx`
+
+**Coloring Logic**:
+
+- Blue points: Within control limits (statistically in-control)
+- Red points: Outside control limits (out-of-control)
+- Target line: User-adjustable reference at cpkTarget (default 1.33)
+
+**Rationale**:
+
+- Simpler for Excel's constrained UI
+- Matches standard SPC practice (control limits define control status)
+- One requirement value matches real-world usage
+
+**UI Control**:
+
+```tsx
+<label htmlFor="cpk-target-input">Target Cpk:</label>
+<input
+  type="number"
+  min="0.5"
+  max="3.0"
+  step="0.01"
+  value={cpkTarget}
+  onChange={e => setCpkTarget(parseFloat(e.target.value) || 1.33)}
+  title="Industry standard: 1.33 (4σ), 1.67 (5σ), 2.00 (6σ)"
+/>
 ```
 
 ---

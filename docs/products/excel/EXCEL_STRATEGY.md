@@ -15,7 +15,7 @@ The Excel Add-in achieves **~85% feature parity** with the PWA, focusing on core
 |                       | PerformanceIChart       | ✅           | ✅                | Complete          |
 |                       | PerformanceBoxplot      | ✅           | ✅                | Complete          |
 |                       | PerformanceCapability   | ✅           | ✅                | Complete          |
-|                       | Cpk Thresholds          | ✅           | ✅                | **Complete** ✨   |
+|                       | Cpk Target              | ✅           | ✅                | Complete          |
 |                       | Drill-down by channel   | ✅           | ✅                | Complete          |
 |                       | Cp/Cpk toggle           | ✅           | ✅                | Complete          |
 | **Filtering**         | Native controls         | Filter chips | Excel slicers     | Platform-specific |
@@ -65,7 +65,7 @@ The Excel Add-in achieves **~85% feature parity** with the PWA, focusing on core
 **Implemented:**
 
 - ✅ Performance Mode (multi-channel Cpk analysis)
-- ✅ Cpk threshold customization
+- ✅ Cpk target customization (single requirement value)
 - ✅ Drill-down navigation
 - ✅ State persistence
 
@@ -165,37 +165,89 @@ useEffect(() => {
 - `getResponsiveFonts(width)` - Font scaling
 - `getResponsiveTickCount(size, axis)` - Optimal tick density
 
-## Implementation Path: Cpk Thresholds (COMPLETE)
+## Cpk Target: Simplified Approach (Feb 2026)
 
-### Status: ✅ Already Implemented
+### Overview
 
-**Estimated Effort (Original Plan):** 2-3 hours
-**Actual Status:** Complete (Feb 2026)
+All apps (PWA, Azure, Excel) use a **single Cpk requirement value** instead of multiple threshold zones. This matches how real manufacturing companies work: one minimum acceptable Cpk value.
 
-### What Was Built
+| Feature        | PWA            | Azure          | Excel           | Status                              |
+| -------------- | -------------- | -------------- | --------------- | ----------------------------------- |
+| Cpk Target     | ✅ Setup panel | ✅ Setup panel | ✅ Inline input | Active - single requirement value   |
+| Cpk Thresholds | ❌ Removed     | ❌ Removed     | ❌ Removed      | Deprecated - unnecessary complexity |
 
-1. **AddInState interface** updated with `cpkThresholds?: CpkThresholds`
-2. **CpkThresholdSettings UI component** created (Fluent UI)
-3. **SetupWizard integration** added as Step 5
-4. **stateBridge** updated to persist and validate thresholds
-5. **ContentPerformanceDashboard** passes thresholds to all charts
-6. **App.tsx** displays current thresholds in configured state
+**Rationale for Simplification:**
 
-### Files Modified
+- Most companies have ONE minimum Cpk requirement (e.g., "must be ≥ 1.33")
+- Standard I-Charts use control limits for statistical control, not arbitrary color zones
+- Consistent behavior across all apps (PWA, Azure, Excel)
+- Simpler to understand and maintain
 
-- `apps/excel-addin/src/lib/stateBridge.ts` - State interface, validation
-- `apps/excel-addin/src/taskpane/components/CpkThresholdSettings.tsx` - Settings UI
-- `apps/excel-addin/src/taskpane/components/SetupWizard.tsx` - Wizard step
-- `apps/excel-addin/src/content/ContentPerformanceDashboard.tsx` - Chart consumption
-- `apps/excel-addin/src/taskpane/App.tsx` - Configuration display
+### Implementation
 
-### Verification
+**File**: `apps/excel-addin/src/content/ContentPerformanceDashboard.tsx`
 
-```bash
-pnpm build --filter @variscout/excel-addin  # ✅ Build successful
+**State Management** (line 240):
+
+```typescript
+const [cpkTarget, setCpkTarget] = useState<number>(1.33);
 ```
 
-**See:** `docs/products/excel/CPK_THRESHOLDS_IMPLEMENTATION.md`
+**UI Control** (lines 425-463):
+
+- Inline input field in I-Chart header
+- Range: 0.5 - 3.0, Step: 0.01
+- Default: 1.33 (industry standard)
+- Width: 60px (compact)
+- Tooltip: Industry standards reference
+
+**Chart Integration** (line 498):
+
+```typescript
+<PerformanceIChartBase
+  cpkTarget={cpkTarget}  // Single requirement value
+  // cpkThresholds prop removed - uses control-based coloring
+/>
+```
+
+### I-Chart Coloring
+
+**Standard Control-Based Approach**:
+
+- **Blue points**: Within control limits (in statistical control)
+- **Red points**: Outside control limits (out of statistical control)
+- **Target line**: Dashed green horizontal line at cpkTarget value
+- **Control limits**: UCL/LCL calculated from Cpk distribution (mean ± 3σ)
+
+**Interpretation**:
+
+1. **Blue point above target**: Process is stable and meeting requirement ✅
+2. **Blue point below target**: Process is stable but not meeting requirement ⚠️
+3. **Red point**: Process is out of control (investigate special cause) 🔴
+
+### User Experience
+
+**Setup Flow**:
+
+1. Run Setup Wizard (5 steps: Data, Columns, Stages, Slicers, Specs)
+2. Select measure columns
+3. Set specification limits
+4. Review and enable
+
+**Performance Dashboard**:
+
+1. View I-Chart with control-based coloring
+2. Adjust Cpk Target inline (default: 1.33)
+3. Target line updates immediately
+4. Points colored by statistical control status
+
+### Future Enhancements
+
+- Persist cpkTarget to Custom Document Properties
+- Add preset buttons (1.33, 1.67, 2.00)
+- Optional: Below-target indicator (highlight without changing base color)
+
+---
 
 ## Future Roadmap
 
@@ -221,11 +273,11 @@ pnpm build --filter @variscout/excel-addin  # ✅ Build successful
 - Update `darkTheme.ts` to `theme.ts` with toggle
 - Content Add-in charts use `useChartTheme` hook
 
-**Threshold Presets:**
+**Cpk Target Presets:**
 
-- Dropdown in CpkThresholdSettings: "Industry Standard", "Aerospace", "Automotive", "Custom"
-- Pre-fills inputs with common values
-- User can still override
+- Preset buttons for common Cpk targets: 1.33 (4σ), 1.67 (5σ), 2.00 (6σ)
+- One-click selection in Performance Dashboard header
+- User can still enter custom values
 
 ### Phase 2: Advanced Features (15-25 hours total)
 
@@ -497,7 +549,7 @@ export const CHANNEL_LIMITS = {
 
 - Installation from AppSource
 - Setup wizard walkthrough
-- Cpk thresholds configuration
+- Cpk target configuration
 - Sample dataset downloads
 - Troubleshooting common issues
 
@@ -527,7 +579,7 @@ export const CHANNEL_LIMITS = {
 ### Feature Parity (Current)
 
 - ✅ Performance Mode: 100%
-- ✅ Cpk Thresholds: 100%
+- ✅ Cpk Target: 100%
 - ✅ State Persistence: 100%
 - ⚠️ Advanced Features: 60%
 - ⚠️ UI/UX: 70%
@@ -542,7 +594,7 @@ export const CHANNEL_LIMITS = {
 ### User Experience
 
 - Setup wizard completion rate: > 80% (target)
-- Cpk threshold customization adoption: > 30% (target)
+- Cpk target customization adoption: > 30% (target)
 - Sample dataset downloads: Track via website analytics
 
 ## Conclusion
@@ -552,14 +604,14 @@ The Excel Add-in strategy balances feature parity with platform-appropriate UX. 
 **Key Achievements:**
 
 - ✅ Full Performance Mode implementation
-- ✅ Cpk threshold customization
+- ✅ Cpk target customization (single requirement value)
 - ✅ Excel-native filtering (slicers)
 - ✅ Persistent configuration
 - ✅ Sample datasets via website
 
 **Next Steps:**
 
-1. Verify Cpk thresholds with manual testing
+1. Verify Cpk target functionality with manual testing
 2. Create sample dataset .xlsx files for website
 3. Publish AppSource listing (Q2 2026)
 4. Monitor user adoption and feature requests

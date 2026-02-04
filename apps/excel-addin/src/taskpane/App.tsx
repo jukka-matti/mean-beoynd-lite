@@ -363,16 +363,6 @@ const App: React.FC = () => {
                   <Body2 style={{ fontFamily: 'monospace' }}>{savedState.specs.cpkTarget}</Body2>
                 </div>
               )}
-              {savedState.cpkThresholds && (
-                <div className={styles.configRow}>
-                  <Body2>Cpk Thresholds:</Body2>
-                  <Body2 style={{ fontFamily: 'monospace' }}>
-                    {savedState.cpkThresholds.critical.toFixed(2)} /{' '}
-                    {savedState.cpkThresholds.warning.toFixed(2)} /{' '}
-                    {savedState.cpkThresholds.capable.toFixed(2)}
-                  </Body2>
-                </div>
-              )}
             </div>
           </div>
 

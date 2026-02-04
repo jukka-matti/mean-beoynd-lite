@@ -17,12 +17,7 @@ import {
 } from '@variscout/hooks';
 import { azurePersistenceAdapter, setDefaultLocation } from '../lib/persistenceAdapter';
 import { useStorage, type StorageLocation, type SyncStatus } from '../services/storage';
-import type {
-  StatsResult,
-  StagedStatsResult,
-  StageOrderMode,
-  CpkThresholds,
-} from '@variscout/core';
+import type { StatsResult, StagedStatsResult, StageOrderMode } from '@variscout/core';
 
 // Re-export types for backwards compatibility
 export type { DisplayOptions, ParetoMode, DataQualityReport, ParetoRow, StorageLocation };
@@ -33,9 +28,6 @@ export type { DisplayOptions, ParetoMode, DataQualityReport, ParetoRow, StorageL
  */
 interface DataContextType extends Omit<DataState, 'saveProject' | 'loadProject'> {
   // All DataState fields are inherited
-
-  // Cpk thresholds (from DataState)
-  cpkThresholds: CpkThresholds;
 
   // Multi-point selection (Minitab-style brushing)
   selectedPoints: Set<number>;
@@ -73,7 +65,6 @@ interface DataContextType extends Omit<DataState, 'saveProject' | 'loadProject'>
   setMeasureLabel: DataActions['setMeasureLabel'];
   setSelectedMeasure: DataActions['setSelectedMeasure'];
   setCpkTarget: DataActions['setCpkTarget'];
-  setCpkThresholds: DataActions['setCpkThresholds'];
   setMeasureSpecs: DataActions['setMeasureSpecs'];
   setMeasureSpec: DataActions['setMeasureSpec'];
 
@@ -208,7 +199,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       selectedMeasure: state.selectedMeasure,
       performanceResult: state.performanceResult,
       cpkTarget: state.cpkTarget,
-      cpkThresholds: state.cpkThresholds,
       measureSpecs: state.measureSpecs,
       getSpecsForMeasure: state.getSpecsForMeasure,
 
@@ -248,7 +238,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setMeasureLabel: actions.setMeasureLabel,
       setSelectedMeasure: actions.setSelectedMeasure,
       setCpkTarget: actions.setCpkTarget,
-      setCpkThresholds: actions.setCpkThresholds,
       setMeasureSpecs: actions.setMeasureSpecs,
       setMeasureSpec: actions.setMeasureSpec,
 

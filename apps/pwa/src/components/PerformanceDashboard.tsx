@@ -36,14 +36,8 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
   onExitPerformanceMode,
   onDrillToMeasure,
 }) => {
-  const {
-    performanceResult,
-    selectedMeasure,
-    setSelectedMeasure,
-    specs,
-    measureColumns,
-    cpkThresholds,
-  } = useData();
+  const { performanceResult, selectedMeasure, setSelectedMeasure, specs, measureColumns } =
+    useData();
 
   // Cp/Cpk toggle state (includes 'both' option)
   const [capabilityMetric, setCapabilityMetric] = useState<'cp' | 'cpk' | 'both'>('cpk');
@@ -248,7 +242,6 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                     onChannelClick={handleMeasureClick}
                     capabilityMetric={capabilityMetric}
                     cpkTarget={cpkTarget}
-                    cpkThresholds={cpkThresholds}
                   />
                 </ErrorBoundary>
               </div>
@@ -381,7 +374,6 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                     onChannelClick={handleMeasureClick}
                     capabilityMetric={capabilityMetric}
                     cpkTarget={cpkTarget}
-                    cpkThresholds={cpkThresholds}
                   />
                 </ErrorBoundary>
               </div>

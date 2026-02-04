@@ -5,7 +5,7 @@
  * the Task Pane and Content Add-in (which can't share a runtime).
  */
 
-import { CPK_THRESHOLDS, validateThresholds, type CpkThresholds } from '@variscout/core';
+// Removed cpkThresholds - using control-based coloring only
 
 export interface AddInState {
   /** Version number for change detection */
@@ -52,8 +52,6 @@ export interface AddInState {
     measureId: string;
     returnToPerformance: boolean;
   } | null;
-  /** Custom Cpk thresholds for health classification (optional) */
-  cpkThresholds?: CpkThresholds;
   /** ISO timestamp of last update */
   lastUpdated: string;
 }
@@ -104,12 +102,6 @@ export async function loadAddInState(): Promise<AddInState | null> {
         await context.sync();
         try {
           const state = JSON.parse(item.value) as AddInState;
-
-          // Apply defaults for missing or invalid cpkThresholds
-          if (!state.cpkThresholds || !validateThresholds(state.cpkThresholds)) {
-            state.cpkThresholds = CPK_THRESHOLDS;
-          }
-
           return state;
         } catch (e) {
           console.error('Failed to parse state:', e);

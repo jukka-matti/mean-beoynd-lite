@@ -10,7 +10,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { PerformanceIChartBase, PerformanceBoxplotBase } from '@variscout/charts';
-import { calculateChannelPerformance, CPK_THRESHOLDS } from '@variscout/core';
+import { calculateChannelPerformance } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
 import { useContentTheme, type ThemeTokens } from './ThemeContext';
@@ -237,7 +237,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
   const [capabilityMetric, setCapabilityMetric] = useState<'cp' | 'cpk' | 'both'>('cpk');
 
   // Cpk target threshold state
-  const [cpkTarget] = useState<number>(1.33);
+  const [cpkTarget, setCpkTarget] = useState<number>(1.33);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -368,9 +368,6 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
 
   const { summary } = performanceResult;
 
-  // Get Cpk thresholds from state or use defaults
-  const thresholds = state.cpkThresholds || CPK_THRESHOLDS;
-
   return (
     <div style={styles.container} ref={containerRef}>
       {/* Header with summary stats */}
@@ -420,68 +417,110 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
             {capabilityMetric === 'cp' ? 'Cp' : capabilityMetric === 'cpk' ? 'Cpk' : 'Cp & Cpk'} by{' '}
             {state.measureLabel || 'Measure'}
           </div>
-          {/* Cp/Cpk/Both Toggle */}
-          <div style={{ display: 'flex', gap: '2px' }}>
-            <button
-              onClick={() => setCapabilityMetric('cpk')}
+          {/* Controls container */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: `${theme.spacingS}px` }}>
+            {/* Cpk Target Adjustment */}
+            <div
               style={{
-                padding: `${theme.spacingXS}px ${theme.spacingS}px`,
-                fontSize: theme.fontSizeCaption,
-                fontWeight: theme.fontWeightSemibold,
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor:
-                  capabilityMetric === 'cpk'
-                    ? theme.colorBrandForeground1
-                    : theme.colorNeutralBackground2,
-                color:
-                  capabilityMetric === 'cpk'
-                    ? theme.colorNeutralForeground1
-                    : theme.colorNeutralForeground2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: `${theme.spacingXS}px`,
               }}
             >
-              Cpk
-            </button>
-            <button
-              onClick={() => setCapabilityMetric('cp')}
-              style={{
-                padding: `${theme.spacingXS}px ${theme.spacingS}px`,
-                fontSize: theme.fontSizeCaption,
-                fontWeight: theme.fontWeightSemibold,
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor:
-                  capabilityMetric === 'cp'
-                    ? theme.colorBrandForeground1
-                    : theme.colorNeutralBackground2,
-                color:
-                  capabilityMetric === 'cp'
-                    ? theme.colorNeutralForeground1
-                    : theme.colorNeutralForeground2,
-              }}
-            >
-              Cp
-            </button>
-            <button
-              onClick={() => setCapabilityMetric('both')}
-              style={{
-                padding: `${theme.spacingXS}px ${theme.spacingS}px`,
-                fontSize: theme.fontSizeCaption,
-                fontWeight: theme.fontWeightSemibold,
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor:
-                  capabilityMetric === 'both'
-                    ? theme.colorBrandForeground1
-                    : theme.colorNeutralBackground2,
-                color:
-                  capabilityMetric === 'both'
-                    ? theme.colorNeutralForeground1
-                    : theme.colorNeutralForeground2,
-              }}
-            >
-              Both
-            </button>
+              <label
+                htmlFor="cpk-target-input"
+                style={{
+                  fontSize: theme.fontSizeCaption,
+                  color: theme.colorNeutralForeground2,
+                }}
+              >
+                Target Cpk:
+              </label>
+              <input
+                id="cpk-target-input"
+                type="number"
+                min="0.5"
+                max="3.0"
+                step="0.01"
+                value={cpkTarget}
+                onChange={e => setCpkTarget(parseFloat(e.target.value) || 1.33)}
+                style={{
+                  width: 60,
+                  padding: `${theme.spacingXS}px ${theme.spacingXS}px`,
+                  fontSize: theme.fontSizeSmall,
+                  backgroundColor: theme.colorNeutralBackground2,
+                  color: theme.colorNeutralForeground1,
+                  border: `1px solid ${theme.colorNeutralStroke1}`,
+                  borderRadius: `${theme.borderRadiusS}px`,
+                  textAlign: 'center',
+                  fontFamily: 'monospace',
+                }}
+                title="Industry standard: 1.33 (4σ), 1.67 (5σ), 2.00 (6σ)"
+              />
+            </div>
+            {/* Cp/Cpk/Both Toggle */}
+            <div style={{ display: 'flex', gap: '2px' }}>
+              <button
+                onClick={() => setCapabilityMetric('cpk')}
+                style={{
+                  padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+                  fontSize: theme.fontSizeCaption,
+                  fontWeight: theme.fontWeightSemibold,
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor:
+                    capabilityMetric === 'cpk'
+                      ? theme.colorBrandForeground1
+                      : theme.colorNeutralBackground2,
+                  color:
+                    capabilityMetric === 'cpk'
+                      ? theme.colorNeutralForeground1
+                      : theme.colorNeutralForeground2,
+                }}
+              >
+                Cpk
+              </button>
+              <button
+                onClick={() => setCapabilityMetric('cp')}
+                style={{
+                  padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+                  fontSize: theme.fontSizeCaption,
+                  fontWeight: theme.fontWeightSemibold,
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor:
+                    capabilityMetric === 'cp'
+                      ? theme.colorBrandForeground1
+                      : theme.colorNeutralBackground2,
+                  color:
+                    capabilityMetric === 'cp'
+                      ? theme.colorNeutralForeground1
+                      : theme.colorNeutralForeground2,
+                }}
+              >
+                Cp
+              </button>
+              <button
+                onClick={() => setCapabilityMetric('both')}
+                style={{
+                  padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+                  fontSize: theme.fontSizeCaption,
+                  fontWeight: theme.fontWeightSemibold,
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor:
+                    capabilityMetric === 'both'
+                      ? theme.colorBrandForeground1
+                      : theme.colorNeutralBackground2,
+                  color:
+                    capabilityMetric === 'both'
+                      ? theme.colorNeutralForeground1
+                      : theme.colorNeutralForeground2,
+                }}
+              >
+                Both
+              </button>
+            </div>
           </div>
         </div>
         <div style={styles.chartContainer}>
@@ -493,7 +532,6 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
               parentWidth={topChartWidth}
               parentHeight={topChartHeight}
               showBranding={false}
-              cpkThresholds={thresholds}
               capabilityMetric={capabilityMetric}
               cpkTarget={cpkTarget}
             />
@@ -515,7 +553,6 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
                 parentWidth={bottomChartWidth}
                 parentHeight={bottomChartHeight}
                 showBranding={false}
-                cpkThresholds={thresholds}
                 maxDisplayed={15}
               />
             </ChartErrorBoundary>

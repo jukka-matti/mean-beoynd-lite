@@ -45,7 +45,7 @@ Zone 8 (Exit):   180°C ±10°C
 1. **Use Pareto analysis** to identify worst-performing zones
 2. **Distinguish Cp vs Cpk issues** (variance vs centering problems)
 3. **Apply the Pareto Principle** (80/20 rule in maintenance prioritization)
-4. **Understand custom Cpk thresholds** (industry-specific standards)
+4. **Understand Cpk target values** (industry-specific minimum requirements)
 
 ### Secondary Objectives
 
@@ -108,28 +108,31 @@ Click on each problem zone to see its distribution:
 - **Root Cause:** **Centering issue** - likely burner fouling causing under-heating
 - **Fix:** Clean burner in Zone 6 to restore proper heating
 
-### Step 4: Custom Threshold Exploration
+### Step 4: Adjust Cpk Target (Industry Standards)
 
-**Open Settings → Performance Mode Thresholds**
+**In Performance Dashboard → Adjust "Target Cpk" input**
 
-Try different industry standards:
+Try different industry standards to see how requirements change:
 
-#### Automotive (Default): 1.0, 1.33, 1.67
+#### Automotive (Default): Cpk = 1.33
 
-- 2 zones flagged (Z3 critical, Z6 warning)
-- Standard industrial tolerance
+- Zone 3: Below target (Cpk ~0.89) ⚠️
+- Zone 6: Below target (Cpk ~1.07) ⚠️
+- Standard industrial minimum for automotive
 
-#### Aerospace (Strict): 1.5, 2.0, 2.5
+#### Aerospace (Strict): Cpk = 2.0
 
-- 5+ zones flagged as needing improvement
+- Zones 3, 6, 4, 7: Below target
 - Demonstrates higher standards for critical applications
+- Only highest-performing zones meet requirement
 
-#### Consumer Goods (Lenient): 0.67, 1.0, 1.33
+#### Consumer Goods (Lenient): Cpk = 1.0
 
-- Only Z3 flagged as critical
+- Only Zone 3 below target (Cpk ~0.89)
 - Shows more tolerant standards for non-critical products
+- Zone 6 now considered acceptable
 
-**Teaching Point:** Same data, different classifications based on organizational standards!
+**Teaching Point:** Same data, different target - organizational standards drive what counts as "capable"!
 
 ### Step 5: Verify Systematic Issues (Drill-Down)
 
@@ -203,15 +206,15 @@ Try different industry standards:
 - **This case:** 100% of issues from 25% of zones (2 of 8)
 - **Implication:** Targeted maintenance is more efficient than blanket maintenance
 
-### 3. Custom Cpk Thresholds
+### 3. Cpk Target Values
 
-Different industries have different standards:
+Different industries have different minimum Cpk requirements:
 
 - **Aerospace/Medical:** Cpk ≥ 2.0 for "capable" (near-zero defects)
-- **Automotive:** Cpk ≥ 1.33 (industry standard)
+- **Automotive:** Cpk ≥ 1.33 (industry standard, ~63 PPM defects)
 - **Food/Consumer:** Cpk ≥ 1.0 may be acceptable (lower criticality)
 
-Adjusting thresholds shows how the same data is interpreted differently based on context.
+Adjusting the target value shows how the same data is interpreted differently based on organizational standards and industry requirements.
 
 ### 4. Multi-Factor Analysis
 
