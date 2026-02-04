@@ -60,6 +60,12 @@ export interface DataState {
   grades: { max: number; label: string; color: string }[];
   stats: StatsResult | null;
 
+  // Multi-point selection (Minitab-style brushing)
+  /** Selected point indices in filteredData */
+  selectedPoints: Set<number>;
+  /** Map from filteredData index to original rawData index */
+  selectionIndexMap: Map<number, number>;
+
   // Stage support
   stageColumn: string | null;
   stageOrderMode: StageOrderMode;
@@ -115,6 +121,13 @@ export interface DataActions {
   setFactors: (cols: string[]) => void;
   setTimeColumn: (col: string | null) => void;
   setSpecs: (specs: { usl?: number; lsl?: number; target?: number }) => void;
+
+  // Selection actions (Minitab-style brushing)
+  setSelectedPoints: (indices: Set<number>) => void;
+  addToSelection: (indices: number[]) => void;
+  removeFromSelection: (indices: number[]) => void;
+  clearSelection: () => void;
+  togglePointSelection: (index: number) => void;
   /** Set per-measure spec overrides for Performance Mode */
   setMeasureSpecs: (
     measureSpecs: Record<string, { usl?: number; lsl?: number; target?: number }>
@@ -232,6 +245,10 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
   const [cpkTarget, setCpkTarget] = useState(1.33);
   const [cpkThresholds, setCpkThresholdsState] = useState<CpkThresholds>(CPK_THRESHOLDS);
 
+  // Multi-point selection (Minitab-style brushing)
+  const [selectedPoints, setSelectedPoints] = useState<Set<number>>(new Set());
+  const [selectionIndexMap, setSelectionIndexMap] = useState<Map<number, number>>(new Map());
+
   // Validated setter for Cpk thresholds
   const setCpkThresholds = useCallback((thresholds: CpkThresholds) => {
     if (!validateThresholds(thresholds)) {
@@ -243,17 +260,68 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
   }, []);
 
   // ---------------------------------------------------------------------------
+  // Selection actions
+  // ---------------------------------------------------------------------------
+
+  const addToSelection = useCallback((indices: number[]) => {
+    setSelectedPoints(prev => {
+      const newSet = new Set(prev);
+      indices.forEach(i => newSet.add(i));
+      return newSet;
+    });
+  }, []);
+
+  const removeFromSelection = useCallback((indices: number[]) => {
+    setSelectedPoints(prev => {
+      const newSet = new Set(prev);
+      indices.forEach(i => newSet.delete(i));
+      return newSet;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedPoints(new Set());
+  }, []);
+
+  const togglePointSelection = useCallback((index: number) => {
+    setSelectedPoints(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // ---------------------------------------------------------------------------
   // Computed values
   // ---------------------------------------------------------------------------
 
   const filteredData = useMemo(() => {
-    return rawData.filter(row => {
+    const filtered = rawData.filter(row => {
       return Object.entries(filters).every(([col, values]) => {
         if (!values || values.length === 0) return true;
         const cellValue = row[col];
         return values.includes(cellValue as string | number);
       });
     });
+
+    // Update selection index map when filters change
+    const newMap = new Map<number, number>();
+    filtered.forEach((row, filteredIndex) => {
+      const originalIndex = rawData.indexOf(row);
+      if (originalIndex !== -1) {
+        newMap.set(filteredIndex, originalIndex);
+      }
+    });
+    setSelectionIndexMap(newMap);
+
+    // Clear selection when filters change to avoid confusion
+    setSelectedPoints(new Set());
+
+    return filtered;
   }, [rawData, filters]);
 
   const stats = useMemo(() => {
@@ -553,6 +621,8 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       cpkTarget,
       cpkThresholds,
       getSpecsForMeasure,
+      selectedPoints,
+      selectionIndexMap,
     }),
     [
       rawData,
@@ -593,6 +663,8 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       cpkTarget,
       cpkThresholds,
       getSpecsForMeasure,
+      selectedPoints,
+      selectionIndexMap,
     ]
   );
 
@@ -626,6 +698,11 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       setSelectedMeasure,
       setCpkTarget,
       setCpkThresholds,
+      setSelectedPoints,
+      addToSelection,
+      removeFromSelection,
+      clearSelection,
+      togglePointSelection,
       saveProject,
       loadProject,
       listProjects,
@@ -664,6 +741,11 @@ export function useDataState(options: UseDataStateOptions): [DataState, DataActi
       setSelectedMeasure,
       setCpkTarget,
       setCpkThresholds,
+      setSelectedPoints,
+      addToSelection,
+      removeFromSelection,
+      clearSelection,
+      togglePointSelection,
       saveProject,
       loadProject,
       listProjects,

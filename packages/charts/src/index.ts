@@ -77,6 +77,12 @@ export {
   type UseSelectionStateOptions,
   type UseSelectionStateReturn,
 } from './hooks';
+export {
+  useMultiSelection,
+  type UseMultiSelectionOptions,
+  type UseMultiSelectionResult,
+  type BrushExtent,
+} from './hooks/useMultiSelection';
 
 // Interaction styles
 export {

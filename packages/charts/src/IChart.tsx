@@ -20,6 +20,7 @@ import ChartLegend from './ChartLegend';
 import { chartColors } from './colors';
 import { useChartTheme } from './useChartTheme';
 import { useChartLayout, useChartTooltip } from './hooks';
+import { useMultiSelection } from './hooks/useMultiSelection';
 import { interactionStyles } from './styles/interactionStyles';
 import { getDataPointA11yProps, getInteractiveA11yProps } from './utils/accessibility';
 
@@ -41,6 +42,9 @@ const IChartBase: React.FC<IChartProps> = ({
   showBranding = true,
   brandingText,
   onPointClick,
+  enableBrushSelection = false,
+  selectedPoints = new Set(),
+  onSelectionChange,
   sampleSize,
   showLimitLabels = true,
   onSpecClick,
@@ -133,6 +137,29 @@ const IChartBase: React.FC<IChartProps> = ({
 
   const xTickCount = getResponsiveTickCount(width, 'x');
   const yTickCount = getResponsiveTickCount(height, 'y');
+
+  // Multi-point selection (Minitab-style brushing)
+  const {
+    brushExtent,
+    isBrushing,
+    handleBrushStart,
+    handleBrushMove,
+    handleBrushEnd,
+    handlePointClick: handleBrushPointClick,
+    isPointSelected,
+    getPointOpacity,
+    getPointSize,
+    getPointStrokeWidth,
+  } = useMultiSelection({
+    data,
+    xScale,
+    yScale,
+    selectedPoints,
+    onSelectionChange: onSelectionChange || (() => {}),
+    getX: d => d.x,
+    getY: d => d.y,
+    enableBrush: enableBrushSelection,
+  });
 
   // Get stage stats for a specific data point
   const getStageStatsForPoint = (stage?: string): StatsResult | null => {
@@ -294,7 +321,15 @@ const IChartBase: React.FC<IChartProps> = ({
 
   return (
     <>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        onMouseDown={enableBrushSelection ? handleBrushStart : undefined}
+        onMouseMove={enableBrushSelection ? handleBrushMove : undefined}
+        onMouseUp={enableBrushSelection ? handleBrushEnd : undefined}
+        onMouseLeave={enableBrushSelection ? handleBrushEnd : undefined}
+        style={{ cursor: enableBrushSelection && !isBrushing ? 'crosshair' : 'default' }}
+      >
         <Group left={margin.left} top={margin.top}>
           <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
 
@@ -593,11 +628,32 @@ const IChartBase: React.FC<IChartProps> = ({
             strokeOpacity={0.5}
           />
 
+          {/* Brush selection rectangle */}
+          {enableBrushSelection && isBrushing && brushExtent && (
+            <rect
+              x={Math.min(brushExtent.x0, brushExtent.x1)}
+              y={Math.min(brushExtent.y0, brushExtent.y1)}
+              width={Math.abs(brushExtent.x1 - brushExtent.x0)}
+              height={Math.abs(brushExtent.y1 - brushExtent.y0)}
+              fill="rgba(59, 130, 246, 0.1)"
+              stroke="rgba(59, 130, 246, 0.5)"
+              strokeWidth={1.5}
+              pointerEvents="none"
+            />
+          )}
+
           {/* Data points */}
           {data.map((d, i) => {
             const isHighlighted = highlightedPointIndex === i;
+            const isSelected = enableBrushSelection && isPointSelected(i);
+            const pointOpacity = enableBrushSelection ? getPointOpacity(i) : 1;
+            const pointSize =
+              enableBrushSelection && isSelected ? getPointSize(i) : isHighlighted ? 6 : 4;
+            const strokeWidth =
+              enableBrushSelection && isSelected ? getPointStrokeWidth(i) : isHighlighted ? 2 : 1;
+
             return (
-              <g key={i}>
+              <g key={i} opacity={pointOpacity}>
                 {/* Highlight ring for selected point */}
                 {isHighlighted && (
                   <Circle
@@ -613,12 +669,22 @@ const IChartBase: React.FC<IChartProps> = ({
                 <Circle
                   cx={xScale(d.x)}
                   cy={yScale(d.y)}
-                  r={isHighlighted ? 6 : 4}
+                  r={pointSize}
                   fill={getPointColor(d.y, i, d.stage)}
-                  stroke={isHighlighted ? chartColors.mean : chrome.pointStroke}
-                  strokeWidth={isHighlighted ? 2 : 1}
-                  className={onPointClick ? interactionStyles.clickable : ''}
-                  onClick={() => onPointClick?.(i, d.originalIndex)}
+                  stroke={
+                    isSelected ? '#ffffff' : isHighlighted ? chartColors.mean : chrome.pointStroke
+                  }
+                  strokeWidth={strokeWidth}
+                  className={
+                    onPointClick || enableBrushSelection ? interactionStyles.clickable : ''
+                  }
+                  onClick={e => {
+                    if (enableBrushSelection && onSelectionChange) {
+                      handleBrushPointClick(i, e);
+                    } else {
+                      onPointClick?.(i, d.originalIndex);
+                    }
+                  }}
                   onMouseOver={() =>
                     showTooltipAtCoords(xScale(d.x), yScale(d.y), {
                       x: d.x,

@@ -83,8 +83,12 @@ export interface IChartProps extends BaseChartProps {
   yDomainOverride?: YAxisDomain;
   /** Callback when a point is clicked */
   onPointClick?: (index: number, originalIndex?: number) => void;
-  /** Callback when brush selection changes */
-  onBrushChange?: (range: [number, number] | null) => void;
+  /** Enable brush selection (Minitab-style multi-point selection) */
+  enableBrushSelection?: boolean;
+  /** Currently selected point indices (for cross-chart sync) */
+  selectedPoints?: Set<number>;
+  /** Callback when brush selection changes (new selection indices) */
+  onSelectionChange?: (indices: Set<number>) => void;
   /** Sample size for branding bar */
   sampleSize?: number;
   /** Show Minitab-style labels next to limit lines (default: true) */
