@@ -1163,6 +1163,235 @@ export const LEARN_TOPICS: LearnTopic[] = [
     relatedTools: ['i-chart'],
     relatedTopics: ['staged-analysis', 'methodology-control-limits', 'two-voices'],
   },
+  {
+    slug: 'control-charts',
+    title: 'Control Charts & Special Cause Detection',
+    subtitle: 'Understanding the Voice of Process through Control Limits',
+    description:
+      'Learn how control charts distinguish special cause variation (unusual events) from common cause variation (random noise), enabling data-driven process improvement.',
+    color: '#ef4444',
+    colorClass: 'text-red-500',
+    icon: '🎯',
+    sections: [
+      {
+        id: 'intro',
+        title: 'What Are Control Charts?',
+        content:
+          'Control charts are the primary tool for Statistical Process Control (SPC). They reveal whether your process is stable (predictable) or unstable (unpredictable), helping you focus improvement efforts where they matter most.',
+        visual: {
+          type: 'chart',
+          data: {
+            toolSlug: 'i-chart',
+            sampleKey: 'coffee',
+            height: 300,
+            caption:
+              'Example I-Chart showing control limits (dashed red), mean (solid blue), and data points',
+          },
+        },
+      },
+      {
+        id: 'two-voices',
+        title: 'Voice of Process vs Voice of Customer',
+        content:
+          'Control charts listen to the Voice of Process (what the process naturally does) through control limits. This is different from specification limits (Voice of Customer - what customers require). A stable process may still produce defects if control limits are wider than spec limits.',
+        visual: {
+          type: 'comparison',
+          data: {
+            left: {
+              title: 'Control Limits',
+              subtitle: 'Voice of Process',
+              items: [
+                'UCL/LCL calculated from data',
+                'Show natural process variation',
+                'Detect special cause (instability)',
+                'σ-based (3 standard deviations)',
+                'Red dashed lines on chart',
+              ],
+              color: 'blue',
+            },
+            right: {
+              title: 'Spec Limits',
+              subtitle: 'Voice of Customer',
+              items: [
+                'USL/LSL set by customer',
+                'Define acceptable product',
+                'Detect defects (non-conformance)',
+                'Requirement-based',
+                'Orange dashed lines on chart',
+              ],
+              color: 'green',
+            },
+          },
+        },
+      },
+      {
+        id: 'special-vs-common',
+        title: 'Special Cause vs Common Cause Variation',
+        content:
+          'The fundamental distinction in SPC: Special cause variation signals something unusual that requires investigation. Common cause variation is the natural random noise inherent to all stable processes.',
+        visual: {
+          type: 'comparison',
+          data: {
+            left: {
+              title: 'Special Cause',
+              subtitle: '🔴 Red Dots = Investigate',
+              items: [
+                'Point above UCL or below LCL',
+                'Nelson Rule 2: 9 consecutive points on one side',
+                'Indicates process shift or unusual event',
+                'Assignable cause - can be identified',
+                'Action required: Find and fix',
+              ],
+              color: 'amber',
+            },
+            right: {
+              title: 'Common Cause',
+              subtitle: '🔵 Blue Dots = No Action',
+              items: [
+                'Points within control limits',
+                'Random variation around mean',
+                'Natural process behavior',
+                'Many small factors',
+                'Action: Accept or improve entire system',
+              ],
+              color: 'cyan',
+            },
+          },
+        },
+      },
+      {
+        id: 'point-colors',
+        title: 'What Do Point Colors Mean?',
+        content:
+          'VariScout uses color coding to help you quickly identify process status and required actions.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              {
+                title: '🔵 Blue Dots (Common Cause)',
+                description:
+                  'Points within control limits showing random variation. Process is stable and predictable. No action required - attempting to "fix" common cause leads to tampering (making things worse).',
+              },
+              {
+                title: '🔴 Red Dots (Special Cause)',
+                description:
+                  'Points outside control limits (above UCL, below LCL) or showing special patterns (Nelson Rule 2). Process is unstable - something unusual happened. Investigation required to find the assignable cause.',
+              },
+              {
+                title: '🟠 Orange Dots (Out-of-Spec)',
+                description:
+                  'Points outside specification limits (above USL, below LSL). Product does not meet customer requirements. These are defects that may need rework or scrap, regardless of process stability.',
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: 'nelson-rule-2',
+        title: 'Nelson Rule 2: Detecting Process Shifts',
+        content:
+          'Nelson Rule 2 detects persistent shifts in the process: 9 or more consecutive points on the same side of the mean. This pattern signals that something systematic changed (new material, different operator, adjusted settings, etc.).',
+        visual: {
+          type: 'diagram',
+          data: {
+            steps: [
+              {
+                label: '1. Monitor',
+                description: 'Chart tracks consecutive points relative to mean',
+              },
+              {
+                label: '2. Detect',
+                description: '9+ consecutive points all above (or all below) mean triggers alert',
+              },
+              {
+                label: '3. Visualize',
+                description: 'VariScout highlights sequence with connector line and markers',
+              },
+              {
+                label: '4. Investigate',
+                description: 'Check timeline: What changed when the sequence started?',
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: 'calculation',
+        title: 'How Control Limits Are Calculated',
+        content:
+          'Control limits use 3-sigma bounds to capture 99.73% of normal process variation. If the process is stable (only common cause), ~99.7% of points fall within these limits.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              {
+                title: 'Mean (Center Line)',
+                description: 'X̄ = Average of all data points. Shows process center.',
+              },
+              {
+                title: 'Standard Deviation',
+                description: 'σ = Measure of spread. Quantifies variation magnitude.',
+              },
+              {
+                title: 'Upper Control Limit (UCL)',
+                description: 'UCL = X̄ + 3σ. Upper boundary of natural variation.',
+              },
+              {
+                title: 'Lower Control Limit (LCL)',
+                description: 'LCL = X̄ - 3σ. Lower boundary of natural variation.',
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: 'key-insight',
+        title: 'The Power of Control Charts',
+        content:
+          'Control charts prevent two costly mistakes: (1) Tampering - reacting to common cause as if it were special, introducing more variation. (2) Under-reaction - ignoring special cause, allowing problems to persist.',
+        visual: {
+          type: 'quote',
+          data: {
+            quote:
+              'If I had to reduce all of quality improvement to just one word, it would be: variation. Understanding variation is the key to improvement.',
+            author: 'W. Edwards Deming',
+          },
+        },
+      },
+      {
+        id: 'next-steps',
+        title: 'Applying Control Charts',
+        content:
+          'Start by charting your key process output. Look for special cause patterns. When you find red dots, investigate the timeline - what was different? When you see only blue dots (in-control), focus on improving the entire system rather than reacting to individual points.',
+        visual: {
+          type: 'list',
+          data: {
+            items: [
+              {
+                title: 'Step 1: Collect baseline data',
+                description: '20-30 consecutive measurements to establish initial control limits',
+              },
+              {
+                title: 'Step 2: Calculate control limits',
+                description: 'Use VariScout to automatically compute UCL, mean, and LCL',
+              },
+              {
+                title: 'Step 3: Monitor for special cause',
+                description: 'Continue charting new data, looking for red dots or patterns',
+              },
+              {
+                title: 'Step 4: Investigate and improve',
+                description: 'When special cause appears, find the root cause and take action',
+              },
+            ],
+          },
+        },
+      },
+    ],
+    relatedTools: ['i-chart', 'boxplot', 'capability'],
+    relatedTopics: ['two-voices', 'four-pillars', 'eda-philosophy', 'staged-analysis'],
+  },
 ];
 
 export function getLearnTopicBySlug(slug: string): LearnTopic | undefined {

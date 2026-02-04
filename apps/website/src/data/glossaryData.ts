@@ -487,6 +487,200 @@ export const GLOSSARY_EXTENSIONS: Record<string, Partial<GlossaryPageData>> = {
     practicalTip:
       'High reproducibility suggests training issues - standardize procedures, train operators on technique.',
   },
+
+  // Special Cause and Common Cause Variation
+  specialCause: {
+    seoTitle: 'Special Cause Variation | VariScout Glossary',
+    seoDescription:
+      'Special cause variation in Statistical Process Control (SPC): Learn how to detect unusual events through control charts and Nelson rules, and why investigation is required.',
+    relatedTools: ['i-chart', 'boxplot'],
+    relatedLearn: ['control-charts', 'two-voices', 'four-pillars'],
+    sections: [
+      {
+        type: 'interpretation',
+        title: 'Detection Methods',
+        content: 'Special cause variation is detected through specific patterns on control charts:',
+        items: [
+          {
+            value: 'Above UCL',
+            label: 'Point Above Upper Control Limit',
+            description: 'Process shifted unusually high',
+          },
+          {
+            value: 'Below LCL',
+            label: 'Point Below Lower Control Limit',
+            description: 'Process shifted unusually low',
+          },
+          {
+            value: 'Nelson Rule 2',
+            label: '9+ Consecutive Points on One Side',
+            description: 'Persistent process shift detected',
+          },
+        ],
+      },
+      {
+        type: 'example',
+        title: 'Real-World Example',
+        content:
+          'A coffee roasting process shows 12 consecutive batches below the mean weight. Nelson Rule 2 triggers (special cause detected). Investigation reveals a new material supplier changed bean density. Corrective action: Adjust roasting time for new supplier.',
+      },
+    ],
+    examples: [
+      'Machine malfunction causing erratic output',
+      'Operator error during shift change',
+      'New material batch with different properties',
+      'Environmental change (temperature spike)',
+      'Measurement system drift',
+    ],
+    practicalTip:
+      'When you see red dots (special cause), investigate the timeline: What was different when these points occurred? Look for changes in materials, methods, machines, measurements, or environment (5Ms).',
+  },
+
+  commonCause: {
+    seoTitle: 'Common Cause Variation | VariScout Glossary',
+    seoDescription:
+      'Common cause variation in SPC: Understanding natural random variation inherent to stable processes, and why attempting to "fix" it leads to tampering.',
+    relatedTools: ['i-chart', 'capability'],
+    relatedLearn: ['control-charts', 'two-voices'],
+    sections: [
+      {
+        type: 'interpretation',
+        title: 'Characteristics',
+        content: 'Common cause variation has these properties:',
+        items: [
+          {
+            value: 'Random',
+            label: 'Random Fluctuation',
+            description: 'No discernible pattern, points scattered within limits',
+          },
+          {
+            value: 'Stable',
+            label: 'Predictable Range',
+            description: 'Process is stable - future performance is predictable',
+          },
+          {
+            value: 'Many Factors',
+            label: 'Multiple Small Sources',
+            description: 'Result of many small, uncontrollable factors',
+          },
+        ],
+      },
+      {
+        type: 'example',
+        title: 'Real-World Example',
+        content:
+          'A packaging line shows all points within control limits (blue dots). Variation is due to: slight material thickness differences, ambient temperature fluctuations, normal machine vibration, operator technique variations. No single factor dominates - this is common cause. To reduce it, you must improve the entire system (better materials, climate control, machine stability).',
+      },
+    ],
+    examples: [
+      'Natural material property variation',
+      'Normal machine vibration',
+      'Ambient temperature fluctuations',
+      'Measurement precision limits',
+      'Operator technique variations (within training)',
+    ],
+    practicalTip:
+      '⚠️ Do NOT react to individual blue dots (common cause). Reacting to random variation as if it were special cause is called "tampering" and increases variation. Instead, focus on improving the entire system.',
+  },
+
+  nelsonRule2: {
+    seoTitle: 'Nelson Rule 2 | VariScout Glossary',
+    seoDescription:
+      'Nelson Rule 2 in control charts: Detecting process shifts through 9 consecutive points on the same side of the mean. Learn what this pattern signals and how to investigate.',
+    relatedTools: ['i-chart'],
+    relatedLearn: ['control-charts', 'two-voices'],
+    sections: [
+      {
+        type: 'interpretation',
+        title: 'Rule Definition',
+        content: 'Nelson Rule 2 detects a persistent shift in the process level:',
+        items: [
+          {
+            value: '9+ Points',
+            label: 'Nine or More Consecutive',
+            description: 'All on the same side of centerline (mean)',
+          },
+          {
+            value: 'Above/Below',
+            label: 'Direction Matters',
+            description: '9 above OR 9 below mean (not a mix)',
+          },
+          {
+            value: 'Systematic',
+            label: 'Indicates Shift',
+            description: 'Process moved to new level - not random',
+          },
+        ],
+      },
+      {
+        type: 'diagram',
+        title: 'Visual Pattern',
+        content:
+          'VariScout highlights Nelson Rule 2 sequences with connector lines and markers, making the pattern immediately visible rather than requiring manual counting.',
+      },
+      {
+        type: 'example',
+        title: 'Real-World Example',
+        content:
+          'A pharmaceutical tablet press shows 11 consecutive weights above mean (Nelson Rule 2). Investigation timeline reveals settings were adjusted after the 15th batch. Corrective action: Return to original settings and update change control procedures.',
+      },
+    ],
+    examples: [
+      'Machine settings adjusted mid-production',
+      'New material batch with higher/lower average',
+      'Process drift over time (wear, temperature)',
+      'Operator change with different technique',
+      'Measurement system bias shift',
+    ],
+    practicalTip:
+      'When Nelson Rule 2 triggers, check your timeline: What changed when the sequence started? Look at batch numbers, shift changes, material lots, maintenance events, and environmental conditions.',
+  },
+
+  inControl: {
+    seoTitle: 'In-Control Process | VariScout Glossary',
+    seoDescription:
+      'In-control process in SPC: A stable, predictable process with only common cause variation. Learn the difference between in-control and capable.',
+    relatedTools: ['i-chart', 'capability'],
+    relatedLearn: ['control-charts', 'two-voices', 'four-pillars'],
+    sections: [
+      {
+        type: 'interpretation',
+        title: 'In-Control Criteria',
+        content: 'A process is in-control when:',
+        items: [
+          {
+            value: 'Within Limits',
+            label: 'All Points Inside UCL/LCL',
+            description: 'No points outside control limits',
+          },
+          {
+            value: 'No Patterns',
+            label: 'Random Variation Only',
+            description: 'No Nelson rules triggered (no trends, shifts, cycles)',
+          },
+          {
+            value: 'Predictable',
+            label: 'Stable Performance',
+            description: 'Future output will fall within same limits',
+          },
+        ],
+      },
+      {
+        type: 'example',
+        title: 'In-Control ≠ Capable',
+        content:
+          'CRITICAL DISTINCTION: A process can be in-control (stable, predictable) but NOT capable (still producing defects). Example: Bolt diameter is stable with UCL=10.5mm, LCL=9.5mm (in-control). But customer spec is USL=10.2mm, LSL=9.8mm. The process is predictably making defects - it is in-control but not capable.',
+      },
+    ],
+    examples: [
+      'Packaging line running steadily with consistent output',
+      'Stable but off-target (needs centering adjustment)',
+      'In-control with high variation (needs variation reduction)',
+      'Capable AND in-control (ideal state)',
+    ],
+    practicalTip:
+      'First achieve in-control (eliminate special cause), THEN assess capability (compare control limits to spec limits). You cannot accurately calculate capability indices (Cp/Cpk) for an out-of-control process.',
+  },
 };
 
 /**

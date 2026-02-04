@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Special Cause Education System**: Comprehensive learning system for control chart interpretation
+  - Enhanced I-Chart tooltips with violation explanations (Above UCL, Below LCL, Nelson Rule 2)
+  - Data window row annotations with red AlertCircle icons for control violations
+  - Nelson Rule 2 sequence visualization with connector lines and sequence tooltips
+  - Chart legend component with educational (Common/Special/Out-of-Spec) and practical modes
+  - New glossary terms: Special Cause, Common Cause, Nelson Rule 2, In-Control Process
+  - Website learn page: "Control Charts & Special Cause Detection" with 8 comprehensive sections
+  - Extended glossary pages with rich content (detection methods, examples, practical tips)
+  - Cross-linking between tools, glossary, and learn pages for guided learning journey
+  - Philosophy-compliant language: States signals factually without prescriptive action
+  - Multi-language support (en, de, es, fr, pt) for all educational content
+
 - **I-Chart Nelson Rule 2 Detection**: Automatic detection of process shifts
   - Points flagged red when 9+ consecutive points fall on same side of center line
   - Works with staged mode (per-stage detection using each stage's mean)
