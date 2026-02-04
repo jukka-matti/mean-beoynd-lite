@@ -3,10 +3,10 @@
  *
  * Displays multi-channel performance analysis with:
  * - Summary bar with health counts
- * - I-Chart showing Cpk by channel
- * - Boxplot for selected channel or worst channels
- * - Pareto ranking channels by Cpk
- * - Capability histogram for selected channel
+ * - I-Chart showing Cpk by channel (full width)
+ * - Boxplot showing worst 15 channels (full width)
+ *
+ * Optimized for 100+ column datasets - click any chart to drill to standard Dashboard.
  */
 
 import React, { useCallback, useState, useEffect } from 'react';
@@ -14,8 +14,6 @@ import { useData } from '../context/DataContext';
 import PerformanceSummary from './PerformanceSummary';
 import PerformanceIChart from './charts/PerformanceIChart';
 import PerformanceBoxplot from './charts/PerformanceBoxplot';
-import PerformancePareto from './charts/PerformancePareto';
-import PerformanceCapability from './charts/PerformanceCapability';
 import PerformanceSetupPanel from './PerformanceSetupPanel';
 import ErrorBoundary from './ErrorBoundary';
 import {
@@ -48,11 +46,11 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
   const [cpkTarget, setCpkTarget] = useState<number>(1.33);
 
   // Focus mode state
-  type FocusedChart = 'ichart' | 'boxplot' | 'pareto' | 'capability' | null;
+  type FocusedChart = 'ichart' | 'boxplot' | null;
   const [focusedChart, setFocusedChart] = useState<FocusedChart>(null);
 
   // Chart order for navigation
-  const chartOrder: FocusedChart[] = ['ichart', 'boxplot', 'pareto', 'capability'];
+  const chartOrder: FocusedChart[] = ['ichart', 'boxplot'];
 
   const handleNextChart = useCallback(() => {
     if (!focusedChart) return;
@@ -92,6 +90,20 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
       setSelectedMeasure(selectedMeasure === measureId ? null : measureId);
     },
     [selectedMeasure, setSelectedMeasure]
+  );
+
+  const handleBoxplotClick = useCallback(
+    (measureId: string) => {
+      // Show confirmation and drill to Dashboard
+      if (
+        window.confirm(
+          `Analyze ${measureId} in detail? This will switch to standard Dashboard view.`
+        )
+      ) {
+        onDrillToMeasure?.(measureId);
+      }
+    },
+    [onDrillToMeasure]
   );
 
   // Show setup panel if no measures configured
@@ -240,9 +252,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
             <div className="flex-1 bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 flex flex-col h-full">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold text-slate-300">
-                  {selectedMeasure
-                    ? `${selectedMeasure} Distribution`
-                    : 'All Measures Distribution'}
+                  Worst 30 Measures (Click to Analyze)
                 </h3>
                 <button
                   onClick={() => setFocusedChart(null)}
@@ -254,51 +264,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
               </div>
               <div className="flex-1 min-h-0">
                 <ErrorBoundary componentName="PerformanceBoxplot">
-                  <PerformanceBoxplot onChannelClick={handleMeasureClick} maxDisplayed={Infinity} />
-                </ErrorBoundary>
-              </div>
-            </div>
-          )}
-
-          {focusedChart === 'pareto' && (
-            <div className="flex-1 bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-slate-300">
-                  Measure Ranking (Worst First)
-                </h3>
-                <button
-                  onClick={() => setFocusedChart(null)}
-                  className="p-2 rounded text-slate-400 hover:text-white hover:bg-slate-700 transition-colors bg-slate-700/50"
-                  title="Exit Focus Mode (Escape)"
-                >
-                  <Minimize2 size={20} />
-                </button>
-              </div>
-              <div className="flex-1 min-h-0">
-                <ErrorBoundary componentName="PerformancePareto">
-                  <PerformancePareto onChannelClick={handleMeasureClick} maxDisplayed={50} />
-                </ErrorBoundary>
-              </div>
-            </div>
-          )}
-
-          {focusedChart === 'capability' && (
-            <div className="flex-1 bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-slate-300">
-                  {selectedMeasure ? `${selectedMeasure} Capability` : 'Measure Capability'}
-                </h3>
-                <button
-                  onClick={() => setFocusedChart(null)}
-                  className="p-2 rounded text-slate-400 hover:text-white hover:bg-slate-700 transition-colors bg-slate-700/50"
-                  title="Exit Focus Mode (Escape)"
-                >
-                  <Minimize2 size={20} />
-                </button>
-              </div>
-              <div className="flex-1 min-h-0">
-                <ErrorBoundary componentName="PerformanceCapability">
-                  <PerformanceCapability />
+                  <PerformanceBoxplot onChannelClick={handleBoxplotClick} maxDisplayed={Infinity} />
                 </ErrorBoundary>
               </div>
             </div>
@@ -306,22 +272,30 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
         </div>
       ) : (
         /* Normal grid layout */
-        <div className="flex-1 grid grid-rows-2 grid-cols-1 lg:grid-cols-3 gap-2 p-2 min-h-0">
+        <div className="flex-1 grid grid-rows-2 gap-2 p-2 min-h-0">
           {/* Top row: I-Chart spanning full width */}
-          <div className="lg:col-span-3 min-h-0 bg-slate-800/50 rounded-lg overflow-hidden">
+          <div className="col-span-full min-h-0 bg-slate-800/50 rounded-lg overflow-hidden">
             <div className="h-full p-2">
               <div className="flex items-center justify-between mb-1 px-2">
-                <h3 className="text-xs font-medium text-slate-400">
-                  {capabilityMetric === 'cp'
-                    ? 'Cp'
-                    : capabilityMetric === 'cpk'
-                      ? 'Cpk'
-                      : 'Cp & Cpk'}{' '}
-                  by Measure
-                  {selectedMeasure && (
-                    <span className="ml-2 text-slate-500">(Selected: {selectedMeasure})</span>
-                  )}
-                </h3>
+                <div className="flex items-center gap-1">
+                  <h3 className="text-xs font-medium text-slate-400">
+                    {capabilityMetric === 'cp'
+                      ? 'Cp'
+                      : capabilityMetric === 'cpk'
+                        ? 'Cpk'
+                        : 'Cp & Cpk'}{' '}
+                    by Measure
+                    {selectedMeasure && (
+                      <span className="ml-2 text-slate-500">(Selected: {selectedMeasure})</span>
+                    )}
+                  </h3>
+                  <span
+                    className="text-xs text-slate-500 cursor-help"
+                    title="Measures ranked by Cpk (lowest first). Click point to analyze in detail."
+                  >
+                    ⓘ
+                  </span>
+                </div>
                 <div className="flex items-center gap-2">
                   {/* Cp/Cpk/Both Toggle */}
                   <div className="flex rounded overflow-hidden border border-slate-600">
@@ -406,12 +380,12 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
             </div>
           </div>
 
-          {/* Bottom row: Three charts */}
-          <div className="min-h-0 bg-slate-800/50 rounded-lg overflow-hidden">
+          {/* Bottom row: Single Boxplot chart */}
+          <div className="col-span-full min-h-0 bg-slate-800/50 rounded-lg overflow-hidden">
             <div className="h-full p-2">
               <div className="flex items-center justify-between mb-1 px-2">
                 <h3 className="text-xs font-medium text-slate-400">
-                  {selectedMeasure ? `${selectedMeasure} Distribution` : 'Worst Measures'}
+                  Worst 15 Measures (Click to Analyze)
                 </h3>
                 <button
                   onClick={() => setFocusedChart('boxplot')}
@@ -423,51 +397,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
               </div>
               <div className="h-[calc(100%-1.5rem)]">
                 <ErrorBoundary componentName="PerformanceBoxplot">
-                  <PerformanceBoxplot onChannelClick={handleMeasureClick} />
-                </ErrorBoundary>
-              </div>
-            </div>
-          </div>
-
-          <div className="min-h-0 bg-slate-800/50 rounded-lg overflow-hidden">
-            <div className="h-full p-2">
-              <div className="flex items-center justify-between mb-1 px-2">
-                <h3 className="text-xs font-medium text-slate-400">
-                  Measure Ranking (Worst First)
-                </h3>
-                <button
-                  onClick={() => setFocusedChart('pareto')}
-                  className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
-                  title="Maximize Chart"
-                >
-                  <Maximize2 size={14} />
-                </button>
-              </div>
-              <div className="h-[calc(100%-1.5rem)]">
-                <ErrorBoundary componentName="PerformancePareto">
-                  <PerformancePareto onChannelClick={handleMeasureClick} />
-                </ErrorBoundary>
-              </div>
-            </div>
-          </div>
-
-          <div className="min-h-0 bg-slate-800/50 rounded-lg overflow-hidden">
-            <div className="h-full p-2">
-              <div className="flex items-center justify-between mb-1 px-2">
-                <h3 className="text-xs font-medium text-slate-400">
-                  {selectedMeasure ? `${selectedMeasure} Capability` : 'Measure Capability'}
-                </h3>
-                <button
-                  onClick={() => setFocusedChart('capability')}
-                  className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
-                  title="Maximize Chart"
-                >
-                  <Maximize2 size={14} />
-                </button>
-              </div>
-              <div className="h-[calc(100%-1.5rem)]">
-                <ErrorBoundary componentName="PerformanceCapability">
-                  <PerformanceCapability />
+                  <PerformanceBoxplot onChannelClick={handleBoxplotClick} maxDisplayed={15} />
                 </ErrorBoundary>
               </div>
             </div>

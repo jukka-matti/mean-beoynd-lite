@@ -1,17 +1,15 @@
 /**
  * ContentPerformanceDashboard - Performance Mode for Excel Content Add-in
  *
- * Displays multi-channel performance analysis charts using the base variants
- * from @variscout/charts for explicit sizing in the Excel embedding context.
+ * Displays multi-channel performance analysis with simplified layout:
+ * - I-Chart showing Cpk by channel (full width)
+ * - Boxplot showing worst 15 channels (full width)
+ *
+ * Optimized for 100+ column datasets - uses base chart variants for explicit sizing.
  */
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import {
-  PerformanceIChartBase,
-  PerformanceBoxplotBase,
-  PerformanceParetoBase,
-  PerformanceCapabilityBase,
-} from '@variscout/charts';
+import { PerformanceIChartBase, PerformanceBoxplotBase } from '@variscout/charts';
 import { calculateChannelPerformance, CPK_THRESHOLDS } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
@@ -159,7 +157,7 @@ const createStyles = (theme: ThemeTokens): Record<string, React.CSSProperties> =
   bottomRow: {
     flex: '0 0 50%',
     display: 'flex',
-    gap: theme.spacingM,
+    flexDirection: 'column',
   },
   chartSection: {
     flex: 1,
@@ -311,12 +309,6 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
     return calculateChannelPerformance(data, state.measureColumns, specs);
   }, [data, state.measureColumns, state.specs]);
 
-  // Get selected channel for capability chart
-  const selectedChannel = useMemo(() => {
-    if (!selectedMeasure || !performanceResult) return null;
-    return performanceResult.channels.find(c => c.id === selectedMeasure) ?? null;
-  }, [performanceResult, selectedMeasure]);
-
   const handleMeasureClick = useCallback(
     (measureId: string) => {
       const newSelection = selectedMeasure === measureId ? null : measureId;
@@ -326,10 +318,24 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
     [selectedMeasure, onSelectMeasure]
   );
 
+  const handleBoxplotClick = useCallback(
+    (measureId: string) => {
+      // Show confirmation and drill to Dashboard
+      if (
+        window.confirm(
+          `Analyze ${measureId} in detail? This will switch to standard Dashboard view.`
+        )
+      ) {
+        onDrillToMeasure?.(measureId);
+      }
+    },
+    [onDrillToMeasure]
+  );
+
   // Chart dimensions
   const topChartWidth = Math.max(200, containerSize.width - 32);
   const topChartHeight = Math.max(120, (containerSize.height - 120) * 0.4);
-  const bottomChartWidth = Math.max(120, (containerSize.width - 48) / 3);
+  const bottomChartWidth = Math.max(200, containerSize.width - 32);
   const bottomChartHeight = Math.max(100, (containerSize.height - 120) * 0.5);
 
   if (isLoading) {
@@ -495,57 +501,22 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
         </div>
       </div>
 
-      {/* Bottom row: Three charts */}
+      {/* Bottom row: Single Boxplot chart */}
       <div style={styles.bottomRow}>
         <div style={styles.chartSection}>
-          <div style={styles.chartLabel}>
-            {selectedMeasure ? `${selectedMeasure} Distribution` : 'Worst Channels'}
-          </div>
+          <div style={styles.chartLabel}>Worst 15 Channels (Click to Analyze)</div>
           <div style={styles.chartContainer}>
             <ChartErrorBoundary chartName="PerformanceBoxplot" theme={theme}>
               <PerformanceBoxplotBase
                 channels={performanceResult.channels}
                 specs={state.specs || {}}
                 selectedMeasure={selectedMeasure}
-                onChannelClick={handleMeasureClick}
+                onChannelClick={handleBoxplotClick}
                 parentWidth={bottomChartWidth}
                 parentHeight={bottomChartHeight}
                 showBranding={false}
                 cpkThresholds={thresholds}
-              />
-            </ChartErrorBoundary>
-          </div>
-        </div>
-
-        <div style={styles.chartSection}>
-          <div style={styles.chartLabel}>Ranking (Worst First)</div>
-          <div style={styles.chartContainer}>
-            <ChartErrorBoundary chartName="PerformancePareto" theme={theme}>
-              <PerformanceParetoBase
-                channels={performanceResult.channels}
-                selectedMeasure={selectedMeasure}
-                onChannelClick={handleMeasureClick}
-                parentWidth={bottomChartWidth}
-                parentHeight={bottomChartHeight}
-                showBranding={false}
-                cpkThresholds={thresholds}
-              />
-            </ChartErrorBoundary>
-          </div>
-        </div>
-
-        <div style={styles.chartSection}>
-          <div style={styles.chartLabel}>
-            {selectedMeasure ? `${selectedMeasure} Capability` : 'Select Channel'}
-          </div>
-          <div style={styles.chartContainer}>
-            <ChartErrorBoundary chartName="PerformanceCapability" theme={theme}>
-              <PerformanceCapabilityBase
-                channel={selectedChannel}
-                specs={state.specs || {}}
-                parentWidth={bottomChartWidth}
-                parentHeight={bottomChartHeight}
-                showBranding={false}
+                maxDisplayed={15}
               />
             </ChartErrorBoundary>
           </div>
