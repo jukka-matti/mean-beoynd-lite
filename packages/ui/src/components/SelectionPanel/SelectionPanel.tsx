@@ -101,6 +101,7 @@ export const SelectionPanel: React.FC<SelectionPanelProps> = ({
           <span className="text-sm font-medium text-blue-300">
             {sortedIndices.length} {sortedIndices.length === 1 ? 'point' : 'points'} selected
           </span>
+          <span className="text-xs text-content-muted hidden sm:inline">(Press Esc to clear)</span>
         </div>
 
         <div className="flex items-center gap-2">

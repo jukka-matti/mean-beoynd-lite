@@ -28,6 +28,10 @@ interface DataPanelProps {
   excludedRowIndices?: Set<number>;
   excludedReasons?: Map<number, ExclusionReason[]>;
   controlViolations?: Map<number, string[]>;
+  /** Selected point indices for multi-point selection (Phase 3: Brushing) */
+  selectedIndices?: Set<number>;
+  /** Callback to toggle a point in/out of selection */
+  onToggleSelection?: (index: number) => void;
 }
 
 const DataPanel: React.FC<DataPanelProps> = ({
@@ -38,6 +42,8 @@ const DataPanel: React.FC<DataPanelProps> = ({
   excludedRowIndices,
   excludedReasons,
   controlViolations,
+  selectedIndices,
+  onToggleSelection,
 }) => {
   const { filteredData, rawData, outcome, specs, columnAliases, filters } = useData();
 
@@ -113,6 +119,25 @@ const DataPanel: React.FC<DataPanelProps> = ({
       return () => clearTimeout(timeout);
     }
   }, [highlightedRow, currentPage]);
+
+  // Scroll to first selected row when selection changes (Phase 3: Brushing)
+  useEffect(() => {
+    if (selectedIndices && selectedIndices.size > 0) {
+      // Find first selected row in filtered data
+      const firstSelectedOriginalIndex = Array.from(selectedIndices).sort((a, b) => a - b)[0];
+      const dataIndex = dataWithIndices.findIndex(
+        d => d.originalIndex === firstSelectedOriginalIndex
+      );
+
+      if (dataIndex >= 0) {
+        const targetPage = Math.floor(dataIndex / ROWS_PER_PAGE);
+        if (targetPage !== currentPage) {
+          setCurrentPage(targetPage);
+        }
+        // Scroll will happen automatically when page renders
+      }
+    }
+  }, [selectedIndices, dataWithIndices, currentPage]);
 
   // Drag handlers for resizing
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -282,22 +307,34 @@ const DataPanel: React.FC<DataPanelProps> = ({
                 {pageData.map((item, pageRowIdx) => {
                   const { row, originalIndex } = item;
                   const isHighlighted = originalIndex === highlightedRow;
+                  const isSelected = selectedIndices?.has(originalIndex) ?? false;
                   const isExcluded = isRowExcluded(originalIndex);
                   const exclusionReasons = getExclusionReasons(originalIndex);
                   const hasViolation = hasControlViolation(originalIndex);
                   const violationReasons = getControlViolationReasons(originalIndex);
 
+                  // Handle row click: toggle selection if onToggleSelection provided, otherwise use onRowClick
+                  const handleRowClick = () => {
+                    if (onToggleSelection) {
+                      onToggleSelection(originalIndex);
+                    } else {
+                      onRowClick?.(originalIndex);
+                    }
+                  };
+
                   return (
                     <tr
                       key={`${originalIndex}-${pageRowIdx}`}
                       ref={isHighlighted ? highlightRowRef : undefined}
-                      onClick={() => onRowClick?.(originalIndex)}
+                      onClick={handleRowClick}
                       className={`cursor-pointer transition-colors duration-1000 ${
-                        isHighlighted
-                          ? 'bg-blue-500/30'
-                          : isExcluded
-                            ? 'bg-amber-500/10 hover:bg-amber-500/20'
-                            : 'hover:bg-surface-tertiary/50'
+                        isSelected
+                          ? 'bg-blue-500/20 hover:bg-blue-500/30'
+                          : isHighlighted
+                            ? 'bg-blue-500/30'
+                            : isExcluded
+                              ? 'bg-amber-500/10 hover:bg-amber-500/20'
+                              : 'hover:bg-surface-tertiary/50'
                       }`}
                     >
                       <td className="px-2 py-1 text-content-muted border-b border-edge/50 font-mono">

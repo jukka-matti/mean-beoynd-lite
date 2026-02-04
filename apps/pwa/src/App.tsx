@@ -17,7 +17,7 @@ import AppFooter from './components/AppFooter';
 import { useDataIngestion } from './hooks/useDataIngestion';
 import { useEmbedMessaging } from './hooks/useEmbedMessaging';
 import { useAutoSave } from './hooks/useAutoSave';
-import { SAMPLES } from './data/sampleData';
+import { SAMPLES } from '@variscout/data';
 import {
   validateData,
   getNelsonRule2ViolationPoints,
@@ -59,6 +59,10 @@ function App() {
     setDataQualityReport,
     factors,
     columnAliases,
+    // Multi-point selection (Phase 3: Brushing)
+    selectedPoints,
+    togglePointSelection,
+    clearSelection,
   } = useData();
 
   // State for performance mode auto-detection
@@ -563,20 +567,27 @@ function App() {
   }, [clearData]);
 
   // Handle view change from settings
-  const handleViewChange = useCallback((view: AnalysisView) => {
-    setActiveView(view);
-  }, []);
+  const handleViewChange = useCallback(
+    (view: AnalysisView) => {
+      // Clear selection when switching views (Phase 4: Performance Mode Integration)
+      clearSelection();
+      setActiveView(view);
+    },
+    [clearSelection]
+  );
 
   // Handle enabling performance mode from detection modal
   const handleEnablePerformanceMode = useCallback(
     (columns: string[], label: string) => {
+      // Clear selection when entering Performance Mode (Phase 4)
+      clearSelection();
       setMeasureColumns(columns);
       setMeasureLabel(label);
       setPerformanceMode(true);
       setWideFormatDetection(null);
       setActiveView('performance');
     },
-    [setMeasureColumns, setMeasureLabel, setPerformanceMode]
+    [setMeasureColumns, setMeasureLabel, setPerformanceMode, clearSelection]
   );
 
   // Handle declining performance mode from detection modal
@@ -601,9 +612,11 @@ function App() {
 
   // Handle returning to Performance Mode from drilled I-Chart
   const handleBackToPerformance = useCallback(() => {
+    // Clear selection when returning to Performance Mode (Phase 4)
+    clearSelection();
     setDrillFromPerformance(null);
     setActiveView('performance');
-  }, []);
+  }, [clearSelection]);
 
   // Handle manual data entry completion
   const handleManualDataAnalyze = useCallback(
@@ -637,11 +650,14 @@ function App() {
 
       // Handle performance mode
       if (config.isPerformanceMode && config.measureColumns && config.measureColumns.length >= 3) {
+        // Clear selection when entering Performance Mode (Phase 4)
+        clearSelection();
         setMeasureColumns(config.measureColumns);
         setMeasureLabel(config.measureLabel || 'Channel');
         setPerformanceMode(true);
         setActiveView('performance');
       } else {
+        clearSelection();
         setMeasureColumns([]);
         setPerformanceMode(false);
         setActiveView('dashboard');
@@ -845,6 +861,8 @@ function App() {
             excludedRowIndices={excludedRowIndices}
             excludedReasons={excludedReasons}
             controlViolations={controlViolations}
+            selectedIndices={selectedPoints}
+            onToggleSelection={togglePointSelection}
           />
         )}
       </main>

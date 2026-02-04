@@ -199,6 +199,12 @@ const Dashboard = ({
     onEscape: onExitPresentation,
   });
 
+  // Keyboard handler for Selection clearing (Phase 5: Polish)
+  useKeyboardNavigation({
+    focusedItem: selectedPoints.size > 0 ? 'selection' : null,
+    onEscape: clearSelection,
+  });
+
   // Handle breadcrumb navigation (delegates to hook)
   const handleBreadcrumbNavigate = useCallback((id: string) => navigateTo(id), [navigateTo]);
 
