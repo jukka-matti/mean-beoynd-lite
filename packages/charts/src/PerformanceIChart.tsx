@@ -13,7 +13,7 @@
 
 import React, { useMemo } from 'react';
 import { Group } from '@visx/group';
-import { Circle, Line } from '@visx/shape';
+import { Circle } from '@visx/shape';
 import { scaleLinear, scaleBand } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { GridRows } from '@visx/grid';
@@ -24,6 +24,9 @@ import { chartColors } from './colors';
 import { useChartTheme } from './useChartTheme';
 import { getResponsiveMargins, getScaledFonts, getResponsiveTickCount } from './responsive';
 import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
+import { SpecLimitLine } from './components/SpecLimitLine';
+import ChartLegend from './ChartLegend';
+import { getDataPointA11yProps } from './utils/accessibility';
 import {
   calculateCapabilityControlLimits,
   getCapabilityControlStatus,
@@ -43,6 +46,8 @@ const DEFAULT_CPK_TARGET = 1.33;
 export interface PerformanceIChartBaseProps extends PerformanceIChartProps {
   /** User-defined Cpk/Cp target line (default: 1.33) */
   cpkTarget?: number;
+  /** Show control status legend (default: false) */
+  showLegend?: boolean;
 }
 
 export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
@@ -54,6 +59,7 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
   showBranding = true,
   capabilityMetric = 'cpk',
   cpkTarget = DEFAULT_CPK_TARGET,
+  showLegend = false,
 }) => {
   const { chrome, fontScale } = useChartTheme();
   const sourceBarHeight = getSourceBarHeight(showBranding);
@@ -68,15 +74,17 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
   const height = Math.max(0, parentHeight - margin.top - margin.bottom);
 
   // Calculate control limits from capability values across channels
-  const controlLimits = useMemo(
-    () => calculateCapabilityControlLimits(channels, capabilityMetric),
-    [channels, capabilityMetric]
-  );
+  // Use 'cpk' for control limits when in 'both' mode (can't show control limits for both metrics)
+  const controlLimits = useMemo(() => {
+    const metric = capabilityMetric === 'both' ? 'cpk' : capabilityMetric;
+    return calculateCapabilityControlLimits(channels, metric);
+  }, [channels, capabilityMetric]);
 
   // Determine control status for each channel
   const controlStatus = useMemo(() => {
     if (!controlLimits) return new Map<string, CapabilityControlStatus>();
-    return getCapabilityControlStatus(channels, controlLimits, capabilityMetric);
+    const metric = capabilityMetric === 'both' ? 'cpk' : capabilityMetric;
+    return getCapabilityControlStatus(channels, controlLimits, metric);
   }, [channels, controlLimits, capabilityMetric]);
 
   // X scale - band scale for channels
@@ -99,7 +107,16 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
       return scaleLinear({ range: [height, 0], domain: [0, 2] });
     }
 
-    const metricValues = channels.map(c => c[capabilityMetric] ?? 0).filter(v => v > 0);
+    let metricValues: number[];
+    if (capabilityMetric === 'both') {
+      // Include both Cp and Cpk values when in 'both' mode
+      const cpValues = channels.map(c => c.cp ?? 0).filter(v => v > 0);
+      const cpkValues = channels.map(c => c.cpk ?? 0).filter(v => v > 0);
+      metricValues = [...cpValues, ...cpkValues];
+    } else {
+      metricValues = channels.map(c => c[capabilityMetric] ?? 0).filter(v => v > 0);
+    }
+
     let minMetric = Math.min(...metricValues, 0);
     let maxMetric = Math.max(...metricValues, 2);
 
@@ -121,6 +138,65 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
     });
   }, [channels, height, capabilityMetric, controlLimits, cpkTarget]);
 
+  // Label Collision Detection (adapted from PWA IChart)
+  const resolvedLabels = useMemo(() => {
+    const labels: Array<{
+      y: number;
+      text: string;
+      fill: string;
+    }> = [];
+
+    // Collect control limit labels (when available)
+    if (controlLimits) {
+      labels.push({
+        y: yScale(controlLimits.ucl),
+        text: `UCL: ${controlLimits.ucl.toFixed(2)}`,
+        fill: chrome.axisSecondary,
+      });
+      labels.push({
+        y: yScale(controlLimits.mean),
+        text: `Mean: ${controlLimits.mean.toFixed(2)}`,
+        fill: chartColors.mean,
+      });
+      labels.push({
+        y: yScale(controlLimits.lcl),
+        text: `LCL: ${controlLimits.lcl.toFixed(2)}`,
+        fill: chrome.axisSecondary,
+      });
+    }
+
+    // Add target label
+    labels.push({
+      y: yScale(cpkTarget),
+      text: `Target: ${cpkTarget.toFixed(2)}`,
+      fill: chartColors.target,
+    });
+
+    // Sort by Y position (top to bottom)
+    labels.sort((a, b) => a.y - b.y);
+
+    // Apply collision resolution
+    const minSpacing = (fonts.statLabel || 10) + 2;
+
+    for (let i = 1; i < labels.length; i++) {
+      const prev = labels[i - 1];
+      const curr = labels[i];
+      if (curr.y < prev.y + minSpacing) {
+        curr.y = prev.y + minSpacing; // Push down overlapping labels
+      }
+    }
+
+    return labels;
+  }, [
+    controlLimits,
+    cpkTarget,
+    yScale,
+    fonts.statLabel,
+    chrome.axisSecondary,
+    chartColors.mean,
+    chartColors.target,
+  ]);
+
   const xTickCount = getResponsiveTickCount(width, 'x');
 
   // Get point color based on control status (I-Chart style)
@@ -137,7 +213,10 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
 
   const showTooltip = (channel: ChannelResult, index: number) => {
     const x = (xScale(index.toString()) ?? 0) + xScale.bandwidth() / 2;
-    const y = yScale(channel[capabilityMetric] ?? 0);
+    // Use cpk value for tooltip positioning when in 'both' mode
+    const yValue =
+      capabilityMetric === 'both' ? (channel.cpk ?? 0) : (channel[capabilityMetric] ?? 0);
+    const y = yScale(yValue);
     const status = controlStatus.get(channel.id);
     setTooltipData({ channel, x, y, status });
     setTooltipLeft(x + margin.left);
@@ -173,104 +252,183 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
           {/* Control Limits (when available) */}
           {controlLimits && (
             <>
-              {/* UCL line - cyan for Voice of the Process */}
-              <Line
-                from={{ x: 0, y: yScale(controlLimits.ucl) }}
-                to={{ x: width, y: yScale(controlLimits.ucl) }}
-                stroke={chartColors.control}
-                strokeWidth={1.5}
-                strokeDasharray="6,4"
+              <SpecLimitLine
+                value={controlLimits.ucl}
+                type="ucl"
+                yScale={yScale}
+                width={width}
+                fonts={fonts}
+                showLabel={false}
+                decimalPlaces={2}
               />
-              <text
-                x={width - 4}
-                y={yScale(controlLimits.ucl) - 4}
-                fill={chartColors.control}
-                fontSize={fonts.statLabel}
-                textAnchor="end"
-              >
-                UCL = {controlLimits.ucl.toFixed(2)}
-              </text>
-
-              {/* Mean line */}
-              <Line
-                from={{ x: 0, y: yScale(controlLimits.mean) }}
-                to={{ x: width, y: yScale(controlLimits.mean) }}
-                stroke={chartColors.mean}
-                strokeWidth={1.5}
+              <SpecLimitLine
+                value={controlLimits.mean}
+                type="mean"
+                yScale={yScale}
+                width={width}
+                fonts={fonts}
+                showLabel={false}
+                decimalPlaces={2}
               />
-              <text
-                x={width - 4}
-                y={yScale(controlLimits.mean) - 4}
-                fill={chartColors.mean}
-                fontSize={fonts.statLabel}
-                textAnchor="end"
-              >
-                x̄ = {controlLimits.mean.toFixed(2)}
-              </text>
-
-              {/* LCL line - cyan for Voice of the Process */}
-              <Line
-                from={{ x: 0, y: yScale(controlLimits.lcl) }}
-                to={{ x: width, y: yScale(controlLimits.lcl) }}
-                stroke={chartColors.control}
-                strokeWidth={1.5}
-                strokeDasharray="6,4"
+              <SpecLimitLine
+                value={controlLimits.lcl}
+                type="lcl"
+                yScale={yScale}
+                width={width}
+                fonts={fonts}
+                showLabel={false}
+                decimalPlaces={2}
               />
-              <text
-                x={width - 4}
-                y={yScale(controlLimits.lcl) + 12}
-                fill={chartColors.control}
-                fontSize={fonts.statLabel}
-                textAnchor="end"
-              >
-                LCL = {controlLimits.lcl.toFixed(2)}
-              </text>
             </>
           )}
 
           {/* Target line (user-defined reference) */}
-          <Line
-            from={{ x: 0, y: yScale(cpkTarget) }}
-            to={{ x: width, y: yScale(cpkTarget) }}
-            stroke={chartColors.pass}
-            strokeWidth={1.5}
-            strokeDasharray="4,2"
+          <SpecLimitLine
+            value={cpkTarget}
+            type="target"
+            yScale={yScale}
+            width={width}
+            fonts={fonts}
+            showLabel={false}
+            decimalPlaces={2}
           />
-          <text
-            x={4}
-            y={yScale(cpkTarget) - 4}
-            fill={chartColors.pass}
-            fontSize={fonts.statLabel}
-            textAnchor="start"
-          >
-            Target = {cpkTarget}
-          </text>
 
           {/* Data points */}
           {channels.map((channel, i) => {
-            const metricValue = channel[capabilityMetric] ?? 0;
             const x = (xScale(i.toString()) ?? 0) + xScale.bandwidth() / 2;
-            const y = yScale(metricValue);
             const isSelected = selectedMeasure === channel.id;
-            const pointColor = getPointColor(channel.id);
 
-            return (
-              <Circle
-                key={channel.id}
-                cx={x}
-                cy={y}
-                r={isSelected ? 8 : 5}
-                fill={pointColor}
-                stroke={isSelected ? '#fff' : chrome.pointStroke}
-                strokeWidth={isSelected ? 2 : 1}
-                opacity={selectedMeasure && !isSelected ? 0.4 : 1}
-                style={{ cursor: onChannelClick ? 'pointer' : 'default' }}
-                onClick={() => onChannelClick?.(channel.id)}
-                onMouseEnter={() => showTooltip(channel, i)}
-                onMouseLeave={hideTooltip}
-              />
-            );
+            if (capabilityMetric === 'both') {
+              // Render BOTH Cp and Cpk dots
+              const cpValue = channel.cp ?? 0;
+              const cpkValue = channel.cpk ?? 0;
+
+              return (
+                <Group key={channel.id}>
+                  {/* Cpk dot (darker blue) */}
+                  <Circle
+                    cx={x}
+                    cy={yScale(cpkValue)}
+                    r={isSelected ? 8 : 5}
+                    fill={chartColors.mean} // #3b82f6 (darker)
+                    stroke={isSelected ? '#fff' : chrome.pointStroke}
+                    strokeWidth={isSelected ? 2 : 1}
+                    opacity={selectedMeasure && !isSelected ? 0.4 : 1}
+                    style={{ cursor: onChannelClick ? 'pointer' : 'default' }}
+                    onClick={() => onChannelClick?.(channel.id)}
+                    onMouseEnter={() => showTooltip(channel, i)}
+                    onMouseLeave={hideTooltip}
+                    {...getDataPointA11yProps(
+                      'Cpk',
+                      cpkValue,
+                      i,
+                      onChannelClick ? () => onChannelClick(channel.id) : undefined
+                    )}
+                  />
+                  {isSelected && (
+                    <Circle
+                      cx={x}
+                      cy={yScale(cpkValue)}
+                      r={12}
+                      fill="transparent"
+                      stroke={chartColors.mean}
+                      strokeWidth={2}
+                      className="animate-pulse"
+                      pointerEvents="none"
+                    />
+                  )}
+                  {/* Cp dot (lighter blue) */}
+                  <Circle
+                    cx={x}
+                    cy={yScale(cpValue)}
+                    r={isSelected ? 8 : 5}
+                    fill={chartColors.meanAlt} // #60a5fa (lighter)
+                    stroke={isSelected ? '#fff' : chrome.pointStroke}
+                    strokeWidth={isSelected ? 2 : 1}
+                    opacity={selectedMeasure && !isSelected ? 0.4 : 1}
+                    style={{ cursor: onChannelClick ? 'pointer' : 'default' }}
+                    onClick={() => onChannelClick?.(channel.id)}
+                    onMouseEnter={() => showTooltip(channel, i)}
+                    onMouseLeave={hideTooltip}
+                    {...getDataPointA11yProps(
+                      'Cp',
+                      cpValue,
+                      i,
+                      onChannelClick ? () => onChannelClick(channel.id) : undefined
+                    )}
+                  />
+                  {isSelected && (
+                    <Circle
+                      cx={x}
+                      cy={yScale(cpValue)}
+                      r={12}
+                      fill="transparent"
+                      stroke={chartColors.meanAlt}
+                      strokeWidth={2}
+                      className="animate-pulse"
+                      pointerEvents="none"
+                    />
+                  )}
+                </Group>
+              );
+            } else {
+              // Render single dot (existing logic)
+              const metricValue = channel[capabilityMetric] ?? 0;
+              const y = yScale(metricValue);
+              const pointColor = getPointColor(channel.id);
+
+              return (
+                <Group key={channel.id}>
+                  <Circle
+                    cx={x}
+                    cy={y}
+                    r={isSelected ? 8 : 5}
+                    fill={pointColor}
+                    stroke={isSelected ? '#fff' : chrome.pointStroke}
+                    strokeWidth={isSelected ? 2 : 1}
+                    opacity={selectedMeasure && !isSelected ? 0.4 : 1}
+                    style={{ cursor: onChannelClick ? 'pointer' : 'default' }}
+                    onClick={() => onChannelClick?.(channel.id)}
+                    onMouseEnter={() => showTooltip(channel, i)}
+                    onMouseLeave={hideTooltip}
+                    {...getDataPointA11yProps(
+                      metricLabel,
+                      metricValue,
+                      i,
+                      onChannelClick ? () => onChannelClick(channel.id) : undefined
+                    )}
+                  />
+                  {isSelected && (
+                    <Circle
+                      cx={x}
+                      cy={y}
+                      r={12}
+                      fill="transparent"
+                      stroke={chartColors.mean}
+                      strokeWidth={2}
+                      className="animate-pulse"
+                      pointerEvents="none"
+                    />
+                  )}
+                </Group>
+              );
+            }
           })}
+
+          {/* Render collision-resolved limit labels */}
+          {resolvedLabels.map((label, i) => (
+            <text
+              key={i}
+              x={width + 4}
+              y={label.y}
+              fill={label.fill}
+              fontSize={fonts.statLabel}
+              textAnchor="start"
+              dominantBaseline="middle"
+            >
+              {label.text}
+            </text>
+          ))}
 
           {/* X Axis */}
           <AxisBottom
@@ -339,6 +497,16 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
             width={parentWidth}
             top={parentHeight - getSourceBarHeight()}
             n={channels.length}
+          />
+        )}
+
+        {/* Control Status Legend (optional) */}
+        {showLegend && capabilityMetric !== 'both' && (
+          <ChartLegend
+            mode="practical"
+            width={parentWidth}
+            top={parentHeight - (showBranding ? sourceBarHeight + 30 : 30)}
+            show={showLegend}
           />
         )}
       </svg>

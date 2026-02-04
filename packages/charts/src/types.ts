@@ -343,8 +343,8 @@ export interface PerformanceIChartProps extends BaseChartProps {
   selectedMeasure?: string | null;
   /** Callback when a channel point is clicked */
   onChannelClick?: (channelId: string) => void;
-  /** Which capability metric to display: 'cpk' (default) or 'cp' */
-  capabilityMetric?: 'cp' | 'cpk';
+  /** Which capability metric to display: 'cpk' (default), 'cp', or 'both' */
+  capabilityMetric?: 'cp' | 'cpk' | 'both';
   /** User-defined Cpk/Cp target line (default: 1.33) */
   cpkTarget?: number;
   /** Custom Cpk thresholds for health classification (defaults to industry standards) */

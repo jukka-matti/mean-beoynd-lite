@@ -41,8 +41,11 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
   const { performanceResult, selectedMeasure, setSelectedMeasure, specs, measureColumns } =
     useData();
 
-  // Cp/Cpk toggle state
-  const [capabilityMetric, setCapabilityMetric] = useState<'cp' | 'cpk'>('cpk');
+  // Cp/Cpk toggle state (includes 'both' option)
+  const [capabilityMetric, setCapabilityMetric] = useState<'cp' | 'cpk' | 'both'>('cpk');
+
+  // Cpk target threshold state
+  const [cpkTarget, setCpkTarget] = useState<number>(1.33);
 
   // Focus mode state
   type FocusedChart = 'ichart' | 'boxplot' | 'pareto' | 'capability' | null;
@@ -140,13 +143,18 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
             <div className="flex-1 bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl shadow-black/20 flex flex-col h-full">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold text-slate-300">
-                  {capabilityMetric === 'cp' ? 'Cp' : 'Cpk'} by Measure
+                  {capabilityMetric === 'cp'
+                    ? 'Cp'
+                    : capabilityMetric === 'cpk'
+                      ? 'Cpk'
+                      : 'Cp & Cpk'}{' '}
+                  by Measure
                   {selectedMeasure && (
                     <span className="ml-2 text-slate-500">(Selected: {selectedMeasure})</span>
                   )}
                 </h3>
                 <div className="flex items-center gap-2">
-                  {/* Cp/Cpk Toggle */}
+                  {/* Cp/Cpk/Both Toggle */}
                   <div className="flex rounded overflow-hidden border border-slate-600">
                     <button
                       onClick={() => setCapabilityMetric('cpk')}
@@ -168,7 +176,36 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                     >
                       Cp
                     </button>
+                    <button
+                      onClick={() => setCapabilityMetric('both')}
+                      className={`px-2 py-0.5 text-xs font-medium transition-colors ${
+                        capabilityMetric === 'both'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-700 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Both
+                    </button>
                   </div>
+
+                  {/* Cpk Target Adjustment */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <label htmlFor="cpk-target-focused" className="text-slate-400">
+                      Target Cpk:
+                    </label>
+                    <input
+                      id="cpk-target-focused"
+                      type="number"
+                      min="0.5"
+                      max="3.0"
+                      step="0.01"
+                      value={cpkTarget}
+                      onChange={e => setCpkTarget(parseFloat(e.target.value) || 1.33)}
+                      className="w-20 px-2 py-1 bg-slate-700 text-slate-100 border border-slate-600 rounded text-center"
+                      title="Industry standard: 1.33 (4σ), 1.67 (5σ), 2.00 (6σ)"
+                    />
+                  </div>
+
                   {selectedMeasure && onDrillToMeasure && (
                     <button
                       onClick={() => onDrillToMeasure(selectedMeasure)}
@@ -192,6 +229,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                   <PerformanceIChart
                     onChannelClick={handleMeasureClick}
                     capabilityMetric={capabilityMetric}
+                    cpkTarget={cpkTarget}
                   />
                 </ErrorBoundary>
               </div>
@@ -274,13 +312,18 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
             <div className="h-full p-2">
               <div className="flex items-center justify-between mb-1 px-2">
                 <h3 className="text-xs font-medium text-slate-400">
-                  {capabilityMetric === 'cp' ? 'Cp' : 'Cpk'} by Measure
+                  {capabilityMetric === 'cp'
+                    ? 'Cp'
+                    : capabilityMetric === 'cpk'
+                      ? 'Cpk'
+                      : 'Cp & Cpk'}{' '}
+                  by Measure
                   {selectedMeasure && (
                     <span className="ml-2 text-slate-500">(Selected: {selectedMeasure})</span>
                   )}
                 </h3>
                 <div className="flex items-center gap-2">
-                  {/* Cp/Cpk Toggle */}
+                  {/* Cp/Cpk/Both Toggle */}
                   <div className="flex rounded overflow-hidden border border-slate-600">
                     <button
                       onClick={() => setCapabilityMetric('cpk')}
@@ -302,7 +345,36 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                     >
                       Cp
                     </button>
+                    <button
+                      onClick={() => setCapabilityMetric('both')}
+                      className={`px-2 py-0.5 text-xs font-medium transition-colors ${
+                        capabilityMetric === 'both'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-700 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Both
+                    </button>
                   </div>
+
+                  {/* Cpk Target Adjustment */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <label htmlFor="cpk-target-grid" className="text-slate-400">
+                      Target Cpk:
+                    </label>
+                    <input
+                      id="cpk-target-grid"
+                      type="number"
+                      min="0.5"
+                      max="3.0"
+                      step="0.01"
+                      value={cpkTarget}
+                      onChange={e => setCpkTarget(parseFloat(e.target.value) || 1.33)}
+                      className="w-20 px-2 py-1 bg-slate-700 text-slate-100 border border-slate-600 rounded text-center"
+                      title="Industry standard: 1.33 (4σ), 1.67 (5σ), 2.00 (6σ)"
+                    />
+                  </div>
+
                   {/* Drill to I-Chart button */}
                   {selectedMeasure && onDrillToMeasure && (
                     <button
@@ -327,6 +399,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                   <PerformanceIChart
                     onChannelClick={handleMeasureClick}
                     capabilityMetric={capabilityMetric}
+                    cpkTarget={cpkTarget}
                   />
                 </ErrorBoundary>
               </div>

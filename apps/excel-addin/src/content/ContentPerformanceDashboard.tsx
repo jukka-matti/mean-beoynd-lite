@@ -235,6 +235,12 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
   const [selectedMeasure, setSelectedMeasure] = useState<string | null>(
     state.selectedMeasure ?? null
   );
+  // Cp/Cpk toggle state (includes 'both' option)
+  const [capabilityMetric, setCapabilityMetric] = useState<'cp' | 'cpk' | 'both'>('cpk');
+
+  // Cpk target threshold state
+  const [cpkTarget] = useState<number>(1.33);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Observe container size for responsive charts
@@ -395,7 +401,83 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
 
       {/* Top row: I-Chart */}
       <div style={styles.topRow}>
-        <div style={styles.chartLabel}>Cpk by {state.measureLabel || 'Measure'}</div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+            backgroundColor: theme.colorNeutralBackground3,
+          }}
+        >
+          <div style={styles.chartLabel}>
+            {capabilityMetric === 'cp' ? 'Cp' : capabilityMetric === 'cpk' ? 'Cpk' : 'Cp & Cpk'} by{' '}
+            {state.measureLabel || 'Measure'}
+          </div>
+          {/* Cp/Cpk/Both Toggle */}
+          <div style={{ display: 'flex', gap: '2px' }}>
+            <button
+              onClick={() => setCapabilityMetric('cpk')}
+              style={{
+                padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+                fontSize: theme.fontSizeCaption,
+                fontWeight: theme.fontWeightSemibold,
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor:
+                  capabilityMetric === 'cpk'
+                    ? theme.colorBrandForeground1
+                    : theme.colorNeutralBackground2,
+                color:
+                  capabilityMetric === 'cpk'
+                    ? theme.colorNeutralForeground1
+                    : theme.colorNeutralForeground2,
+              }}
+            >
+              Cpk
+            </button>
+            <button
+              onClick={() => setCapabilityMetric('cp')}
+              style={{
+                padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+                fontSize: theme.fontSizeCaption,
+                fontWeight: theme.fontWeightSemibold,
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor:
+                  capabilityMetric === 'cp'
+                    ? theme.colorBrandForeground1
+                    : theme.colorNeutralBackground2,
+                color:
+                  capabilityMetric === 'cp'
+                    ? theme.colorNeutralForeground1
+                    : theme.colorNeutralForeground2,
+              }}
+            >
+              Cp
+            </button>
+            <button
+              onClick={() => setCapabilityMetric('both')}
+              style={{
+                padding: `${theme.spacingXS}px ${theme.spacingS}px`,
+                fontSize: theme.fontSizeCaption,
+                fontWeight: theme.fontWeightSemibold,
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor:
+                  capabilityMetric === 'both'
+                    ? theme.colorBrandForeground1
+                    : theme.colorNeutralBackground2,
+                color:
+                  capabilityMetric === 'both'
+                    ? theme.colorNeutralForeground1
+                    : theme.colorNeutralForeground2,
+              }}
+            >
+              Both
+            </button>
+          </div>
+        </div>
         <div style={styles.chartContainer}>
           <ChartErrorBoundary chartName="PerformanceIChart" theme={theme}>
             <PerformanceIChartBase
@@ -406,6 +488,8 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
               parentHeight={topChartHeight}
               showBranding={false}
               cpkThresholds={thresholds}
+              capabilityMetric={capabilityMetric}
+              cpkTarget={cpkTarget}
             />
           </ChartErrorBoundary>
         </div>

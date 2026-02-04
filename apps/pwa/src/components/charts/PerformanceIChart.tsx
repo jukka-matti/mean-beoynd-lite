@@ -11,8 +11,10 @@ import { useData } from '../../context/DataContext';
 
 interface PerformanceIChartProps {
   onChannelClick?: (channelId: string) => void;
-  /** Which capability metric to display: 'cpk' (default) or 'cp' */
-  capabilityMetric?: 'cp' | 'cpk';
+  /** Which capability metric to display: 'cpk' (default), 'cp', or 'both' */
+  capabilityMetric?: 'cp' | 'cpk' | 'both';
+  /** User-defined Cpk/Cp target line (default: 1.33) */
+  cpkTarget?: number;
   /** Custom Cpk thresholds for health classification (defaults to industry standards) */
   cpkThresholds?: CpkThresholds;
 }
@@ -20,6 +22,7 @@ interface PerformanceIChartProps {
 const PerformanceIChart: React.FC<PerformanceIChartProps> = ({
   onChannelClick,
   capabilityMetric = 'cpk',
+  cpkTarget,
   cpkThresholds,
 }) => {
   const { performanceResult, selectedMeasure } = useData();
@@ -30,6 +33,7 @@ const PerformanceIChart: React.FC<PerformanceIChartProps> = ({
       selectedMeasure={selectedMeasure}
       onChannelClick={onChannelClick}
       capabilityMetric={capabilityMetric}
+      cpkTarget={cpkTarget}
       cpkThresholds={cpkThresholds}
     />
   );
