@@ -367,6 +367,8 @@ export interface PerformanceBoxplotProps extends BaseChartProps {
   onChannelClick?: (channelId: string) => void;
   /** Show stats table below the chart (default: false) */
   showStatsTable?: boolean;
+  /** Custom Cpk thresholds for health classification in stats table (defaults to industry standards) */
+  cpkThresholds?: CpkThresholds;
 }
 
 /**

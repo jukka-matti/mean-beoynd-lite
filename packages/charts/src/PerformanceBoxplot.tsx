@@ -15,7 +15,7 @@ import { scaleBand, scaleLinear } from '@visx/scale';
 import { AxisBottom, AxisLeft } from '@visx/axis';
 import { withParentSize } from '@visx/responsive';
 import { TooltipWithBounds, defaultStyles } from '@visx/tooltip';
-import { getWorstChannels } from '@variscout/core';
+import { getWorstChannels, CPK_THRESHOLDS } from '@variscout/core';
 import type { PerformanceBoxplotProps, ChannelResult } from './types';
 import { chartColors } from './colors';
 import { useChartTheme } from './useChartTheme';
@@ -63,6 +63,7 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
   onChannelClick,
   showBranding = true,
   showStatsTable = false,
+  cpkThresholds = CPK_THRESHOLDS,
 }) => {
   const { chrome, fontScale } = useChartTheme();
   const sourceBarHeight = getSourceBarHeight(showBranding);
@@ -491,11 +492,14 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
                       padding: '4px 8px',
                       textAlign: 'right',
                       color:
-                        channel.cpk !== undefined && channel.cpk < 1.33
+                        channel.cpk !== undefined && channel.cpk < cpkThresholds.warning
                           ? chartColors.fail
                           : chrome.labelSecondary,
                       fontFamily: 'monospace',
-                      fontWeight: channel.cpk !== undefined && channel.cpk < 1.33 ? 600 : 400,
+                      fontWeight:
+                        channel.cpk !== undefined && channel.cpk < cpkThresholds.warning
+                          ? 600
+                          : 400,
                       borderBottom: `1px solid ${chrome.gridLine}`,
                     }}
                   >

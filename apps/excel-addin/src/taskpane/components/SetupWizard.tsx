@@ -24,12 +24,14 @@ import {
   ArrowLeft24Regular,
   ArrowRight24Regular,
   Flowchart24Regular,
+  SlideSettings24Regular,
 } from '@fluentui/react-icons';
 import { ensureTable, detectColumnTypes } from '../../lib/tableManager';
 import { createSlicerRow, isSlicerSupported } from '../../lib/slicerManager';
 import { saveAddInState, createInitialState, type AddInState } from '../../lib/stateBridge';
-import { hasValidLicense } from '@variscout/core';
+import { hasValidLicense, CPK_THRESHOLDS, type CpkThresholds } from '@variscout/core';
 import { UpgradePrompt } from './UpgradePrompt';
+import { CpkThresholdSettings } from './CpkThresholdSettings';
 
 const useStyles = makeStyles({
   container: {
@@ -116,7 +118,7 @@ const useStyles = makeStyles({
   },
 });
 
-type WizardStep = 'data' | 'columns' | 'stages' | 'slicers' | 'specs' | 'complete';
+type WizardStep = 'data' | 'columns' | 'stages' | 'slicers' | 'thresholds' | 'specs' | 'complete';
 
 interface SetupWizardProps {
   onComplete: (state: AddInState) => void;
@@ -151,7 +153,10 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
   const [createSlicers, setCreateSlicers] = useState(true);
   const [slicerNames, setSlicerNames] = useState<string[]>([]);
 
-  // Step 5: Spec limits
+  // Step 5: Cpk thresholds
+  const [cpkThresholds, setCpkThresholds] = useState<CpkThresholds>(CPK_THRESHOLDS);
+
+  // Step 6: Spec limits
   const [usl, setUsl] = useState<string>('');
   const [lsl, setLsl] = useState<string>('');
   const [target, setTarget] = useState<string>('');
@@ -167,6 +172,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
     { key: 'columns', label: 'Configure Columns', icon: <Settings24Regular /> },
     { key: 'stages', label: 'Stage Analysis', icon: <Flowchart24Regular /> },
     { key: 'slicers', label: 'Create Slicers', icon: <Filter24Regular /> },
+    { key: 'thresholds', label: 'Cpk Thresholds', icon: <SlideSettings24Regular /> },
     { key: 'specs', label: 'Set Specs', icon: <ChartMultiple24Regular /> },
     { key: 'complete', label: 'Complete', icon: <Checkmark24Regular /> },
   ];
@@ -243,7 +249,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
     setCurrentStep('slicers');
   }, []);
 
-  // Step 4 → Step 5: Optionally create slicers, then proceed
+  // Step 4 → Step 5: Optionally create slicers, then proceed to thresholds
   const handleSlicersNext = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -253,7 +259,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
         const names = await createSlicerRow(dataSheetName, tableName, factorColumns);
         setSlicerNames(names);
       }
-      setCurrentStep('specs');
+      setCurrentStep('thresholds');
     } catch (err: unknown) {
       console.error('Error creating slicers:', err);
       setError('Failed to create slicers. You can skip this step and continue.');
@@ -262,7 +268,13 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
     }
   }, [createSlicers, slicerSupported, factorColumns, dataSheetName, tableName]);
 
-  // Step 5 → Complete: Save state
+  // Step 5 → Step 6: Cpk thresholds
+  const handleThresholdsNext = useCallback(() => {
+    setError(null);
+    setCurrentStep('specs');
+  }, []);
+
+  // Step 6 → Complete: Save state
   const handleSpecsNext = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -330,6 +342,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
       // Add stage configuration
       state.stageColumn = stageColumn;
       state.stageOrderMode = stageOrderMode;
+      // Add Cpk thresholds
+      state.cpkThresholds = cpkThresholds;
 
       // Check license status - only licensed users can save configuration
       if (hasValidLicense()) {
@@ -362,6 +376,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
     slicerNames,
     stageColumn,
     stageOrderMode,
+    cpkThresholds,
     onComplete,
   ]);
 
@@ -626,7 +641,36 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
         </Card>
       )}
 
-      {/* Step 5: Set Specs */}
+      {/* Step 5: Cpk Thresholds */}
+      {currentStep === 'thresholds' && (
+        <div>
+          <div className={styles.stepHeader}>
+            <SlideSettings24Regular className={styles.stepIcon} />
+            <Body1 className={styles.stepTitle}>Cpk Health Thresholds</Body1>
+          </div>
+          <Body2 className={styles.stepDescription}>
+            Customize Cpk thresholds for health classification in Performance Mode. These determine
+            when channels are flagged as critical, warning, or capable.
+          </Body2>
+
+          <CpkThresholdSettings thresholds={cpkThresholds} onThresholdsChange={setCpkThresholds} />
+
+          {error && (
+            <Body2
+              role="alert"
+              aria-live="polite"
+              style={{
+                color: tokens.colorPaletteRedForeground1,
+                marginTop: tokens.spacingVerticalS,
+              }}
+            >
+              {error}
+            </Body2>
+          )}
+        </div>
+      )}
+
+      {/* Step 6: Set Specs */}
       {currentStep === 'specs' && (
         <Card className={styles.card}>
           <div className={styles.stepHeader}>
@@ -772,7 +816,9 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel }
                     ? handleStagesNext
                     : currentStep === 'slicers'
                       ? handleSlicersNext
-                      : handleSpecsNext
+                      : currentStep === 'thresholds'
+                        ? handleThresholdsNext
+                        : handleSpecsNext
             }
             disabled={isLoading || (currentStep === 'data' && !rangeAddress && !isLoading)}
           >

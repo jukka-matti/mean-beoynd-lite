@@ -52,8 +52,13 @@ export const useDataIngestion = (options?: UseDataIngestionOptions) => {
   };
 
   // Use the shared hook for common functionality
-  const { handleFileUpload, handleParetoFileUpload, clearParetoFile, clearData } =
-    useDataIngestionBase(actions, options);
+  const {
+    handleFileUpload,
+    handleParetoFileUpload,
+    clearParetoFile,
+    clearData,
+    applyTimeExtraction,
+  } = useDataIngestionBase(actions, options);
 
   // PWA-specific: Load sample dataset
   const loadSample = useCallback(
@@ -102,5 +107,6 @@ export const useDataIngestion = (options?: UseDataIngestionOptions) => {
     clearParetoFile,
     loadSample,
     clearData,
+    applyTimeExtraction,
   };
 };

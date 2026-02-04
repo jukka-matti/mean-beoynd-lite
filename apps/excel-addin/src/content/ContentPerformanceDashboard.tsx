@@ -12,7 +12,7 @@ import {
   PerformanceParetoBase,
   PerformanceCapabilityBase,
 } from '@variscout/charts';
-import { calculateChannelPerformance } from '@variscout/core';
+import { calculateChannelPerformance, CPK_THRESHOLDS } from '@variscout/core';
 import type { AddInState } from '../lib/stateBridge';
 import { getFilteredTableData } from '../lib/dataFilter';
 import { useContentTheme, type ThemeTokens } from './ThemeContext';
@@ -356,6 +356,9 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
 
   const { summary } = performanceResult;
 
+  // Get Cpk thresholds from state or use defaults
+  const thresholds = state.cpkThresholds || CPK_THRESHOLDS;
+
   return (
     <div style={styles.container} ref={containerRef}>
       {/* Header with summary stats */}
@@ -402,6 +405,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
               parentWidth={topChartWidth}
               parentHeight={topChartHeight}
               showBranding={false}
+              cpkThresholds={thresholds}
             />
           </ChartErrorBoundary>
         </div>
@@ -423,6 +427,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
                 parentWidth={bottomChartWidth}
                 parentHeight={bottomChartHeight}
                 showBranding={false}
+                cpkThresholds={thresholds}
               />
             </ChartErrorBoundary>
           </div>
@@ -439,6 +444,7 @@ const ContentPerformanceDashboard: React.FC<ContentPerformanceDashboardProps> = 
                 parentWidth={bottomChartWidth}
                 parentHeight={bottomChartHeight}
                 showBranding={false}
+                cpkThresholds={thresholds}
               />
             </ChartErrorBoundary>
           </div>

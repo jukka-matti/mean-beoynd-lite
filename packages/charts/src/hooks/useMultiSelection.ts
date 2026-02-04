@@ -124,17 +124,6 @@ export function useMultiSelection<T = { x: number; y: number }>({
   );
 
   /**
-   * Convert pixel coordinates to data domain values
-   */
-  const pixelToData = useCallback(
-    (pixelX: number, pixelY: number) => ({
-      x: xScale.invert(pixelX),
-      y: yScale.invert(pixelY),
-    }),
-    [xScale, yScale]
-  );
-
-  /**
    * Find all points within the brush extent
    */
   const getPointsInBrush = useCallback(
