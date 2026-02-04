@@ -68,6 +68,8 @@ export interface UseDataIngestionOptions {
   getRawData?: () => DataRow[];
   /** Getter for current outcome column (needed for validation) */
   getOutcome?: () => string | null;
+  /** Getter for current factors list (needed for time extraction) */
+  getFactors?: () => string[];
 }
 
 export interface UseDataIngestionReturn {
@@ -94,7 +96,8 @@ export function useDataIngestion(
   actions: DataIngestionActions,
   options?: UseDataIngestionOptions
 ): UseDataIngestionReturn {
-  const { onWideFormatDetected, onTimeColumnDetected, getRawData, getOutcome } = options || {};
+  const { onWideFormatDetected, onTimeColumnDetected, getRawData, getOutcome, getFactors } =
+    options || {};
   const {
     setRawData,
     setOutcome,
@@ -251,25 +254,26 @@ export function useDataIngestion(
   // Apply time extraction to current dataset
   const applyTimeExtraction = useCallback(
     (timeColumn: string, config: TimeExtractionConfig) => {
-      if (!getRawData || !getOutcome) {
-        console.warn('applyTimeExtraction requires getRawData and getOutcome options');
+      if (!getRawData || !getOutcome || !getFactors) {
+        console.warn('applyTimeExtraction requires getRawData, getOutcome, and getFactors options');
         return;
       }
 
       const rawData = getRawData();
       const outcome = getOutcome();
+      const currentFactors = getFactors();
 
       if (rawData.length === 0) return;
 
       const { newColumns } = augmentWithTimeColumns(rawData, timeColumn, config);
 
       if (newColumns.length > 0) {
-        setFactors(prev => [...prev, ...newColumns]);
+        setFactors([...currentFactors, ...newColumns]);
         const report = validateData(rawData, outcome);
         setDataQualityReport(report);
       }
     },
-    [getRawData, getOutcome, setFactors, setDataQualityReport]
+    [getRawData, getOutcome, getFactors, setFactors, setDataQualityReport]
   );
 
   return {

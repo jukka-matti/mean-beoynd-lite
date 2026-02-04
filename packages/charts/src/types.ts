@@ -57,6 +57,8 @@ export interface IChartDataPoint {
   originalIndex?: number;
   /** Stage identifier for staged I-Charts */
   stage?: string;
+  /** Formatted time value for tooltip display */
+  timeValue?: string | null;
 }
 
 /**

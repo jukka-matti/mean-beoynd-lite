@@ -79,6 +79,7 @@ function App() {
     clearParetoFile,
     loadSample,
     clearData,
+    applyTimeExtraction,
   } = useDataIngestion({
     onWideFormatDetected: handleWideFormatDetected,
     onTimeColumnDetected: prompt => {
@@ -89,6 +90,7 @@ function App() {
     },
     getRawData: () => rawData,
     getOutcome: () => outcome,
+    getFactors: () => factors,
   });
   const [isMapping, setIsMapping] = useState(false);
   const [timeExtractionPrompt, setTimeExtractionPrompt] = useState<{
@@ -414,6 +416,13 @@ function App() {
     setOutcome(newOutcome);
     setFactors(newFactors);
     setIsMapping(false);
+
+    // Apply time extraction if timeColumn exists
+    if (timeExtractionPrompt?.timeColumn) {
+      applyTimeExtraction(timeExtractionPrompt.timeColumn, timeExtractionConfig);
+    }
+
+    setTimeExtractionPrompt(null);
   };
 
   const handleMappingCancel = () => {
@@ -800,6 +809,9 @@ function App() {
               separateParetoFilename={separateParetoFilename}
               onParetoFileUpload={handleParetoFileUpload}
               onClearParetoFile={clearParetoFile}
+              timeColumn={timeExtractionPrompt?.timeColumn}
+              hasTimeComponent={timeExtractionPrompt?.hasTimeComponent}
+              onTimeExtractionChange={setTimeExtractionConfig}
             />
           ) : (
             <Dashboard

@@ -64,7 +64,7 @@ const IChart = ({
           x: i,
           y: Number(d[outcome]),
           stage: stageColumn ? String(d[stageColumn] ?? '') : undefined,
-          timeValue: timeColumn ? formatTimeValue(d[timeColumn]) : undefined,
+          timeValue: timeColumn ? formatTimeValue(d[timeColumn] as any) : undefined,
           originalIndex: i,
         })
       )
