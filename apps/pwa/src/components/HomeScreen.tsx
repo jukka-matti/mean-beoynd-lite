@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, FolderOpen, ArrowRight, BarChart2, FileUp, Clock, PenLine } from 'lucide-react';
-import { SampleDataset } from '../data/sampleData';
+import type { SampleDataset } from '@variscout/data';
 import { useData } from '../context/DataContext';
 import { hasValidLicense } from '../lib/license';
 import { useIsInstalled } from '../hooks/useIsInstalled';

@@ -41,6 +41,8 @@ export const pizza: SampleDataset = {
   description: 'Classic Green Belt training case - reduce delivery time variation.',
   icon: 'timer',
   urlKey: 'pizza',
+  category: 'journeys',
+  featured: false,
   data: generatePizzaData(),
   config: {
     outcome: 'Delivery_Time_min',

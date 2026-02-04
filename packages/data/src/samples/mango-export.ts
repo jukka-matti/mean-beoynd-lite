@@ -33,6 +33,8 @@ export const mangoExport: SampleDataset = {
   description: 'Weight compliance analysis for fruit export to EU markets.',
   icon: 'apple',
   urlKey: 'mango-export',
+  category: 'standard',
+  featured: false,
   data: generateMangoData(),
   config: {
     outcome: 'Fruit Weight (g)',

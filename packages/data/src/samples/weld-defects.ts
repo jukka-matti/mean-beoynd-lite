@@ -43,6 +43,8 @@ export const weldDefects: SampleDataset = {
   description: 'Robot cell analysis - find the fixture problem.',
   icon: 'zap',
   urlKey: 'weld-defects',
+  category: 'cases',
+  featured: false,
   data: generateWeldDefectsData(),
   config: {
     outcome: 'Defect_Count',

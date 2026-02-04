@@ -82,6 +82,8 @@ export const gagerr: SampleDataset = {
     'Measurement system analysis - 5 parts measured by 3 operators with 3 replicates each.',
   icon: 'ruler',
   urlKey: 'gagerr',
+  category: 'standard',
+  featured: false,
   data: generateGageRRData(),
   config: {
     outcome: 'Measurement',

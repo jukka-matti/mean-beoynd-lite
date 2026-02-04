@@ -65,6 +65,8 @@ export const journey: SampleDataset = {
   description: 'Three factors, one hidden problem. Where is the 46%?',
   icon: 'search',
   urlKey: 'journey',
+  category: 'journeys',
+  featured: true,
   data: generateJourneyData(),
   config: {
     outcome: 'Measurement',
@@ -78,6 +80,8 @@ export const journeyBefore: SampleDataset = {
   description: 'Capability analysis before fixing Factor C (Cpk ~0.8).',
   icon: 'alert-circle',
   urlKey: 'journey-before',
+  category: 'journeys',
+  featured: false,
   data: generateJourneyBeforeData(),
   config: {
     outcome: 'Measurement',
@@ -91,6 +95,8 @@ export const journeyAfter: SampleDataset = {
   description: 'Capability analysis after fixing Factor C (Cpk ~1.5).',
   icon: 'check-circle',
   urlKey: 'journey-after',
+  category: 'journeys',
+  featured: false,
   data: generateJourneyAfterData(),
   config: {
     outcome: 'Measurement',

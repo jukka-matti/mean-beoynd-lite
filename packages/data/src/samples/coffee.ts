@@ -59,6 +59,8 @@ export const coffee: SampleDataset = {
   description: 'Drying bed comparison - which bed keeps failing export spec?',
   icon: 'coffee',
   urlKey: 'coffee',
+  category: 'cases',
+  featured: true,
   data: generateCoffeeMoistureData(),
   config: {
     outcome: 'Moisture_pct',
@@ -72,6 +74,8 @@ export const coffeeDefects: SampleDataset = {
   description: 'Defect counts per 300g sample (Specialty vs Off-Grade detection).',
   icon: 'coffee',
   urlKey: 'coffee-defects',
+  category: 'standard',
+  featured: false,
   data: generateCoffeeDefectsData(),
   config: {
     outcome: 'Total Defects (per 300g)',

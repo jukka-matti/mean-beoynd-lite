@@ -35,6 +35,8 @@ export const packaging: SampleDataset = {
   description: 'Product line analysis - which product has a defect problem?',
   icon: 'package',
   urlKey: 'packaging',
+  category: 'cases',
+  featured: false,
   data: generatePackagingDefectsData(),
   config: {
     outcome: 'Defect_Count',

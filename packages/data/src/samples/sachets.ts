@@ -76,6 +76,8 @@ export const sachets: SampleDataset = {
   description: '8-head coffee sachet filler - which heads need attention?',
   icon: 'coffee',
   urlKey: 'sachets',
+  category: 'cases',
+  featured: true,
   data: generateSachetData(),
   config: {
     outcome: 'H1', // Default, but will switch to performance mode

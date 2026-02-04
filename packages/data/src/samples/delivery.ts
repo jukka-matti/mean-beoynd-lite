@@ -46,6 +46,8 @@ export const delivery: SampleDataset = {
   description: 'Logistics analysis - which route causes delays?',
   icon: 'truck',
   urlKey: 'delivery',
+  category: 'cases',
+  featured: false,
   data: generateDeliveryPerformanceData(),
   config: {
     outcome: 'Delivery_Time_min',

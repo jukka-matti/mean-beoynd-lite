@@ -8,7 +8,7 @@ import {
   FolderOpen,
   ArrowRight,
 } from 'lucide-react';
-import { SAMPLES, SampleDataset, SampleCategory } from '../data/sampleData';
+import { SAMPLES, type SampleDataset, type SampleCategory } from '@variscout/data';
 
 interface SampleSectionProps {
   onLoadSample: (sample: SampleDataset) => void;

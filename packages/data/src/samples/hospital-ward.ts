@@ -54,6 +54,8 @@ export const hospitalWard: SampleDataset = {
   description: 'The aggregation trap - what is your daily average hiding?',
   icon: 'activity',
   urlKey: 'hospital-ward',
+  category: 'cases',
+  featured: false,
   data: generateHospitalWardData(),
   config: {
     outcome: 'Utilization_pct',

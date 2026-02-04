@@ -27,6 +27,8 @@ export const textiles: SampleDataset = {
   description: 'Quality control for cotton tensile strength in garment production.',
   icon: 'shirt',
   urlKey: 'textiles-strength',
+  category: 'standard',
+  featured: false,
   data: generateTextileData(),
   config: {
     outcome: 'Tensile Strength (N)',

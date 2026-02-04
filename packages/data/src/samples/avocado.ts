@@ -41,6 +41,8 @@ export const avocado: SampleDataset = {
   description: 'Regression analysis - optimizing shelf life through coating.',
   icon: 'trending-up',
   urlKey: 'avocado',
+  category: 'cases',
+  featured: false,
   data: generateAvocadoCoatingData(),
   config: {
     outcome: 'Shelf_Life_Days',

@@ -72,6 +72,8 @@ export const ovenZonesData: SampleDataset = {
   description: '8-zone industrial baking oven - identify zones needing maintenance',
   icon: 'flame',
   urlKey: 'oven-zones',
+  category: 'cases',
+  featured: false,
   data: generateOvenData(),
   config: {
     outcome: 'Z1_Entry', // Default, but will switch to performance mode

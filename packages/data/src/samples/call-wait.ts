@@ -40,6 +40,8 @@ export const callWait: SampleDataset = {
   description: 'Service center analysis - which queue needs help?',
   icon: 'phone',
   urlKey: 'call-wait',
+  category: 'cases',
+  featured: false,
   data: generateCallWaitTimeData(),
   config: {
     outcome: 'Wait_Time_min',

@@ -41,6 +41,8 @@ export const sockMystery: SampleDataset = {
   description: 'Classic training case - where do the socks go?',
   icon: 'help-circle',
   urlKey: 'sock-mystery',
+  category: 'cases',
+  featured: false,
   data: generateSockMysteryData(),
   config: {
     outcome: 'Socks_Lost',

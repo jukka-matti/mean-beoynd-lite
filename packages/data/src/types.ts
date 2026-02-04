@@ -1,4 +1,9 @@
 /**
+ * Category for grouping samples in the UI
+ */
+export type SampleCategory = 'featured' | 'cases' | 'journeys' | 'standard';
+
+/**
  * Sample dataset configuration for VariScout demos and case studies
  */
 export interface SampleDataset {
@@ -10,6 +15,10 @@ export interface SampleDataset {
   icon: string;
   /** URL-friendly key for ?sample= parameter */
   urlKey: string;
+  /** Category for grouping in UI */
+  category: SampleCategory;
+  /** Show as visual card in web demo mode */
+  featured: boolean;
   /** Raw data records */
   data: Record<string, unknown>[];
   /** Analysis configuration */

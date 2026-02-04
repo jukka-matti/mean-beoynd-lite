@@ -10,6 +10,7 @@
 // Types
 export type {
   SampleDataset,
+  SampleCategory,
   SampleConfig,
   SpecLimits,
   GradeDefinition,
@@ -46,6 +47,8 @@ export {
   textiles,
   pizza,
   gagerr,
+  sachets,
+  ovenZonesData,
 } from './samples';
 
 // Computed data utilities

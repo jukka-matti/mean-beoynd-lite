@@ -13,7 +13,7 @@ import {
   type UseDataIngestionOptions,
 } from '@variscout/hooks';
 import { validateData } from '@variscout/core';
-import { SampleDataset } from '../data/sampleData';
+import type { SampleDataset } from '@variscout/data';
 
 export const useDataIngestion = (options?: UseDataIngestionOptions) => {
   const {
@@ -63,14 +63,14 @@ export const useDataIngestion = (options?: UseDataIngestionOptions) => {
   // PWA-specific: Load sample dataset
   const loadSample = useCallback(
     (sample: SampleDataset) => {
-      setRawData(sample.data);
+      setRawData(sample.data as any[]);
       setDataFilename(sample.name);
       setOutcome(sample.config.outcome);
       setFactors(sample.config.factors);
       setSpecs(sample.config.specs);
       setGrades(sample.config.grades || []);
       // Run validation for sample data too
-      const report = validateData(sample.data, sample.config.outcome);
+      const report = validateData(sample.data as any[], sample.config.outcome);
       setDataQualityReport(report);
       // Reset Pareto to derived mode
       setParetoMode('derived');

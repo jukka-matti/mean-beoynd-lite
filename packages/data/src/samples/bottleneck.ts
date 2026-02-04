@@ -36,6 +36,8 @@ export const bottleneck: SampleDataset = {
   description: 'Process step analysis - which step is really the bottleneck?',
   icon: 'factory',
   urlKey: 'bottleneck',
+  category: 'cases',
+  featured: true,
   data: generateBottleneckData(),
   config: {
     outcome: 'Cycle_Time_sec',

@@ -43,6 +43,8 @@ export const cookieWeight: SampleDataset = {
   description: 'Classic SPC case - which oven is causing weight variation?',
   icon: 'cookie',
   urlKey: 'cookie-weight',
+  category: 'cases',
+  featured: false,
   data: generateCookieWeightData(),
   config: {
     outcome: 'Cookie_Weight_g',
