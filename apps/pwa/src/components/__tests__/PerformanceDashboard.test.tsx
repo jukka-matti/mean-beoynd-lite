@@ -102,7 +102,7 @@ describe('PerformanceDashboard', () => {
       expect(chart).toHaveAttribute('data-capability-metric', 'cp');
 
       // Cp button should now be active
-      expect(cpButton).toHaveClass('bg-blue-600');
+      expect(cpButton).toHaveClass('bg-purple-600');
     });
 
     it('switches back to cpk when Cpk button clicked after switching to cp', () => {

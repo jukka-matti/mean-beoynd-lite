@@ -112,6 +112,8 @@ describe('Dashboard', () => {
     columnAliases: {},
     chartTitles: { ichart: '', boxplot: '', pareto: '', histogram: '', scatter: '' },
     setChartTitles: vi.fn(),
+    selectedPoints: new Set<number>(),
+    clearSelection: vi.fn(),
   };
 
   it('renders dashboard view by default', () => {
