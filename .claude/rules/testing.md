@@ -10,12 +10,14 @@
 
 ## Test Ownership
 
-| Package                  | Test Type            | What to Test                   |
-| ------------------------ | -------------------- | ------------------------------ |
-| `@variscout/core`        | Unit                 | stats, parser, license, export |
-| `@variscout/pwa`         | Component            | UI components, context         |
-| `@variscout/charts`      | Unit (optional)      | responsive utilities           |
-| `@variscout/excel-addin` | Integration (future) | state bridge                   |
+| Package                  | Test Type            | What to Test                          |
+| ------------------------ | -------------------- | ------------------------------------- |
+| `@variscout/core`        | Unit                 | stats, parser, tier, export           |
+| `@variscout/pwa`         | Component            | UI components, context                |
+| `@variscout/charts`      | Unit (optional)      | responsive utilities                  |
+| `@variscout/excel-addin` | Integration (future) | state bridge                          |
+
+> Note: `license.ts` tests remain for backward compatibility but new tests should use `tier.ts`.
 
 ## Commands
 

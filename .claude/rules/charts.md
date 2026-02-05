@@ -91,7 +91,7 @@ Returns:
 
 - `ChartSourceBar` component for footer branding
 - `getSourceBarHeight(showBranding)` for margin calculations
-- Controlled by edition system in `@variscout/core`
+- Branding shown for free tier, hidden for paid tiers (`isPaidTier()` from `@variscout/core/tier`)
 
 ## Performance Charts (Multi-Measure Analysis)
 

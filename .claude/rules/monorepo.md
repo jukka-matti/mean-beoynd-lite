@@ -4,7 +4,7 @@
 
 ```
 packages/
-├── core/      # @variscout/core - Pure logic, glossary (no React)
+├── core/      # @variscout/core - Pure logic, glossary, tier system (no React)
 ├── charts/    # @variscout/charts - React + Visx (standard + Performance charts), useChartTheme
 ├── data/      # @variscout/data - Sample datasets with pre-computed chart data
 ├── hooks/     # @variscout/hooks - Shared React hooks:
@@ -15,9 +15,10 @@ packages/
 │              #   useDataIngestion - File upload and data parsing
 │              #   useKeyboardNavigation - Arrow key focus management
 │              #   useResponsiveChartMargins - Dynamic chart margins
+│              #   useTier - License tier state and limits
 └── ui/        # @variscout/ui - ChartCard, ColumnMapping, MeasureColumnSelector,
                #   PerformanceDetectedModal, DataQualityBanner, HelpTooltip,
-               #   useGlossary, useIsMobile, colors, errorService
+               #   TierBadge, UpgradePrompt, useGlossary, useIsMobile, colors, errorService
 
 apps/
 ├── pwa/          # @variscout/pwa - PWA website
@@ -30,10 +31,10 @@ apps/
 
 - Apps import from packages: `import { calculateStats } from '@variscout/core'`
 - Packages never import from apps
-- `@variscout/core` has no React dependencies (exports stats, parser, glossary)
+- `@variscout/core` has no React dependencies (exports stats, parser, glossary, tier)
 - `@variscout/charts` depends on `@variscout/core`
-- `@variscout/hooks` depends on `@variscout/core` (for types and utilities)
-- `@variscout/ui` exports `ChartCard`, `ColumnMapping`, `MeasureColumnSelector`, `PerformanceDetectedModal`, `DataQualityBanner`, `HelpTooltip`, `useGlossary`, `useIsMobile`, `gradeColors`, `errorService`
+- `@variscout/hooks` depends on `@variscout/core` (for types, utilities, and tier)
+- `@variscout/ui` exports `ChartCard`, `ColumnMapping`, `MeasureColumnSelector`, `PerformanceDetectedModal`, `DataQualityBanner`, `HelpTooltip`, `TierBadge`, `UpgradePrompt`, `useGlossary`, `useIsMobile`, `gradeColors`, `errorService`
 
 ## Build Commands
 

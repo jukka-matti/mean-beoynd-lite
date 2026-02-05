@@ -103,7 +103,7 @@ pnpm workspaces monorepo:
 ```
 variscout-lite/
 ├── packages/
-│   ├── core/          # @variscout/core - Stats, parser, license, types
+│   ├── core/          # @variscout/core - Stats, parser, tier, types
 │   ├── charts/        # @variscout/charts - Visx chart components
 │   ├── data/          # @variscout/data - Sample datasets with pre-computed chart data
 │   ├── hooks/         # @variscout/hooks - Shared React hooks (filter navigation, scale, tracking)
@@ -151,7 +151,11 @@ See [ADR-007](docs/07-decisions/adr-007-azure-marketplace-distribution.md) for t
 | `packages/core/src/__tests__/stats.test.ts`                    | Unit tests for statistics engine                                                 |
 | `packages/core/src/types.ts`                                   | Shared TypeScript interfaces                                                     |
 | `packages/core/src/navigation.ts`                              | Navigation types and utilities                                                   |
-| `packages/core/src/edition.ts`                                 | Tier detection (`getTier()`, feature gating)                                     |
+| `packages/core/src/tier.ts`                                    | Tier configuration (`getTier()`, `isPaidTier()`, channel limits)                 |
+| `packages/core/src/edition.ts`                                 | Edition detection (deprecated, use tier.ts for new code)                         |
+| `packages/hooks/src/useTier.ts`                                | React hook for tier state and limits                                             |
+| `packages/ui/src/components/TierBadge/`                        | Tier indicator badge component                                                   |
+| `packages/ui/src/components/UpgradePrompt/`                    | Upgrade call-to-action component                                                 |
 | `packages/charts/src/`                                         | IChart, Boxplot, ParetoChart, ScatterPlot, GageRRChart                           |
 | `packages/charts/src/PerformanceIChart.tsx`                    | Multi-channel Cpk scatter plot (shared)                                          |
 | `packages/charts/src/PerformanceBoxplot.tsx`                   | Multi-channel distribution comparison (shared)                                   |

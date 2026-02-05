@@ -179,31 +179,38 @@ async function checkAzureLicense(): Promise<LicenseStatus> {
 
 ## Implementation Phases
 
-### Phase 1: Documentation (Current)
+### Phase 1: Documentation ✅ Complete
 
-- Update all documentation to reflect new model
-- Archive Paddle-related documentation
-- Create Azure Marketplace and AppSource guides
+- Updated all documentation to reflect new model
+- Archived Paddle-related documentation
+- Created Azure Marketplace and AppSource guides
 
-### Phase 2: Azure Marketplace (Q2 2026)
+### Phase 2: Core Tier Infrastructure ✅ Complete
+
+- Created `packages/core/src/tier.ts` with tier configuration
+- Implemented `getTier()`, `isPaidTier()`, `getMaxChannels()` functions
+- Created `packages/hooks/src/useTier.ts` React hook
+- Added `TierBadge` and `UpgradePrompt` UI components
+- Integrated tier-aware channel limits (5 free / 1,500 paid)
+
+### Phase 3: Azure Marketplace (Q2 2026)
 
 - Partner Center account setup
 - Azure Application offer creation
 - Pricing tier configuration
 - Certification and launch
 
-### Phase 3: Excel AppSource (Q2 2026)
+### Phase 4: Excel AppSource (Q2 2026)
 
 - Partner Center submission
 - Free tier implementation
 - Graph API license detection
 - Certification and launch
 
-### Phase 4: Code Cleanup (Post-Launch)
+### Phase 5: Code Cleanup (Post-Launch)
 
-- Remove `packages/core/src/license.ts`
-- Update `packages/core/src/edition.ts` for Graph API
-- Create licensing services for Azure and Excel apps
+- Remove deprecated `packages/core/src/license.ts`
+- Finalize Graph API integration in `packages/core/src/edition.ts`
 
 ---
 
