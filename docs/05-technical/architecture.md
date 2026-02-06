@@ -9,23 +9,25 @@ VariScout Lite uses a **pnpm workspaces monorepo** to support multiple applicati
 ```
 variscout-lite/
 ├── packages/
-│   ├── core/              # @variscout/core - Pure logic (stats, parser, license)
+│   ├── core/              # @variscout/core - Pure logic (stats, parser, tier, glossary)
 │   ├── charts/            # @variscout/charts - Props-based Visx chart components
 │   ├── data/              # @variscout/data - Sample datasets with pre-computed chart data
 │   ├── hooks/             # @variscout/hooks - Shared React hooks (filter navigation, scale, tracking)
-│   ├── analysis/          # @variscout/analysis - Analysis algorithms (deferred integration)
-│   └── ui/                # @variscout/ui - Shared UI utilities, colors, and hooks
+│   └── ui/                # @variscout/ui - Shared UI components, colors, and hooks
 ├── apps/
 │   ├── pwa/               # PWA website (React + Vite + PWA)
 │   ├── azure/             # Azure Team App (React + MSAL + Azure Functions)
 │   ├── website/           # Marketing website (Astro + React Islands)
 │   └── excel-addin/       # Excel Add-in (Office.js + React + Fluent UI)
-├── infra/                 # Infrastructure as Code (Bicep)
 ├── docs/
-│   ├── concepts/          # Strategic product decisions
-│   ├── design-system/     # Design tokens, components, charts
-│   ├── technical/         # Implementation guides
-│   └── products/          # Product specs (PWA, Website, Excel, Power BI, Azure)
+│   ├── 01-vision/         # Product philosophy, Four Pillars, Two Voices
+│   ├── 02-journeys/       # User research, personas, flows
+│   ├── 03-features/       # Feature documentation (analysis, workflows, data, navigation)
+│   ├── 04-cases/          # Case studies with demo data
+│   ├── 05-technical/      # Technical architecture and implementation
+│   ├── 06-design-system/  # Design tokens, components, charts
+│   ├── 07-decisions/      # Architecture Decision Records
+│   └── 08-products/       # Product specs (Azure, Excel, PWA, Website, Power BI)
 ├── pnpm-workspace.yaml    # Workspace configuration
 ├── tsconfig.base.json     # Shared TypeScript config
 └── package.json           # Root scripts
@@ -39,7 +41,7 @@ variscout-lite/
 - **Frontend**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Utility-first), [Fluent UI](https://developer.microsoft.com/en-us/fluentui) (Excel Add-in)
 - **Visualization**: [Visx](https://airbnb.io/visx/) (Low-level D3 primitives for React) via `@variscout/charts`
-- **Shared Logic**: `@variscout/core` package (stats, parser, license)
+- **Shared Logic**: `@variscout/core` package (stats, parser, tier, glossary)
 - **Persistence**: IndexedDB + localStorage (PWA), Custom Document Properties (Excel)
 - **PWA**: [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) with Workbox
 - **Excel Integration**: [Office.js](https://learn.microsoft.com/en-us/office/dev/add-ins/) for Excel Add-in
@@ -75,20 +77,21 @@ variscout-lite/
 │         @variscout/charts           │          @variscout/core              │
 │       (packages/charts/)            │        (packages/core/)               │
 │                                     │                                       │
-│  IChart │ Boxplot │ ParetoChart     │  stats.ts │ parser.ts │ license.ts   │
-│  CapabilityHistogram │ responsive   │  edition.ts │ export.ts │ types.ts   │
+│  IChart │ Boxplot │ ParetoChart     │  stats.ts │ parser.ts │ tier.ts      │
+│  CapabilityHistogram │ responsive   │  glossary │ export.ts │ types.ts     │
 ├─────────────────────────────────────┼───────────────────────────────────────┤
-│          @variscout/hooks           │         @variscout/analysis           │
-│         (packages/hooks/)           │        (packages/analysis/)           │
+│          @variscout/hooks           │          @variscout/data              │
+│         (packages/hooks/)           │         (packages/data/)              │
 │                                     │                                       │
-│  useChartScale │ useFilterNavigation│  (Deferred integration)               │
-│  useVariationTracking │ useKeyboard │  Analysis algorithms                  │
+│  useChartScale │ useFilterNavigation│  coffee │ journey │ bottleneck       │
+│  useVariationTracking │ useTier     │  sachets │ pre-computed chart data   │
 ├─────────────────────────────────────┼───────────────────────────────────────┤
-│          @variscout/ui              │          @variscout/data              │
-│         (packages/ui/)              │         (packages/data/)              │
-│      (Shared UI Components)         │      (Sample Datasets)                │
-│   Button │ useMediaQuery │ colors   │  coffee │ journey │ bottleneck       │
-└─────────────────────────────────────┴───────────────────────────────────────┘
+│          @variscout/ui                                                      │
+│         (packages/ui/)                                                      │
+│  AnovaResults │ FilterBreadcrumb │ FilterChipDropdown │ RegressionPanel    │
+│  PerformanceSetupPanel │ VariationBar │ YAxisPopover │ TierBadge          │
+│  UpgradePrompt │ ChartCard │ ColumnMapping │ HelpTooltip │ colors         │
+└─────────────────────────────────────────────────────────────────────────────┘
 
 ```
 
@@ -100,12 +103,13 @@ Pure TypeScript logic with no React dependencies:
 | --------------- | -------------------------------------------------------------------------- |
 | `stats.ts`      | Mean, StdDev, UCL/LCL, Cp, Cpk, conformance, factor grouping, staged stats |
 | `parser.ts`     | CSV/Excel file parsing                                                     |
+| `tier.ts`       | Tier configuration (Azure Marketplace licensing, channel limits)           |
 | `navigation.ts` | Navigation types and utilities (FilterAction, BreadcrumbItem)              |
 | `variation.ts`  | Cumulative variation tracking (η² cascading, drill suggestions)            |
-| `license.ts`    | License key validation (offline)                                           |
-| `edition.ts`    | Edition configuration (community/licensed)                                 |
+| `edition.ts`    | Edition detection (deprecated, use tier.ts for new code)                   |
+| `glossary/`     | Glossary terms and type definitions for help tooltips                      |
 | `export.ts`     | CSV export utilities                                                       |
-| `types.ts`      | Shared TypeScript interfaces (StatsResult, ConformanceResult)              |
+| `types.ts`      | Shared TypeScript interfaces (StatsResult, LicenseTier, etc.)              |
 
 ### @variscout/charts
 
@@ -152,11 +156,14 @@ const sample = getSample('coffee');
 
 ### @variscout/ui
 
-Shared UI component library for Web and Azure apps (not Excel Add-in).
+Shared UI component library for PWA and Azure apps (not Excel Add-in).
 
 - **Stack**: React + Tailwind CSS + Radix UI + Lucide React.
 - **Goal**: Ensure consistent design system implementation across web properties.
-- **Exports**: `Button`, `Input`, `cn` (utility), `useMediaQuery`, `useIsMobile`, shared Tailwind preset.
+- **Components**: `AnovaResults`, `FilterBreadcrumb`, `FilterChipDropdown`, `PerformanceSetupPanelBase`, `RegressionPanelBase`, `VariationBar`, `YAxisPopover`, `ChartCard`, `ColumnMapping`, `MeasureColumnSelector`, `PerformanceDetectedModal`, `DataQualityBanner`, `HelpTooltip`, `SelectionPanel`, `CreateFactorModal`, `TierBadge`, `UpgradePrompt`.
+- **Hooks**: `useIsMobile`, `useGlossary`.
+- **Services**: `errorService`.
+- **Utilities**: `gradeColors`.
 
 ### @variscout/hooks
 
@@ -169,6 +176,15 @@ Shared React hooks for cross-platform functionality:
 | `useVariationTracking`      | Cumulative η² tracking + filter chip data with contribution % |
 | `useKeyboardNavigation`     | Arrow key navigation and focus management                     |
 | `useResponsiveChartMargins` | Dynamic chart margins based on container width                |
+| `useDataState`              | Shared DataContext state management                           |
+| `useDataIngestion`          | File upload and data parsing                                  |
+| `useTier`                   | License tier state and limits (Azure Marketplace)             |
+| `useAvailableOutcomes`      | Available outcome columns for analysis                        |
+| `useAvailableStageColumns`  | Available stage columns for staged analysis                   |
+| `useChartNavigation`        | Chart tab navigation and ordering                             |
+| `useClipboardCopy`          | Clipboard copy with feedback                                  |
+| `useColumnClassification`   | Column type classification for regression                     |
+| `useRegressionState`        | Regression analysis mode and state management                 |
 
 **Key types:**
 
@@ -177,6 +193,7 @@ Shared React hooks for cross-platform functionality:
 | `FilterChipData`            | Filter chip data with contribution % and available values      |
 | `UseFilterNavigationReturn` | Return type including `updateFilterValues()`, `removeFilter()` |
 | `VariationTrackingResult`   | Return type including `filterChipData`                         |
+| `UseTierResult`             | Tier info, validation functions, warning messages              |
 
 **Usage:**
 
@@ -185,13 +202,10 @@ import {
   useFilterNavigation,
   useVariationTracking,
   useChartScale,
+  useTier,
   type FilterChipData,
 } from '@variscout/hooks';
 ```
-
-### @variscout/analysis
-
-Analysis algorithms package (deferred integration). Contains pure TypeScript analysis functions that may be integrated into apps in future iterations.
 
 ### Internationalization (i18n)
 
@@ -307,8 +321,9 @@ variscout-lite/
 │   │   │   ├── index.ts         # Barrel export
 │   │   │   ├── stats.ts         # Statistics calculations
 │   │   │   ├── parser.ts        # File parsing
-│   │   │   ├── license.ts       # License validation
-│   │   │   ├── edition.ts       # Edition configuration
+│   │   │   ├── tier.ts          # Tier configuration (Azure Marketplace)
+│   │   │   ├── edition.ts       # Edition detection (deprecated)
+│   │   │   ├── glossary/        # Glossary terms and types
 │   │   │   ├── export.ts        # CSV export
 │   │   │   └── types.ts         # Shared interfaces
 │   │   ├── package.json
@@ -333,24 +348,39 @@ variscout-lite/
 │   │   │   ├── index.ts         # Barrel export
 │   │   │   ├── useChartScale.ts # Y-axis scale calculation
 │   │   │   ├── useFilterNavigation.ts  # Filter navigation
-│   │   │   ├── useVariationTracking.ts  # Cumulative η² tracking
+│   │   │   ├── useVariationTracking.ts # Cumulative η² tracking
 │   │   │   ├── useKeyboardNavigation.ts # Keyboard navigation
-│   │   │   └── useResponsiveChartMargins.ts # Responsive margins
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   ├── analysis/                # @variscout/analysis (deferred)
-│   │   ├── src/
-│   │   │   └── index.ts         # Barrel export
+│   │   │   ├── useResponsiveChartMargins.ts # Responsive margins
+│   │   │   ├── useDataState.ts  # Shared DataContext state
+│   │   │   ├── useDataIngestion.ts # File upload and parsing
+│   │   │   ├── useTier.ts       # Tier state and limits
+│   │   │   ├── useChartNavigation.ts # Chart tab navigation
+│   │   │   ├── useClipboardCopy.ts # Clipboard copy
+│   │   │   ├── useColumnClassification.ts # Column type classification
+│   │   │   └── useRegressionState.ts # Regression analysis state
 │   │   ├── package.json
 │   │   └── tsconfig.json
 │   │
 │   └── ui/                      # @variscout/ui
 │       ├── src/
 │       │   ├── index.ts         # Barrel export
-│       │   ├── colors.ts        # UI color constants
-│       │   ├── hooks/           # Responsive hooks
-│       │   │   └── useMediaQuery.ts
+│       │   ├── colors.ts        # UI color constants (gradeColors)
+│       │   ├── hooks/           # useMediaQuery, useGlossary
+│       │   ├── services/        # errorService
+│       │   ├── components/      # Shared UI components
+│       │   │   ├── AnovaResults/
+│       │   │   ├── FilterBreadcrumb/
+│       │   │   ├── FilterChipDropdown/
+│       │   │   ├── PerformanceSetupPanel/
+│       │   │   ├── RegressionPanel/
+│       │   │   ├── VariationBar/
+│       │   │   ├── YAxisPopover/
+│       │   │   ├── TierBadge/
+│       │   │   ├── UpgradePrompt/
+│       │   │   ├── ChartCard/
+│       │   │   ├── ColumnMapping/
+│       │   │   ├── HelpTooltip/
+│       │   │   └── ...
 │       │   └── lib/utils.ts     # Utility functions (cn)
 │       ├── package.json
 │       └── tsconfig.json
@@ -376,17 +406,23 @@ variscout-lite/
 │   │   ├── package.json
 │   │   └── dist/                # PWA build output (gitignored)
 │   │
+│   ├── azure/                   # @variscout/azure-app
+│   │   ├── src/
+│   │   │   ├── components/      # UI components (Dashboard, FilterBreadcrumb, etc.)
+│   │   │   ├── context/         # DataContext (mirrors PWA)
+│   │   │   ├── services/        # Offline-first storage + OneDrive sync
+│   │   │   ├── auth/            # MSAL configuration
+│   │   │   └── lib/             # Edition detection, utilities
+│   │   ├── vite.config.ts
+│   │   └── package.json
+│   │
 │   └── excel-addin/             # @variscout/excel-addin
 │       ├── src/
 │       │   ├── taskpane/        # Task Pane UI (sidebar)
 │       │   │   └── TaskPane.tsx # 4-step setup wizard
 │       │   ├── content/         # Content Add-in (embedded)
 │       │   │   └── ContentApp.tsx
-│       │   ├── utils/           # Excel integration utilities
-│       │   │   ├── stateBridge.ts
-│       │   │   ├── tableManager.ts
-│       │   │   ├── slicerManager.ts
-│       │   │   └── dataFilter.ts
+│       │   ├── lib/             # stateBridge, licenseDetection, featureLimits
 │       │   └── commands/        # Excel ribbon commands
 │       ├── manifest.xml         # Office Add-in manifest
 │       ├── vite.config.ts
@@ -394,10 +430,14 @@ variscout-lite/
 │       └── dist/                # Add-in build output (gitignored)
 │
 ├── docs/                        # Documentation
-│   ├── concepts/                # Strategic product decisions
-│   ├── design-system/           # Design tokens, components, charts
-│   ├── technical/               # Implementation guides
-│   └── products/                # Product specs (PWA, Website, Excel, Power BI, Azure)
+│   ├── 01-vision/               # Product philosophy, Four Pillars, Two Voices
+│   ├── 02-journeys/             # User research, personas, flows
+│   ├── 03-features/             # Feature documentation
+│   ├── 04-cases/                # Case studies with demo data
+│   ├── 05-technical/            # Technical architecture and implementation
+│   ├── 06-design-system/        # Design tokens, components, charts
+│   ├── 07-decisions/            # Architecture Decision Records
+│   └── 08-products/             # Product specs (Azure, Excel, PWA, Website)
 ├── pnpm-workspace.yaml
 ├── tsconfig.base.json
 └── package.json                 # Root scripts
@@ -448,14 +488,14 @@ Components use `window.innerWidth` with resize listeners to conditionally render
 
 ## 9. Theme System
 
-VariScout supports light/dark theming for Licensed editions via a coordinated system:
+VariScout supports light/dark theming for paid tiers via a coordinated system:
 
 ### Theme Detection
 
 Theme is controlled via the `data-theme` attribute on `<html>`:
 
-- `data-theme="dark"` - Dark mode (default for Community edition)
-- `data-theme="light"` - Light mode (Licensed edition + PWA installation required)
+- `data-theme="dark"` - Dark mode (default for free tier)
+- `data-theme="light"` - Light mode (paid tiers: Individual/Team/Enterprise)
 
 ### Chart Theme Hook
 
@@ -473,12 +513,12 @@ const MyChart = () => {
 
 ### Color Architecture
 
-| Layer         | Location                                | Purpose                    |
-| ------------- | --------------------------------------- | -------------------------- |
-| Theme Context | `apps/pwa/src/context/ThemeContext.tsx` | User preference storage    |
-| Edition Gate  | `packages/core/src/edition.ts`          | `isThemingEnabled()` check |
-| Chart Colors  | `packages/charts/src/colors.ts`         | `getChromeColors(isDark)`  |
-| Theme Hook    | `packages/charts/src/useChartTheme.ts`  | Reactive theme state       |
+| Layer         | Location                                | Purpose                   |
+| ------------- | --------------------------------------- | ------------------------- |
+| Theme Context | `apps/pwa/src/context/ThemeContext.tsx` | User preference storage   |
+| Tier Gate     | `packages/core/src/tier.ts`             | `isPaidTier()` check      |
+| Chart Colors  | `packages/charts/src/colors.ts`         | `getChromeColors(isDark)` |
+| Theme Hook    | `packages/charts/src/useChartTheme.ts`  | Reactive theme state      |
 
 ### Chrome Colors
 
@@ -508,13 +548,6 @@ pnpm build           # Build all packages and apps
 pnpm build:pwa       # Build PWA only
 pnpm build:excel     # Build Excel Add-in only
 pnpm preview         # Preview production build locally
-```
-
-### Edition-Specific Builds
-
-```bash
-pnpm build:pwa:community    # Free with "VariScout" branding
-pnpm build:pwa:licensed     # No branding, theme customization (PWA install required)
 ```
 
 ### Deployment
@@ -593,7 +626,7 @@ When drilling down through factors, variation percentages (η² / eta-squared) a
         ┌───────────────────────────┼───────────────────────────┐
         ▼                           ▼                           ▼
 ┌───────────────────┐   ┌───────────────────────┐   ┌───────────────────┐
-│    PWA            │   │    Excel Add-in       │   │    Azure (future) │
+│    PWA            │   │    Excel Add-in       │   │    Azure App      │
 │                   │   │                       │   │                   │
 │ useVariationTracking │ │ calculateFactorVariations │ │ useVariationTracking │
 │       ↓           │   │         ↓             │   │       ↓           │
@@ -604,12 +637,12 @@ When drilling down through factors, variation percentages (η² / eta-squared) a
 
 ### Platform-Specific Implementation
 
-| Platform  | Feature                             | Implementation                                   |
-| --------- | ----------------------------------- | ------------------------------------------------ |
-| **PWA**   | Full breadcrumb with cumulative %   | `useVariationTracking` hook → `FilterBreadcrumb` |
-| **PWA**   | Filter suggestions on boxplot       | `factorVariations` → `Boxplot.tsx`               |
-| **Excel** | Variation % on boxplot axis label   | `calculateFactorVariations` → `BoxplotBase`      |
-| **Azure** | Full breadcrumb experience (future) | Same as PWA, import shared functions             |
+| Platform  | Feature                           | Implementation                                   |
+| --------- | --------------------------------- | ------------------------------------------------ |
+| **PWA**   | Full breadcrumb with cumulative % | `useVariationTracking` hook → `FilterBreadcrumb` |
+| **PWA**   | Filter suggestions on boxplot     | `factorVariations` → `Boxplot.tsx`               |
+| **Excel** | Variation % on boxplot axis label | `calculateFactorVariations` → `BoxplotBase`      |
+| **Azure** | Full breadcrumb with cumulative % | `useVariationTracking` hook → `FilterBreadcrumb` |
 
 ### Visual Indicators
 
@@ -651,5 +684,4 @@ The `@variscout/charts` `BoxplotBase` component accepts optional `variationPct` 
 
 - IndexedDB (project storage)
 - Service Workers (offline capability)
-- Web Crypto API (license validation)
 - ES2020+

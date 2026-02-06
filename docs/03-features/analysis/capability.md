@@ -76,9 +76,34 @@ When no specifications are configured, the StatsPanel shows only basic statistic
 
 ---
 
+---
+
+## Technical Reference
+
+VariScout's implementation:
+
+```typescript
+// From @variscout/core
+import { calculateStats } from '@variscout/core';
+
+const stats = calculateStats(values, usl, lsl);
+// Returns: { mean, stdDev, cp, cpk, outOfSpecPercentage, ... }
+
+// Cp = (USL - LSL) / (6 * stdDev)
+// Cpk = min((USL - mean) / (3 * stdDev), (mean - LSL) / (3 * stdDev))
+```
+
+**Test coverage:** See `packages/core/src/__tests__/stats.test.ts` for capability tests.
+
+---
+
 ## See Also
 
-- [VALUE Pillar](../../01-vision/four-pillars/value.md)
-- [Two Voices](../../01-vision/two-voices/index.md)
+- [VALUE Pillar](../../01-vision/four-pillars/value.md) - Customer value concepts
+- [Two Voices](../../01-vision/two-voices/index.md) - Control limits vs specs
+- [Probability Plot](probability-plot.md) - Check normality assumption
+- [Performance Mode](performance-mode.md) - Multi-channel capability comparison
+- [Staged Analysis](staged-analysis.md) - Before/after capability comparison
 - [Glossary: Cp/Cpk](../../glossary.md#cp)
 - [Chart Design](../../06-design-system/charts/capability.md)
+- [Case: Packaging](../../04-cases/packaging/index.md) - Capability assessment example

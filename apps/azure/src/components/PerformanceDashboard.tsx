@@ -11,6 +11,8 @@
 
 import React, { useCallback, useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
+import { useTier } from '@variscout/hooks';
+import { TierBadge } from '@variscout/ui';
 import PerformanceSummary from './PerformanceSummary';
 import PerformanceIChart from './charts/PerformanceIChart';
 import PerformanceBoxplot from './charts/PerformanceBoxplot';
@@ -152,11 +154,25 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
     );
   }
 
+  // Tier information for channel count display
+  const { tier, maxChannels, upgradeUrl } = useTier();
+  const channelCount = measureColumns.length;
+
   // Show warning if no specs defined (but still show charts - they just won't have Cpk)
   const noSpecs = specs.usl === undefined && specs.lsl === undefined;
 
   return (
     <div className="flex flex-col h-full bg-slate-900">
+      {/* Header bar with tier badge and channel count */}
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-800/50 border-b border-slate-700">
+        <div className="flex items-center gap-3">
+          <TierBadge tier={tier} upgradeUrl={tier === 'free' ? upgradeUrl : undefined} size="sm" />
+          <span className="text-xs text-slate-500">
+            {channelCount} / {maxChannels} channels
+          </span>
+        </div>
+      </div>
+
       {/* Warning banner if no specs */}
       {noSpecs && (
         <div className="flex items-center gap-2 px-4 py-2 bg-amber-600/20 border-b border-amber-600/30 text-amber-300 text-sm">

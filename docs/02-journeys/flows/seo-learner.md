@@ -41,6 +41,46 @@
 
 ## Journey Flow
 
+### Mermaid Flowchart
+
+```mermaid
+flowchart TD
+    A[Google Search<br/>'how to read control chart'] --> B[/tools/i-chart]
+    B --> C{User Action}
+    C -->|Scrolls| D[Sees patterns section]
+    C -->|Clicks demo| E[Try It Demo]
+    D --> F[Two Mindsets<br/>Resonates with EDA]
+    E --> G[I like this!<br/>Clicks CTA]
+    F --> H[/products or /pricing]
+    G --> H
+    H --> I[Evaluates options]
+    I --> J[CONVERSION<br/>Azure App or Excel]
+```
+
+### User Satisfaction Journey
+
+```mermaid
+journey
+    title SEO Learner Journey
+    section Discovery
+      Google search: 4: User
+      Find tool page: 5: User
+    section Exploration
+      Read explanation: 4: User
+      Try interactive demo: 5: User
+    section Understanding
+      Two Mindsets resonates: 5: User
+      See workflow possibilities: 4: User
+    section Decision
+      Check pricing: 4: User
+      Compare to alternatives: 4: User
+    section Adoption
+      Start with PWA demo: 5: User
+      Purchase Azure App: 5: User
+```
+
+### ASCII Reference
+
 ```
 ┌─────────────────┐
 │ Google Search   │

@@ -167,6 +167,128 @@ const getPointColor = (value: number, usl?: number, lsl?: number) => {
 };
 ```
 
+## Shared Component Color Schemes
+
+Components in `@variscout/ui` use a **colorScheme prop pattern** for platform-agnostic styling:
+
+### Pattern Overview
+
+```tsx
+// Component defines color scheme interface
+interface ComponentColorScheme {
+  containerBg: string; // Tailwind class for background
+  border: string; // Tailwind class for borders
+  textMuted: string; // Tailwind class for muted text
+  // ... component-specific color slots
+}
+
+// Default uses PWA semantic tokens
+const defaultColorScheme: ComponentColorScheme = {
+  containerBg: 'bg-surface-secondary',
+  border: 'border-edge',
+  textMuted: 'text-content-muted',
+};
+
+// Azure uses Tailwind Slate palette
+const azureColorScheme: ComponentColorScheme = {
+  containerBg: 'bg-slate-800',
+  border: 'border-slate-700',
+  textMuted: 'text-slate-500',
+};
+```
+
+### Color Scheme Mapping
+
+| Semantic Token (PWA)     | Slate Equivalent (Azure) | Usage               |
+| ------------------------ | ------------------------ | ------------------- |
+| `bg-surface`             | `bg-slate-900`           | Main container      |
+| `bg-surface-secondary`   | `bg-slate-800`           | Cards, panels       |
+| `bg-surface-tertiary/50` | `bg-slate-700/50`        | Hover backgrounds   |
+| `border-edge`            | `border-slate-700`       | Primary borders     |
+| `border-edge-secondary`  | `border-slate-600`       | Secondary borders   |
+| `text-content`           | `text-white`             | Primary text        |
+| `text-content-secondary` | `text-slate-400`         | Secondary text      |
+| `text-content-muted`     | `text-slate-500`         | Muted/disabled text |
+| `hover:text-content`     | `hover:text-slate-300`   | Hover text          |
+
+### Available Color Schemes
+
+Components export both default and Azure color schemes:
+
+| Component                   | Default Export                            | Azure Export                          |
+| --------------------------- | ----------------------------------------- | ------------------------------------- |
+| `FilterBreadcrumb`          | `filterBreadcrumbDefaultColorScheme`      | `filterBreadcrumbAzureColorScheme`    |
+| `FilterChipDropdown`        | `filterChipDropdownDefaultColorScheme`    | `filterChipDropdownAzureColorScheme`  |
+| `VariationBar`              | `variationBarDefaultColorScheme`          | `variationBarAzureColorScheme`        |
+| `AnovaResults`              | `anovaDefaultColorScheme`                 | `anovaAzureColorScheme`               |
+| `YAxisPopover`              | `yAxisPopoverDefaultColorScheme`          | `yAxisPopoverAzureColorScheme`        |
+| `RegressionPanelBase`       | `regressionPanelDefaultColorScheme`       | `regressionPanelAzureColorScheme`     |
+| `PerformanceSetupPanelBase` | `performanceSetupPanelDefaultColorScheme` | `performanceSetupPanelPwaColorScheme` |
+
+### Usage in Apps
+
+**PWA (uses semantic tokens - default):**
+
+```tsx
+import { FilterBreadcrumb } from '@variscout/ui';
+
+// Default colorScheme uses semantic tokens automatically
+<FilterBreadcrumb {...props} />;
+```
+
+**Azure (uses Slate palette):**
+
+```tsx
+import { FilterBreadcrumb, filterBreadcrumbAzureColorScheme } from '@variscout/ui';
+
+<FilterBreadcrumb {...props} colorScheme={filterBreadcrumbAzureColorScheme} />;
+```
+
+### Nested Color Schemes
+
+Some components contain other themeable components. They use nested color schemes:
+
+```tsx
+interface FilterBreadcrumbColorScheme {
+  containerBg: string;
+  border: string;
+  // Nested schemes for child components
+  variationBar: VariationBarColorScheme;
+  dropdown: FilterChipDropdownColorScheme;
+}
+```
+
+### Creating New Color Schemes
+
+When extracting a component to `@variscout/ui`:
+
+1. **Identify color differences** between PWA and Azure versions
+2. **Create interface** with all color slots needed
+3. **Define default scheme** using PWA semantic tokens
+4. **Define Azure scheme** using Tailwind Slate classes
+5. **Export both** from component index and main package index
+
+```tsx
+// packages/ui/src/components/MyComponent/MyComponent.tsx
+export interface MyComponentColorScheme {
+  background: string;
+  text: string;
+  border: string;
+}
+
+export const defaultColorScheme: MyComponentColorScheme = {
+  background: 'bg-surface-secondary',
+  text: 'text-content',
+  border: 'border-edge',
+};
+
+export const azureColorScheme: MyComponentColorScheme = {
+  background: 'bg-slate-800',
+  text: 'text-white',
+  border: 'border-slate-700',
+};
+```
+
 ## Accessibility
 
 All color combinations meet WCAG AA contrast requirements:

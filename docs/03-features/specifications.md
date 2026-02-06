@@ -456,15 +456,8 @@ When configured:
 - Blue accent bar (3px) + branding text on left
 - Sample size (n=count) on right
 - Semi-transparent slate background
-- Visible in Community edition
-- Hidden when valid license key activated
-
-**License Key System:**
-
-- Format: `VSL-XXXX-XXXX-XXXX` (16 chars with checksum)
-- Offline validation (no server required)
-- Stored in localStorage
-- UI: Settings → License section
+- Visible in free tier
+- Hidden for paid tiers (`isPaidTier()` from `@variscout/core/tier`)
 
 ### 9. Statistical Tooltips
 

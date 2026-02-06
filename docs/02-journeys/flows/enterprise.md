@@ -41,6 +41,71 @@
 
 ## Journey Flow
 
+### Mermaid Flowchart
+
+```mermaid
+flowchart TD
+    A[Referral from colleague<br/>or conference] --> B[Homepage<br/>What is this? Who is it for?]
+    B --> C{Path Choice}
+    C -->|Learn more| D[/journey<br/>See methodology]
+    C -->|Direct| E[/products]
+    D --> F[I get it - now eval for team]
+    F --> E
+    E --> G[/products/enterprise]
+    G --> H{Evaluation Questions}
+    H -->|SSO/Security?| I[Documentation]
+    H -->|Data hosting?| J[Your Azure, your data]
+    H -->|Deployment?| K[1-click ARM template]
+    H -->|Need help?| L[Your consultants can assist]
+    I --> M{Decision}
+    J --> M
+    K --> M
+    L --> M
+    M -->|Self-serve| N[Purchase online + Deploy]
+    M -->|Assisted| O[Consultant deployment]
+```
+
+### Enterprise Evaluation Journey
+
+```mermaid
+journey
+    title Enterprise Evaluator Journey
+    section Awareness
+      Colleague recommendation: 4: User
+      Quick homepage scan: 4: User
+    section Understanding
+      Explore methodology: 4: User
+      See value proposition: 5: User
+    section Evaluation
+      Check security docs: 4: User
+      Review deployment: 4: User
+      Compare pricing: 4: User
+    section Decision
+      IT/Procurement review: 3: User
+      Budget approval: 3: User
+    section Deployment
+      Self-serve purchase: 5: User
+      ARM template deploy: 5: User
+```
+
+### Self-Serve Model
+
+```mermaid
+flowchart LR
+    A[Discover] --> B[Evaluate]
+    B --> C[Purchase]
+    C --> D[Deploy]
+    D --> E[Use]
+
+    A -.->|Website, referral| A
+    B -.->|Free tier, docs| B
+    C -.->|Azure Marketplace| C
+    D -.->|ARM template| D
+    E -.->|Docs + email| E
+```
+
+### ASCII Reference
+
 ```
 ┌─────────────────┐
 │ Referral from   │
@@ -148,14 +213,14 @@ The /products/enterprise page must answer:
 
 Key principle: **No sales calls required**
 
-| Step           | How It Works                                |
-| -------------- | ------------------------------------------- |
-| Discover       | Website, referral, content                  |
-| Evaluate       | Free tier, documentation, case studies      |
-| Purchase       | Paddle (individual) or AppSource (Power BI) |
-| Deploy         | 1-click ARM template                        |
-| Support        | Documentation + email                       |
-| Implementation | Your existing consultants can help          |
+| Step           | How It Works                                         |
+| -------------- | ---------------------------------------------------- |
+| Discover       | Website, referral, content                           |
+| Evaluate       | Free tier, documentation, case studies               |
+| Purchase       | Azure Marketplace (Individual/Team/Enterprise tiers) |
+| Deploy         | 1-click ARM template                                 |
+| Support        | Documentation + email                                |
+| Implementation | Your existing consultants can help                   |
 
 ---
 

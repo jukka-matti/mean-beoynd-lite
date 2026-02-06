@@ -123,3 +123,6 @@ export {
   type UseDataIngestionOptions,
   type UseDataIngestionReturn,
 } from './useDataIngestion';
+
+// Tier (Azure Marketplace licensing)
+export { useTier, type UseTierResult, type ChannelWarningMessage } from './useTier';

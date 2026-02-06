@@ -59,7 +59,26 @@ Click any bar to:
 
 ---
 
+---
+
+## Technical Reference
+
+Pareto charts in VariScout use sorted category counts with cumulative percentages. The calculation is straightforward:
+
+```typescript
+// Sort categories by count descending
+// Calculate cumulative percentage
+// Mark 80% threshold for "vital few"
+```
+
+---
+
 ## See Also
 
-- [FAILURE Pillar](../../01-vision/four-pillars/failure.md)
+- [FAILURE Pillar](../../01-vision/four-pillars/failure.md) - Problem concentration concepts
+- [Boxplot](boxplot.md) - Previous step: compare variation by factor
+- [Capability](capability.md) - Next step: assess capability of focused subset
+- [Drill-Down](../navigation/drill-down.md) - Navigate into top categories
 - [Chart Design](../../06-design-system/charts/pareto.md)
+- [Case: Packaging](../../04-cases/packaging/index.md) - Pareto in action
+- [Performance Mode](performance-mode.md) - Multi-channel Cpk ranking

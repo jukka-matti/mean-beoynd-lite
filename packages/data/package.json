@@ -9,8 +9,7 @@
     "./computed": "./src/computed/index.ts"
   },
   "dependencies": {
-    "@variscout/core": "workspace:*",
-    "@variscout/charts": "workspace:*"
+    "@variscout/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.5.2"

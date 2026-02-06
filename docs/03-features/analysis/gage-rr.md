@@ -79,9 +79,35 @@ GAGE R&R STUDY
 
 ---
 
+---
+
+## Technical Reference
+
+VariScout's implementation follows AIAG standards:
+
+```typescript
+// From @variscout/core
+import { calculateGageRR } from '@variscout/core';
+
+const grr = calculateGageRR(data, {
+  partColumn: 'PartID',
+  operatorColumn: 'Operator',
+  measureColumn: 'Value',
+});
+// Returns: { grrPercent, repeatability, reproducibility, partToPartVariation, ... }
+```
+
+**Test coverage:** See `packages/core/src/__tests__/stats.test.ts` for Gage R&R tests.
+
+---
+
 ## See Also
 
 - [Glossary: %GRR](../../glossary.md#grr)
 - [Glossary: Repeatability](../../glossary.md#repeatability)
 - [Glossary: Reproducibility](../../glossary.md#reproducibility)
+- [I-Chart](i-chart.md) - Verify stability before MSA
+- [Capability](capability.md) - Assess after confirming measurement
 - [Chart Design](../../06-design-system/charts/gage-rr.md)
+- [Case: Coffee](../../04-cases/coffee/index.md) - MSA use case
+- [Case: Avocado](../../04-cases/avocado/index.md) - MSA use case

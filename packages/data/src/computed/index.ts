@@ -6,8 +6,7 @@
  * calculations at runtime.
  */
 
-import { calculateStats, calculateGageRR } from '@variscout/core';
-import { calculateBoxplotStats } from '@variscout/charts';
+import { calculateStats, calculateGageRR, calculateBoxplotStats } from '@variscout/core';
 import { SAMPLES, getSample } from '../samples';
 import type {
   ComputedChartData,

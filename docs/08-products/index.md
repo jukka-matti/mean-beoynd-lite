@@ -1,20 +1,44 @@
 # Products
 
-VariScout is available across multiple platforms via Microsoft's distribution channels.
+VariScout is distributed through Microsoft's ecosystem with the **Azure App as the primary commercial product**.
 
 ---
 
+## Distribution Hierarchy
+
+Per [ADR-007](../07-decisions/adr-007-azure-marketplace-distribution.md):
+
+```mermaid
+flowchart LR
+    subgraph Commercial["Commercial Products"]
+        A[Azure App<br/>PRIMARY]
+        B[Excel Add-in<br/>SECONDARY]
+    end
+
+    subgraph Demo["Evaluation"]
+        C[PWA<br/>DEMO TOOL]
+    end
+
+    subgraph Future["Planned"]
+        D[Power BI]
+    end
+
+    C -->|"Try before buy"| A
+    A -->|"Unlocks"| B
+```
+
 ## Product Matrix
 
-| Product                        | Platform         | Status         | Distribution      | Primary Use Case          |
-| ------------------------------ | ---------------- | -------------- | ----------------- | ------------------------- |
-| [Azure App](azure/index.md)    | Microsoft Azure  | **Production** | Azure Marketplace | Teams & enterprises       |
-| [Excel Add-in](excel/index.md) | Microsoft Excel  | Production     | AppSource (FREE)  | Excel-native workflows    |
-| [PWA](pwa/index.md)            | Web Browser      | Internal/Demo  | Direct URL        | Evaluation & demos        |
-| [Power BI](powerbi/index.md)   | Power BI Service | Planned        | AppSource         | Dashboard integration     |
-| [Website](website/index.md)    | Web              | Production     | Public            | Marketing & documentation |
+| Product                         | Status      | Distribution      | Use Case                  | Pricing                   |
+| ------------------------------- | ----------- | ----------------- | ------------------------- | ------------------------- |
+| **[Azure App](azure/index.md)** | **PRIMARY** | Azure Marketplace | Teams & enterprises       | €99/€499/€1,790/year      |
+| [Excel Add-in](excel/index.md)  | Production  | AppSource         | Excel-native workflows    | FREE (unlocks with Azure) |
+| [PWA](pwa/index.md)             | Demo only   | Direct URL        | Evaluation & learning     | N/A                       |
+| [Power BI](powerbi/index.md)    | Planned     | AppSource         | Dashboard integration     | TBD                       |
+| [Website](website/index.md)     | Production  | Public            | Marketing & documentation | N/A                       |
 
-> **Note**: The PWA is deprecated as a commercial product. It remains available for evaluation, demos, and as the reference implementation.
+!!! tip "Evaluation Path"
+**Try → Buy → Extend**: Start with the [PWA demo](pwa/index.md) (pre-loaded case studies), purchase [Azure App](azure/index.md) for production use, and the [Excel Add-in](excel/index.md) unlocks automatically.
 
 ---
 

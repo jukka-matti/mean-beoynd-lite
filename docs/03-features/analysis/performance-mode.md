@@ -73,7 +73,35 @@ interface PerformanceChartProps {
 
 ---
 
+---
+
+## Technical Reference
+
+VariScout's implementation:
+
+```typescript
+// From @variscout/core
+import { calculateChannelResults, classifyChannelHealth } from '@variscout/core';
+
+const channels = calculateChannelResults(data, measureColumns, specs);
+// Returns: ChannelResult[] with cpk, health classification per channel
+
+// Health classification based on Cpk:
+// - 'excellent': Cpk >= 1.67
+// - 'good': Cpk >= 1.33
+// - 'marginal': Cpk >= 1.0
+// - 'poor': Cpk < 1.0
+```
+
+**Test coverage:** See `packages/core/src/__tests__/performance.test.ts`.
+
+---
+
 ## See Also
 
 - [Chart Design: Performance Mode](../../06-design-system/charts/performance-mode.md)
-- [Capability Analysis](capability.md)
+- [Capability Analysis](capability.md) - Single-channel capability concepts
+- [Pareto](pareto.md) - Ranking pattern (Performance Pareto similar)
+- [I-Chart](i-chart.md) - Time-series view (Performance I-Chart similar)
+- [Feature Parity](../../08-products/feature-parity.md) - Platform availability
+- [Glossary: Cpk](../../glossary.md#cpk)

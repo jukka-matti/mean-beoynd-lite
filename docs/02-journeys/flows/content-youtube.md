@@ -57,6 +57,62 @@ Every piece of content leads back to the website.
 
 ## Journey Flow
 
+### Mermaid Flowchart
+
+```mermaid
+flowchart TD
+    A[YouTube Search OR<br/>TikTok/IG Algorithm] --> B[VaRiScout Content<br/>Educational video with demo]
+    B --> C[Video CTA<br/>'Try VaRiScout']
+    C --> D{Landing Page}
+    D -->|Blog| E[/blog post]
+    D -->|Tool| F[/tools/X]
+    E --> G{Explore}
+    F --> G
+    G -->|Try demo| H[Interactive exploration]
+    G -->|Read more| I[Deeper content]
+    H --> J[/products]
+    I --> J
+    J --> K{Outcome}
+    K --> L[CONVERSION]
+    K --> M[TRAINING INQUIRY]
+```
+
+### User Satisfaction Journey
+
+```mermaid
+journey
+    title Content/YouTube Journey
+    section Discovery
+      YouTube/TikTok algorithm: 3: User
+      Watch educational video: 4: User
+    section Trust Building
+      Content resonates: 5: User
+      See more videos: 4: User
+    section Exploration
+      Click link in bio: 4: User
+      Explore website: 5: User
+    section Warm Lead
+      Try interactive demo: 5: User
+      Understand methodology: 5: User
+    section Conversion
+      Purchase Azure App: 5: User
+      Or training inquiry: 4: User
+```
+
+### The Content Flywheel
+
+```mermaid
+flowchart LR
+    A[Free tool user] --> B[Sees value]
+    B --> C[Training participant]
+    C --> D[Uses in project]
+    D --> E[Coaching client]
+    E --> F[Recommends to colleagues]
+    F --> A
+```
+
+### ASCII Reference
+
 ```
 ┌─────────────────┐
 │ YouTube Search  │

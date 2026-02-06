@@ -40,6 +40,48 @@
 
 ## Journey Flow
 
+### Mermaid Flowchart
+
+```mermaid
+flowchart TD
+    A[LinkedIn Post<br/>'Found 46% in ONE place'] --> B[/cases/bottleneck]
+    B --> C[ACT 1: THE CASE<br/>Sees averages hiding problem]
+    C --> D[ACT 2: YOUR TURN<br/>Interactive demo exploration]
+    D --> E[ACT 3: SOLUTION<br/>Aha! The methodology revealed]
+    E --> F{Next Action}
+    F -->|Explore more| G[Another case study]
+    F -->|Ready to try| H[CTA: What's YOUR 46%?]
+    G --> I[/products]
+    H --> I
+    I --> J{Outcome}
+    J --> K[CONVERSION]
+    J --> L[EMAIL CAPTURE]
+```
+
+### User Satisfaction Journey
+
+```mermaid
+journey
+    title Social Discovery Journey
+    section Hook
+      See LinkedIn post: 4: User
+      Intrigued by 46%: 5: User
+    section Engagement
+      Read Act 1 setup: 4: User
+      Try demo yourself: 5: User
+    section Revelation
+      See solution unfold: 5: User
+      Aha moment: 5: User
+    section Decision
+      Want to try own data: 5: User
+      Check pricing: 4: User
+    section Action
+      Start with PWA demo: 5: User
+      Or sign up for email: 4: User
+```
+
+### ASCII Reference
+
 ```
 ┌─────────────────┐
 │ LinkedIn        │

@@ -4,7 +4,7 @@ A unified design system for VariScout covering both PWA and Excel Add-in platfor
 
 ## Principles
 
-1. **Theme-aware** - Supports dark/light modes (light mode for Licensed edition)
+1. **Theme-aware** - Supports dark/light modes (light mode for paid tiers)
 2. **Data-focused** - Colors prioritize data visibility and status communication
 3. **Consistent semantics** - Same meaning for colors across platforms
 4. **Responsive** - Adapts to screen size without losing functionality
@@ -25,12 +25,12 @@ Both platforms share the same **color values** and **semantic meanings**.
 
 The PWA uses CSS variables for theming, enabling runtime theme switching:
 
-| Feature           | Community   | Licensed (PWA installed) |
-| ----------------- | ----------- | ------------------------ |
-| Dark mode         | ✓ (default) | ✓                        |
-| Light mode        | -           | ✓                        |
-| System preference | -           | ✓                        |
-| Company accent    | -           | ✓                        |
+| Feature           | Free tier   | Paid tiers (Individual/Team/Enterprise) |
+| ----------------- | ----------- | --------------------------------------- |
+| Dark mode         | ✓ (default) | ✓                                       |
+| Light mode        | -           | ✓                                       |
+| System preference | -           | ✓                                       |
+| Company accent    | -           | ✓                                       |
 
 ### Semantic Color Classes
 

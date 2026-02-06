@@ -51,8 +51,34 @@ Click any point to:
 
 ---
 
+---
+
+## Technical Reference
+
+VariScout's implementation:
+
+```typescript
+// From @variscout/core
+import { calculateStats, getNelsonRule2ViolationPoints } from '@variscout/core';
+
+const stats = calculateStats(values, usl, lsl);
+// Returns: { mean, stdDev, ucl, lcl, cp, cpk, outOfSpecPercentage }
+
+const violations = getNelsonRule2ViolationPoints(values, stats.mean);
+// Returns: Set of indices in violation runs
+```
+
+**Test coverage:** See `packages/core/src/__tests__/stats.test.ts` and `packages/core/src/__tests__/nelson.test.ts`.
+
+---
+
 ## See Also
 
-- [CHANGE Pillar](../../01-vision/four-pillars/change.md)
+- [CHANGE Pillar](../../01-vision/four-pillars/change.md) - Time-based stability concepts
 - [Two Voices](../../01-vision/two-voices/index.md) - Control limits vs specs
+- [Nelson Rules](nelson-rules.md) - Pattern detection (9-point runs)
+- [Staged Analysis](staged-analysis.md) - Per-stage control limits
+- [Boxplot](boxplot.md) - Next step: find which factor explains variation
 - [Chart Design](../../06-design-system/charts/ichart.md)
+- [Glossary: UCL/LCL](../../glossary.md#ucl)
+- [Case: Bottleneck](../../04-cases/bottleneck/index.md) - I-Chart in action

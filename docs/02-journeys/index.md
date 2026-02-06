@@ -21,6 +21,97 @@ How different users find, navigate, and convert on VariScout.
 
 ## Entry Points
 
+### Flow Interconnection Diagram
+
+```mermaid
+flowchart TB
+    subgraph Sources["Traffic Sources"]
+        G[Google Search]
+        L[LinkedIn]
+        Y[YouTube / Social]
+        R[Referral]
+        D[Direct URL]
+    end
+
+    subgraph Landing["Landing Pages"]
+        T[/tools/X]
+        H[/ Homepage]
+        C[/cases/X]
+        B[/blog/X]
+        A[/app]
+    end
+
+    subgraph Flows["User Flows"]
+        F1[SEO Learner]
+        F2[Social Discovery]
+        F3[Content/YouTube]
+        F4[Enterprise]
+        F5[Return Visitor]
+    end
+
+    subgraph Conversion["Conversion"]
+        P[/products]
+        PR[/pricing]
+        AZ[Azure Marketplace]
+    end
+
+    G --> T
+    G --> H
+    L --> H
+    L --> C
+    Y --> B
+    Y --> T
+    R --> H
+    D --> H
+    D --> A
+
+    T --> F1
+    C --> F2
+    B --> F3
+    H --> F4
+    A --> F5
+
+    F1 --> P
+    F2 --> P
+    F3 --> P
+    F4 --> P
+    F5 --> A
+
+    P --> PR
+    PR --> AZ
+```
+
+### Entry Point Matrix
+
+```mermaid
+flowchart LR
+    subgraph Entry["Entry Points"]
+        direction TB
+        E1[Google → Tool Page]
+        E2[LinkedIn → Case/Home]
+        E3[YouTube → Blog/Tool]
+        E4[Referral → Homepage]
+        E5[Direct → /app]
+    end
+
+    subgraph First["First Question"]
+        direction TB
+        Q1[Does this answer my question?]
+        Q2[Is this relevant to me?]
+        Q3[Is there more?]
+        Q4[What is this?]
+        Q5[Where was I?]
+    end
+
+    E1 --> Q1
+    E2 --> Q2
+    E3 --> Q3
+    E4 --> Q4
+    E5 --> Q5
+```
+
+### ASCII Reference
+
 ```
                                 ┌─────────────────┐
                                 │   variscout.com │
@@ -115,6 +206,54 @@ How different users find, navigate, and convert on VariScout.
 ---
 
 ## Cross-Linking Strategy
+
+### Content Interconnections
+
+```mermaid
+flowchart TB
+    subgraph Content["Content Sections"]
+        H[Homepage]
+        J[Journey]
+        C[Cases]
+        T[Tools]
+        L[Learn]
+    end
+
+    subgraph Conversion["Conversion Path"]
+        P[Products]
+        PR[Pricing]
+        AZ[CONVERSION]
+    end
+
+    H --> J
+    H --> C
+    H --> T
+
+    J <-->|same methodology| C
+    C <-->|tool used in case| T
+    T <-->|deeper concepts| L
+    T <-->|workflow: I-Chart→Box| T
+
+    J --> P
+    C --> P
+    T --> P
+    L --> P
+
+    P --> PR
+    PR --> AZ
+```
+
+### Cross-Link Rules
+
+| From         | Links To | Connection Type            |
+| ------------ | -------- | -------------------------- |
+| Journey      | Cases    | Same methodology in action |
+| Cases        | Tools    | Tool used in the case      |
+| Tools        | Learn    | Deeper concept explanation |
+| Tools        | Tools    | Workflow progression       |
+| All sections | Products | CTA on every page          |
+
+### ASCII Reference
 
 ```
                 ┌─────────────┐

@@ -59,6 +59,48 @@ When using multiple predictors:
 | VIF         | Check for multicollinearity              |
 | p-values    | Significance of each predictor           |
 
+### When to Use Multiple Regression
+
+Use multiple regression when:
+
+- You have **multiple potential predictors** (X variables)
+- You want to understand **which factors matter most**
+- You need to **control for confounding variables**
+- You're building a **predictive model**
+
+### VIF (Variance Inflation Factor)
+
+VIF detects **multicollinearity** - when predictors are correlated with each other.
+
+| VIF Value | Interpretation | Action                      |
+| --------- | -------------- | --------------------------- |
+| 1         | No correlation | Ideal                       |
+| 1-5       | Moderate       | Usually acceptable          |
+| 5-10      | High           | Investigate                 |
+| >10       | Severe         | Remove predictor or combine |
+
+**Why multicollinearity matters:**
+
+- Inflates coefficient standard errors
+- Makes individual predictor effects unreliable
+- Model still predicts well, but interpretation is compromised
+
+### Interpreting Coefficients
+
+| Element        | Meaning                                                    |
+| -------------- | ---------------------------------------------------------- |
+| Coefficient    | Change in Y per unit change in X (holding others constant) |
+| Standard Error | Uncertainty in coefficient estimate                        |
+| t-statistic    | Coefficient / Standard Error                               |
+| p-value        | Probability of seeing this t if true effect is zero        |
+
+### Model Selection Tips
+
+1. **Start simple** - Add predictors one at a time
+2. **Check Adjusted R²** - Does adding a predictor improve it?
+3. **Monitor VIF** - Remove highly correlated predictors
+4. **Validate** - Test on held-out data if possible
+
 ---
 
 ## Interaction Effects
@@ -101,9 +143,34 @@ Click **"Check Interactions →"** to navigate directly to Regression Panel.
 
 ---
 
+---
+
+## Technical Reference
+
+VariScout's implementation:
+
+```typescript
+// From @variscout/core
+import { calculateRegression, calculateMultiRegression } from '@variscout/core';
+
+// Simple regression
+const result = calculateRegression(data, 'X', 'Y');
+
+// Multiple regression with interactions
+const multiResult = calculateMultiRegression(data, ['X1', 'X2'], 'Y', {
+  includeInteractions: true,
+});
+```
+
+**Test coverage:** See `packages/core/src/__tests__/stats.test.ts` for regression tests.
+
+---
+
 ## See Also
 
 - [Glossary: R²](../../glossary.md#r²)
 - [Glossary: VIF](../../glossary.md#vif)
 - [Chart Design](../../06-design-system/charts/scatter.md)
 - [Drill-Down: When to Check for Interactions](../navigation/drill-down.md#when-to-check-for-interactions)
+- [Boxplot](boxplot.md) - Factor comparison with ANOVA
+- [Case: Avocado](../../04-cases/avocado/index.md) - Regression use case

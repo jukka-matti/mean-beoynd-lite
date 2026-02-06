@@ -61,8 +61,35 @@ Click any box to:
 
 ---
 
+---
+
+## Technical Reference
+
+VariScout's implementation:
+
+```typescript
+// From @variscout/core
+import { calculateAnova, getEtaSquared } from '@variscout/core';
+
+const anova = calculateAnova(data, 'Machine', 'Weight');
+// Returns: { fStatistic, pValue, etaSquared, groups }
+
+const etaSq = getEtaSquared(data, 'Machine', 'Weight');
+// Returns: number (0-1)
+```
+
+**Test coverage:** See `packages/core/src/__tests__/stats.test.ts` for ANOVA tests.
+
+---
+
 ## See Also
 
-- [FLOW Pillar](../../01-vision/four-pillars/flow.md)
-- [Drill-Down](../navigation/drill-down.md)
+- [FLOW Pillar](../../01-vision/four-pillars/flow.md) - Upstream factor concepts
+- [Drill-Down](../navigation/drill-down.md) - Multi-level factor exploration
+- [I-Chart](i-chart.md) - Previous step: detect instability over time
+- [Pareto](pareto.md) - Next step: rank contribution of factors
+- [Regression](regression.md) - When to check for interactions
 - [Chart Design](../../06-design-system/charts/boxplot.md)
+- [Glossary: η² (Eta-squared)](../../glossary.md#eta-squared)
+- [Glossary: F-statistic](../../glossary.md#f-statistic)
+- [Case: Bottleneck](../../04-cases/bottleneck/index.md) - Factor comparison example

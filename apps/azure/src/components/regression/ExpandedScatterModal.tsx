@@ -6,7 +6,7 @@ import { TrendingUp, X } from 'lucide-react';
 
 interface ExpandedScatterModalProps {
   result: RegressionResult;
-  specs: SpecLimits;
+  specs?: SpecLimits | null;
   onClose: () => void;
 }
 
@@ -51,7 +51,7 @@ export const ExpandedScatterModal: React.FC<ExpandedScatterModalProps> = ({
         <div className="h-full bg-slate-800 rounded-xl border border-slate-700">
           <ScatterPlot
             regression={result}
-            specs={specs}
+            specs={specs ?? undefined}
             xAxisLabel={result.xColumn}
             yAxisLabel={result.yColumn}
             showBranding={true}

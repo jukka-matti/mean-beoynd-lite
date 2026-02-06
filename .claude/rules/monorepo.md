@@ -16,9 +16,13 @@ packages/
 │              #   useKeyboardNavigation - Arrow key focus management
 │              #   useResponsiveChartMargins - Dynamic chart margins
 │              #   useTier - License tier state and limits
-└── ui/        # @variscout/ui - ChartCard, ColumnMapping, MeasureColumnSelector,
+└── ui/        # @variscout/ui - Shared UI components:
+               #   AnovaResults, FilterBreadcrumb, FilterChipDropdown,
+               #   PerformanceSetupPanelBase, RegressionPanelBase, VariationBar,
+               #   YAxisPopover, ChartCard, ColumnMapping, MeasureColumnSelector,
                #   PerformanceDetectedModal, DataQualityBanner, HelpTooltip,
-               #   TierBadge, UpgradePrompt, useGlossary, useIsMobile, colors, errorService
+               #   SelectionPanel, CreateFactorModal, TierBadge, UpgradePrompt,
+               #   useGlossary, useIsMobile, gradeColors, errorService
 
 apps/
 ├── pwa/          # @variscout/pwa - PWA website
@@ -34,7 +38,7 @@ apps/
 - `@variscout/core` has no React dependencies (exports stats, parser, glossary, tier)
 - `@variscout/charts` depends on `@variscout/core`
 - `@variscout/hooks` depends on `@variscout/core` (for types, utilities, and tier)
-- `@variscout/ui` exports `ChartCard`, `ColumnMapping`, `MeasureColumnSelector`, `PerformanceDetectedModal`, `DataQualityBanner`, `HelpTooltip`, `TierBadge`, `UpgradePrompt`, `useGlossary`, `useIsMobile`, `gradeColors`, `errorService`
+- `@variscout/ui` exports `AnovaResults`, `FilterBreadcrumb`, `FilterChipDropdown`, `PerformanceSetupPanelBase`, `RegressionPanelBase`, `VariationBar`, `YAxisPopover`, `ChartCard`, `ColumnMapping`, `MeasureColumnSelector`, `PerformanceDetectedModal`, `DataQualityBanner`, `HelpTooltip`, `SelectionPanel`, `CreateFactorModal`, `TierBadge`, `UpgradePrompt`, `useGlossary`, `useIsMobile`, `gradeColors`, `errorService`
 
 ## Build Commands
 

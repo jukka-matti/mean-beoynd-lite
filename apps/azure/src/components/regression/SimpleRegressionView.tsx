@@ -11,7 +11,7 @@ interface SimpleRegressionViewProps {
   toggleXColumn: (col: string) => void;
   regressionResults: RegressionResult[];
   sortedByStrength: RegressionResult[];
-  specs: SpecLimits;
+  specs?: SpecLimits | null;
   onExpandChart: (xColumn: string) => void;
 }
 
@@ -111,7 +111,7 @@ export const SimpleRegressionView: React.FC<SimpleRegressionViewProps> = ({
                   >
                     <ScatterPlot
                       regression={result}
-                      specs={specs}
+                      specs={specs ?? undefined}
                       showBranding={false}
                       showStars={false}
                     />

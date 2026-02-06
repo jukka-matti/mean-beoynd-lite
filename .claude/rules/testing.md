@@ -17,8 +17,6 @@
 | `@variscout/charts`      | Unit (optional)      | responsive utilities                  |
 | `@variscout/excel-addin` | Integration (future) | state bridge                          |
 
-> Note: `license.ts` tests remain for backward compatibility but new tests should use `tier.ts`.
-
 ## Commands
 
 ```bash

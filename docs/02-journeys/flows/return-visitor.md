@@ -39,6 +39,65 @@
 
 ## Journey Flow
 
+### Mermaid Flowchart
+
+```mermaid
+flowchart TD
+    A[Direct URL or Bookmark] --> B{Entry Point}
+    B -->|Direct| C[/app - PWA loads]
+    B -->|Homepage| D[/ Homepage]
+    D --> E[Clicks Try VaRiScout]
+    E --> C
+    C --> F[Previous data restored]
+    F --> G{User Status}
+    G -->|Free tier| H[May see upgrade prompts]
+    G -->|Licensed| I[Full access]
+    H --> J[Continue working]
+    I --> J
+```
+
+### Return Visitor Scenarios
+
+```mermaid
+flowchart LR
+    subgraph Scenario A [Bookmarked /app]
+        A1[Navigate to bookmark] --> A2[PWA loads] --> A3[Previous data available]
+    end
+
+    subgraph Scenario B [Homepage First]
+        B1[Go to variscout.com] --> B2[Click Try VaRiScout] --> B3[PWA loads]
+    end
+
+    subgraph Scenario C [PWA Installed]
+        C1[Click PWA icon] --> C2[Standalone window] --> C3[No browser UI]
+    end
+
+    subgraph Scenario D [New Device]
+        D1[New device] --> D2[Re-enter license] --> D3[Upload fresh]
+    end
+```
+
+### User Satisfaction Journey
+
+```mermaid
+journey
+    title Return Visitor Journey
+    section Return
+      Navigate to bookmark: 5: User
+      Or go to homepage: 4: User
+    section Recognition
+      Site looks familiar: 5: User
+      Find Try VaRiScout: 5: User
+    section Continuity
+      Previous data loads: 5: User
+      Continue where left off: 5: User
+    section Work
+      Analyze new data: 5: User
+      Export results: 5: User
+```
+
+### ASCII Reference
+
 ```
 ┌─────────────────┐
 │ Direct URL or   │

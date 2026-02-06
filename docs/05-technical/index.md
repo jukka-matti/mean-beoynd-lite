@@ -7,7 +7,7 @@ Technical specifications for VariScout implementation. These documents are desig
 ## Architecture Overview
 
 ```
-VARISCOUT ARCHITECTURE
+VARISCOUT ARCHITECTURE (Browser-Only)
 ─────────────────────────────────────────────────────────────────
 
 ┌─────────────────────────────────────────────────────────────────┐
@@ -29,9 +29,9 @@ VARISCOUT ARCHITECTURE
 │                           ↓                                     │
 │  ┌───────────────────────────────────────────────────────────┐ │
 │  │                      IndexedDB                             │ │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐                │ │
-│  │  │ Projects │  │ Settings │  │ License  │                │ │
-│  │  └──────────┘  └──────────┘  └──────────┘                │ │
+│  │           ┌──────────┐  ┌──────────┐                      │ │
+│  │           │ Projects │  │ Settings │                      │ │
+│  │           └──────────┘  └──────────┘                      │ │
 │  └───────────────────────────────────────────────────────────┘ │
 │                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐ │
@@ -40,25 +40,10 @@ VARISCOUT ARCHITECTURE
 │  └───────────────────────────────────────────────────────────┘ │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ (only for license activation)
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                         EXTERNAL                                │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────┐        ┌─────────────────┐               │
-│  │     Paddle      │        │  Webhook API    │               │
-│  │   (payments)    │───────→│ (license gen)   │               │
-│  └─────────────────┘        └─────────────────┘               │
-│                                      │                          │
-│                                      ↓                          │
-│                             ┌─────────────────┐               │
-│                             │  Email (Resend) │               │
-│                             │  License key    │               │
-│                             └─────────────────┘               │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+
+  No external payment or license services.
+  Tier detection: Azure Marketplace (ARM template params / Graph API).
+  See ADR-007 for distribution strategy.
 ```
 
 ---
@@ -97,13 +82,13 @@ VARISCOUT ARCHITECTURE
 
 ## Key Technical Decisions
 
-| Decision                 | Choice            | Rationale                             |
-| ------------------------ | ----------------- | ------------------------------------- |
-| No backend for user data | Client-only       | GDPR simplicity, no hosting costs     |
-| IndexedDB for storage    | Dexie.js          | Large data support, async, persistent |
-| License validation       | Signed keys       | Offline-capable, no server roundtrip  |
-| Payment provider         | Paddle            | VAT handling, merchant of record      |
-| Hosting                  | Vercel/Cloudflare | Static files, edge caching            |
+| Decision                 | Choice                | Rationale                                       |
+| ------------------------ | --------------------- | ----------------------------------------------- |
+| No backend for user data | Client-only           | GDPR simplicity, no hosting costs               |
+| IndexedDB for storage    | Dexie.js              | Large data support, async, persistent           |
+| Tier detection           | Azure Marketplace     | ARM template parameters, Graph API tenant check |
+| Distribution             | Azure Marketplace     | Per-seat SaaS subscriptions, Microsoft billing  |
+| Hosting                  | Azure Static Web Apps | Customer-tenant deployment, edge caching        |
 
 See [Architecture Decision Records](../07-decisions/index.md) for detailed rationale.
 

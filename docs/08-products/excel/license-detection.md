@@ -232,6 +232,17 @@ async function requestAdminConsent(): Promise<void> {
 
 ## Feature Gating
 
+### Feature Limits Module
+
+The Excel Add-in has a dedicated feature limits module at `apps/excel-addin/src/lib/featureLimits.ts`:
+
+- Mirrors the `@variscout/core` tier system with Excel-specific gating
+- Channel limits: Free = 5, Paid = 1,500 (same as core)
+- Soft performance warning at 700 channels
+- Feature availability checks: `canUsePerformanceMode()`, `canUseGageRR()`, `canRemoveBranding()`, `canUseTheming()`
+- Uses `getCurrentTier()` from `licenseDetection.ts` (currently returns `'free'` as stub)
+- Planned: Full Graph API integration for tenant-level license detection
+
 ### Using License Status
 
 ```typescript

@@ -88,7 +88,7 @@ To run agentic tests, issue a prompt to the agent:
 | `calculateRegression()`           | ✅     | Linear, quadratic, weak relationships, optimum detection                |
 | `calculateGageRR()`               | ✅     | Excellent/unacceptable systems, variance components                     |
 | `getNelsonRule2ViolationPoints()` | ✅     | Run detection, edge cases (8 vs 9 points), mean breaks run, staged mode |
-| `license.ts`                      | ✅     | Format validation, checksum verification, edge cases                    |
+| `tier.ts`                         | ✅     | Tier configuration, channel limits, validation                          |
 | `parser.ts`                       | ✅     | CSV/Excel parsing, auto-mapping, validation, data types                 |
 | `export.ts`                       | ✅     | CSV generation, special characters, escaping                            |
 | `edition.ts`                      | ✅     | Edition detection, feature flags, theming gates                         |
@@ -104,6 +104,19 @@ To run agentic tests, issue a prompt to the agent:
 | `GageRRPanel`     | ✅     | Column validation, verdict display         |
 | `AnovaResults`    | ✅     | Null state, F-stat display, p-value format |
 | `export.ts`       | ✅     | CSV generation, special characters         |
+
+### @variscout/hooks
+
+| Hook      | Tested | Focus                                           |
+| :-------- | :----- | :---------------------------------------------- |
+| `useTier` | ✅     | Tier info, channel validation, warning messages |
+
+### @variscout/ui
+
+| Component       | Tested | Focus                                         |
+| :-------------- | :----- | :-------------------------------------------- |
+| `TierBadge`     | ✅     | Tier rendering, colors, upgrade link, sizing  |
+| `UpgradePrompt` | ✅     | Variants (inline/banner/card), tier messaging |
 
 ### @variscout/azure-app (31 test cases)
 

@@ -198,6 +198,19 @@ See [License Detection](../excel/license-detection.md) for implementation detail
 
 ---
 
+## Development Tools
+
+### DevTierSwitcher
+
+The Azure app includes a development-only tier switching component at `apps/azure/src/components/DevTierSwitcher.tsx`:
+
+- Fixed-position panel to quickly switch between tiers during development
+- Only renders when `import.meta.env.DEV === true`
+- Persists tier override in `localStorage`
+- Triggers page reload to reinitialize all tier-dependent state
+
+---
+
 ## See Also
 
 - [Azure Marketplace Guide](marketplace.md)

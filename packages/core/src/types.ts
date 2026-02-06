@@ -620,6 +620,74 @@ export interface VIFWarning {
 /**
  * Result of multiple regression analysis
  */
+// ============================================================================
+// Boxplot Types - Statistical visualization
+// ============================================================================
+
+/**
+ * Simple boxplot input (just group name and values)
+ * Use calculateBoxplotStats() to convert to BoxplotGroupData
+ */
+export interface BoxplotGroupInput {
+  group: string;
+  values: number[];
+}
+
+/**
+ * Boxplot data structure for a single group (with pre-calculated stats)
+ */
+export interface BoxplotGroupData {
+  key: string;
+  values: number[];
+  min: number;
+  max: number;
+  q1: number;
+  median: number;
+  mean: number;
+  q3: number;
+  outliers: number[];
+  stdDev: number;
+}
+
+// ============================================================================
+// Licensing and Tier Types - Multi-tier subscription system
+// ============================================================================
+
+/**
+ * License tier for Azure Marketplace distribution
+ * - free: Demo tier (5 channels max)
+ * - individual: Single user (€99/yr, 1500 channels)
+ * - team: Up to 10 users (€499/yr, 1500 channels)
+ * - enterprise: Unlimited users (€1,790/yr, 1500 channels)
+ */
+export type LicenseTier = 'free' | 'individual' | 'team' | 'enterprise';
+
+/**
+ * Tier-specific limits for feature gating
+ */
+export interface TierLimits {
+  /** Maximum number of measurement channels allowed */
+  maxChannels: number;
+}
+
+/**
+ * Channel limit validation result
+ */
+export interface ChannelLimitResult {
+  /** Whether the current channel count exceeds the limit */
+  exceeded: boolean;
+  /** Current channel count */
+  current: number;
+  /** Maximum allowed for the tier */
+  max: number;
+  /** Whether to show a performance warning (soft limit) */
+  showWarning: boolean;
+}
+
+// ============================================================================
+// Multiple Regression Types - General Linear Model (GLM) support
+// ============================================================================
+
 export interface MultiRegressionResult {
   /** Response (Y) column name */
   yColumn: string;

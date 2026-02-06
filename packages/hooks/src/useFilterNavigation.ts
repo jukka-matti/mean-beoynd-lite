@@ -149,7 +149,7 @@ export function useFilterNavigation(
   options: UseFilterNavigationOptions = {}
 ): UseFilterNavigationReturn {
   const { enableHistory = false, enableUrlSync = false } = options;
-  const { filters, setFilters, columnAliases } = context;
+  const { filters: _filters, setFilters, columnAliases } = context;
 
   // Filter navigation state
   const [filterStack, setFilterStack] = useState<FilterAction[]>([]);

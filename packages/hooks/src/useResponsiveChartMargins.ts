@@ -7,7 +7,7 @@ import {
   type ChartMargins,
   type ChartFonts,
   type ChartType,
-} from '@variscout/charts';
+} from '@variscout/core';
 
 // Re-export types for convenience
 export type { ChartMargins, ChartFonts, ChartType };
