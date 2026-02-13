@@ -186,7 +186,7 @@ Gary evaluates:
 **Updated Journey:**
 
 1. Tool page → "Try Demo" → Explore with samples
-2. Like it? → "Install to Upload" → Install PWA (free demo)
+2. Like it? → "Install to Upload" → Install PWA (free training tool)
 3. Need team features? → Azure App (€150/month)
 
 ---

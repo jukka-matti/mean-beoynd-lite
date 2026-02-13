@@ -1,26 +1,39 @@
-# PWA (Demo Tool)
+# PWA (Free Training Tool)
 
-> **Role**: Interactive demonstration and evaluation tool with pre-loaded case study datasets.
+> **Role**: Free SPC training and education tool for quality professionals, students, and developing countries.
 >
-> Per [ADR-007](../../07-decisions/adr-007-azure-marketplace-distribution.md), the PWA serves as an evaluation gateway to the commercial [Azure App](../azure/index.md).
+> Per [ADR-007](../../07-decisions/adr-007-azure-marketplace-distribution.md), the PWA provides free access to core analysis features. The [Azure App](../azure/index.md) adds file upload, save/persistence, Performance Mode, and team features.
 
 ---
 
-## Purpose: Try Before You Buy
+## Purpose: Free Training & Education
 
-The PWA is an **interactive demo tool** that lets users:
+The PWA is a **free SPC training tool** that provides:
 
-1. **Explore with real data** — Pre-loaded case study datasets
-2. **Experience all features** — Full functionality for evaluation
-3. **Learn the methodology** — Same datasets as documentation
-4. **Decide without friction** — No signup, no payment required
+1. **Core analysis for everyone** — I-Chart, Boxplot, Pareto, Capability, Regression, Gage R&R, ANOVA
+2. **Pre-loaded case study datasets** — Same datasets as documentation
+3. **Copy-paste from Excel/Sheets** — No file upload, paste data directly
+4. **Zero friction** — No signup, no payment, no installation required
 
 ```mermaid
 flowchart LR
-    A[Read Case Study Docs] --> B[Try Same Data in PWA]
-    B --> C[Understand Value]
-    C --> D[Purchase Azure App]
+    A[Paste Data or Load Sample] --> B[Analyze with Full SPC]
+    B --> C[Learn Methodology]
+    C --> D{Need More?}
+    D -->|File upload, save, teams| E[Azure App]
+    D -->|Excel-native SPC| F[Excel Add-in]
 ```
+
+---
+
+## Target Users
+
+| User                  | Context                          | Why PWA Works                              |
+| --------------------- | -------------------------------- | ------------------------------------------ |
+| **LSS Trainers**      | Green Belt / Black Belt courses  | Minitab replacement with zero installation |
+| **Students**          | University statistics courses    | Free, browser-based, no license needed     |
+| **Quality Champions** | SMEs in developing countries     | Better tools than Excel, completely free   |
+| **Evaluators**        | Assessing VariScout capabilities | Try with sample data before purchasing     |
 
 ---
 
@@ -34,38 +47,51 @@ The PWA comes with datasets from the documentation case studies:
 | Bottleneck    | [Bottleneck Case](../../04-cases/bottleneck/index.md)       | Process flow, drill-down |
 | Hospital Ward | [Hospital Ward Case](../../04-cases/hospital-ward/index.md) | Aggregation trap         |
 | Packaging     | [Packaging Case](../../04-cases/packaging/index.md)         | Pareto, capability       |
-| Sachets       | Performance Mode                                            | Multi-channel analysis   |
 
-**Learning continuity**: The same data appears in docs → PWA → teaching materials.
+**Learning continuity**: The same data appears in docs, PWA, and teaching materials.
+
+---
+
+## Features (Free)
+
+All core SPC analysis features:
+
+- I-Chart, Boxplot, Pareto, Capability Histogram
+- Regression analysis, Gage R&R, ANOVA
+- Drill-down with breadcrumb navigation
+- Linked filtering across charts
+- Data input: copy-paste from Excel/Sheets + sample datasets
+- VariScout branding on charts
+
+---
+
+## Restrictions (Free Tier)
+
+| Feature                 | PWA (Free)   | Azure App (Paid) |
+| ----------------------- | ------------ | ---------------- |
+| File upload (CSV/Excel) | -            | ✓                |
+| .vrs import/export      | -            | ✓                |
+| Save/persistence        | Session only | OneDrive sync    |
+| Performance Mode        | -            | ✓                |
+| Branding on charts      | Always shown | Hidden           |
+| Authentication          | None         | Microsoft SSO    |
+| Team collaboration      | -            | Shared projects  |
 
 ---
 
 ## Use Cases
 
-| Use Case               | Appropriate | Notes                              |
-| ---------------------- | :---------: | ---------------------------------- |
-| Evaluate features      |      ✓      | Full functionality                 |
-| Try case study data    |      ✓      | Pre-loaded datasets                |
-| Demo to stakeholders   |      ✓      | No setup required                  |
-| Learn methodology      |      ✓      | Hands-on practice                  |
-| Development reference  |      ✓      | Reference implementation           |
-| **Production use**     |      ✗      | Use [Azure App](../azure/index.md) |
-| **Team collaboration** |      ✗      | Use Azure App with OneDrive        |
-| **Data persistence**   |   Limited   | Browser-only storage               |
-
----
-
-## Overview
-
-The PWA is a React application that:
-
-- Runs entirely in the browser (no server required)
-- Works offline after initial load
-- Can be installed like a native app (Add to Home Screen)
-- Stores data locally in IndexedDB
-- **Pre-loaded with case study datasets** for immediate exploration
-
-This implementation serves as the **reference codebase** for VariScout features before they're ported to Azure App and Excel Add-in.
+| Use Case                 | Appropriate | Notes                              |
+| ------------------------ | :---------: | ---------------------------------- |
+| SPC training courses     |      ✓      | Full Green Belt coverage           |
+| University education     |      ✓      | Free, no license needed            |
+| Try case study data      |      ✓      | Pre-loaded datasets                |
+| Analyze own data (paste) |      ✓      | Copy-paste from Excel              |
+| Demo to stakeholders     |      ✓      | No setup required                  |
+| **Production use**       |      ✗      | Use [Azure App](../azure/index.md) |
+| **Team collaboration**   |      ✗      | Use Azure App with OneDrive        |
+| **File upload**          |      ✗      | Use Azure App                      |
+| **Data persistence**     |      ✗      | Session only (no save)             |
 
 ---
 
@@ -78,21 +104,7 @@ This implementation serves as the **reference codebase** for VariScout features 
 | Styling   | Tailwind CSS             |
 | Charts    | Visx (@variscout/charts) |
 | State     | React Context            |
-| Storage   | IndexedDB (Dexie.js)     |
 | Offline   | Service Worker           |
-
----
-
-## Features
-
-All features are available for evaluation:
-
-- All chart types (I-Chart, Boxplot, Pareto, Capability, Regression, Gage R&R)
-- Performance Mode for multi-channel analysis
-- Drill-down with breadcrumb navigation
-- Linked filtering across charts
-- CSV/Excel file import
-- Data export (CSV, JSON, screenshots)
 
 ---
 
@@ -105,11 +117,6 @@ All features are available for evaluation:
 │  ┌─────────────────────────────────────────────────────────────┐ │
 │  │                    REACT APPLICATION                         │ │
 │  │   DataContext → Charts → Analysis                           │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-│                              │                                   │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │                      IndexedDB                               │ │
-│  │   Projects │ Settings                                       │ │
 │  └─────────────────────────────────────────────────────────────┘ │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────────┐ │
@@ -144,36 +151,19 @@ The PWA serves as the **feature development sandbox**:
 3. **Azure App** adopts features after PWA validation
 4. **Excel Add-in** adapts features for Office.js constraints
 
-This ensures rapid iteration while maintaining code quality across all platforms.
-
 ---
 
-## From Demo to Production
+## Upgrade Path
 
-After evaluating in the PWA:
-
-| Ready For...     | Next Step                                                 |
-| ---------------- | --------------------------------------------------------- |
-| Full features    | [Azure App](../azure/index.md) (€150/month, all features) |
-| Excel-native SPC | [Excel Add-in](../excel/index.md) (FREE, core SPC charts) |
-
----
-
-## What's Different in Production?
-
-| Aspect           | PWA (Demo)          | Azure App (Production)  |
-| ---------------- | ------------------- | ----------------------- |
-| Data storage     | Browser only        | OneDrive sync           |
-| Authentication   | None                | Microsoft SSO           |
-| Team features    | -                   | Shared projects         |
-| Data persistence | Clears with browser | Persists across devices |
-| Support          | Community           | Email (paid tiers)      |
+| Ready For...             | Next Step                                                 |
+| ------------------------ | --------------------------------------------------------- |
+| File upload, save, teams | [Azure App](../azure/index.md) (€150/month, all features) |
+| Excel-native SPC         | [Excel Add-in](../excel/index.md) (FREE, core SPC charts) |
 
 ---
 
 ## See Also
 
-- [Storage](storage.md) - IndexedDB details
 - [Azure App (Primary Product)](../azure/index.md) - Production platform
 - [Excel Add-in](../excel/index.md) - Excel-native option
 - [Feature Parity](../feature-parity.md) - Platform comparison

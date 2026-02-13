@@ -10,16 +10,16 @@ Complete feature availability across VariScout platforms.
 | ---------------- | -------------------------- | ----------- | ----------------- |
 | **Azure App**    | Production (full features) | **PRIMARY** | Azure Marketplace |
 | **Excel Add-in** | Excel-native core SPC      | Production  | AppSource (FREE)  |
-| **PWA**          | Evaluation & demos         | Demo only   | Direct URL        |
+| **PWA**          | Training & education       | Production  | Direct URL (FREE) |
 | **Power BI**     | Dashboard integration      | Planned     | AppSource         |
 
-> Per [ADR-007](../07-decisions/adr-007-azure-marketplace-distribution.md), Azure App is the only paid product (€150/month as Managed Application). Excel Add-in is free forever with core SPC only.
+> Per [ADR-007](../07-decisions/adr-007-azure-marketplace-distribution.md), Azure App is the only paid product (€150/month as Managed Application). Excel Add-in and PWA are free forever.
 
 ---
 
 ## Core Analysis Features
 
-| Feature                  | Azure App | Excel Add-in | PWA (Demo) | Power BI |
+| Feature                  | Azure App | Excel Add-in | PWA (Free) | Power BI |
 | ------------------------ | :-------: | :----------: | :--------: | :------: |
 | **I-Chart**              |     ✓     |      ✓       |     ✓      | Planned  |
 | **Boxplot**              |     ✓     |      ✓       |     ✓      | Planned  |
@@ -28,9 +28,9 @@ Complete feature availability across VariScout platforms.
 | **Probability Plot**     |     ✓     |      -       |     ✓      |    -     |
 | **Scatter/Regression**   |     ✓     |      -       |     ✓      |    -     |
 | **Gage R&R**             |     ✓     |      -       |     ✓      |    -     |
-| **Performance Mode**     |     ✓     |      -       |     ✓      |    -     |
+| **Performance Mode**     |     ✓     |      -       |     -      |    -     |
 
-> Excel Add-in provides the four core SPC charts. Advanced analysis (Performance Mode, Gage R&R, Regression, Probability Plot) requires the Azure App.
+> Excel Add-in provides the four core SPC charts. PWA adds Regression, Gage R&R, and Probability Plot for training. Performance Mode requires the Azure App.
 
 ---
 
@@ -54,7 +54,7 @@ All platforms share `@variscout/core` and produce **identical results** for the 
 
 ## Navigation & Interaction
 
-| Feature                   | Azure App | Excel Add-in | PWA (Demo) | Notes                      |
+| Feature                   | Azure App | Excel Add-in | PWA (Free) | Notes                      |
 | ------------------------- | :-------: | :----------: | :--------: | -------------------------- |
 | **Drill-down**            |     ✓     | Via slicers  |     ✓      | Excel uses native slicers  |
 | **Linked filtering**      |     ✓     | Via slicers  |     ✓      | Excel uses native slicers  |
@@ -67,34 +67,34 @@ All platforms share `@variscout/core` and produce **identical results** for the 
 
 ## Data Handling
 
-| Feature             | Azure App | Excel Add-in | PWA (Demo) | Notes                      |
-| ------------------- | :-------: | :----------: | :--------: | -------------------------- |
-| **CSV upload**      |     ✓     |      -       |     ✓      | Excel reads from worksheet |
-| **Excel upload**    |     ✓     |    Native    |     ✓      | Excel is the data source   |
-| **Paste data**      |     ✓     |      -       |     ✓      |                            |
-| **Sample datasets** |     ✓     |      -       |     ✓      | PWA pre-loaded with cases  |
-| **Column mapping**  |     ✓     |      -       |     ✓      | Excel auto-detects         |
-| **Data validation** |     ✓     |      ✓       |     ✓      |                            |
+| Feature             | Azure App | Excel Add-in | PWA (Free) | Notes                     |
+| ------------------- | :-------: | :----------: | :--------: | ------------------------- |
+| **CSV upload**      |     ✓     |      -       |     -      | Azure App + Excel native  |
+| **Excel upload**    |     ✓     |    Native    |     -      | Azure App + Excel native  |
+| **Paste data**      |     ✓     |      -       |     ✓      |                           |
+| **Sample datasets** |     ✓     |      -       |     ✓      | PWA pre-loaded with cases |
+| **Column mapping**  |     ✓     |      -       |     ✓      | Excel auto-detects        |
+| **Data validation** |     ✓     |      ✓       |     ✓      |                           |
 
 ---
 
 ## Persistence & Storage
 
-| Feature               | Azure App | Excel Add-in | PWA (Demo) | Notes                    |
+| Feature               | Azure App | Excel Add-in | PWA (Free) | Notes                    |
 | --------------------- | :-------: | :----------: | :--------: | ------------------------ |
-| **Local storage**     | IndexedDB |  Doc Props   | IndexedDB  |                          |
+| **Local storage**     | IndexedDB |  Doc Props   |     -      | PWA is session-only      |
 | **Cloud sync**        | OneDrive  |   OneDrive   |     -      |                          |
 | **Offline support**   |  Cached   |      ✓       |     ✓      | Azure caches for offline |
-| **Project save/load** |     ✓     | In workbook  |     ✓      |                          |
-| **Export CSV**        |     ✓     |      -       |     ✓      | Excel is already Excel   |
-| **Export JSON**       |     ✓     |      -       |     ✓      |                          |
+| **Project save/load** |     ✓     | In workbook  |     -      | PWA is session-only      |
+| **Export CSV**        |     ✓     |      -       |     -      | Azure App only           |
+| **Export JSON**       |     ✓     |      -       |     -      | Azure App only           |
 | **Screenshot export** |     ✓     |      ✓       |     ✓      |                          |
 
 ---
 
 ## Authentication & Security
 
-| Feature                     | Azure App | Excel Add-in | PWA (Demo) | Notes                 |
+| Feature                     | Azure App | Excel Add-in | PWA (Free) | Notes                 |
 | --------------------------- | :-------: | :----------: | :--------: | --------------------- |
 | **Microsoft SSO**           |     ✓     |      -       |     -      | Excel: no auth needed |
 | **Azure AD / Entra ID**     |     ✓     |      -       |     -      |                       |
@@ -107,7 +107,7 @@ All platforms share `@variscout/core` and produce **identical results** for the 
 
 ## Theming & Customization
 
-| Feature                  | Azure App | Excel Add-in | PWA (Demo) | Notes                  |
+| Feature                  | Azure App | Excel Add-in | PWA (Free) | Notes                  |
 | ------------------------ | :-------: | :----------: | :--------: | ---------------------- |
 | **Dark/Light theme**     |     ✓     |  Dark only   |     ✓      | Content add-in is dark |
 | **System theme follow**  |     ✓     |      -       |     ✓      |                        |
@@ -129,12 +129,12 @@ All platforms share `@variscout/core` and produce **identical results** for the 
 
 ## Licensing & Pricing
 
-| Aspect           | Azure App         | Excel Add-in   | PWA (Demo) |
-| ---------------- | ----------------- | -------------- | ---------- |
-| **Distribution** | Azure Marketplace | AppSource      | Direct     |
-| **Pricing**      | €150/month        | FREE (forever) | N/A        |
-| **Features**     | All (full)        | Core SPC only  | All (demo) |
-| **Auth**         | MSAL / Entra ID   | None required  | None       |
+| Aspect           | Azure App         | Excel Add-in   | PWA (Free)                                           |
+| ---------------- | ----------------- | -------------- | ---------------------------------------------------- |
+| **Distribution** | Azure Marketplace | AppSource      | Direct URL                                           |
+| **Pricing**      | €150/month        | FREE (forever) | FREE (forever)                                       |
+| **Features**     | All (full)        | Core SPC only  | Core SPC + Green Belt (no Performance Mode, no save) |
+| **Auth**         | MSAL / Entra ID   | None required  | None                                                 |
 
 ---
 
@@ -142,7 +142,9 @@ All platforms share `@variscout/core` and produce **identical results** for the 
 
 ### Azure App Only
 
-- All analysis types (Performance Mode, Gage R&R, Regression, Probability Plot)
+- Performance Mode (multi-channel Cpk analysis)
+- File upload (CSV/Excel)
+- Save/persistence (OneDrive sync)
 - OneDrive project sync
 - Team collaboration
 - MSAL authentication flow
@@ -158,9 +160,11 @@ All platforms share `@variscout/core` and produce **identical results** for the 
 
 ### PWA Only
 
+- Free forever (training & education)
+- Copy-paste data input from Excel/Sheets
+- Pre-loaded case study datasets
 - PWA installation (Add to Home Screen)
 - Service Worker offline caching
-- Pre-loaded case study datasets
 
 ---
 
@@ -178,5 +182,5 @@ All platforms share `@variscout/core` and produce **identical results** for the 
 - [Products Overview](index.md)
 - [Azure App](azure/index.md)
 - [Excel Add-in](excel/index.md)
-- [PWA (Demo)](pwa/index.md)
+- [PWA (Free Training Tool)](pwa/index.md)
 - [ADR-007: Distribution Strategy](../07-decisions/adr-007-azure-marketplace-distribution.md)

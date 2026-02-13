@@ -16,10 +16,10 @@ flowchart LR
 
     subgraph Free["Free Products"]
         B[Excel Add-in<br/>Core SPC]
-        C[PWA<br/>Demo Tool]
+        C[PWA<br/>Free Training Tool]
     end
 
-    C -->|"Try before buy"| A
+    C -->|"Need file upload, save, teams"| A
     B -->|"Need advanced features"| A
 ```
 
@@ -29,12 +29,12 @@ flowchart LR
 | ------------------------------- | ----------- | ----------------- | ------------------------- | -------------- |
 | **[Azure App](azure/index.md)** | **PRIMARY** | Azure Marketplace | Teams & enterprises       | €150/month     |
 | [Excel Add-in](excel/index.md)  | Production  | AppSource         | Excel-native core SPC     | FREE (forever) |
-| [PWA](pwa/index.md)             | Demo only   | Direct URL        | Evaluation & learning     | N/A            |
+| [PWA](pwa/index.md)             | Production  | Direct URL        | Training & education      | FREE (forever) |
 | [Power BI](powerbi/index.md)    | Planned     | AppSource         | Dashboard integration     | TBD            |
 | [Website](website/index.md)     | Production  | Public            | Marketing & documentation | N/A            |
 
-!!! tip "Evaluation Path"
-**Try → Buy**: Start with the [PWA demo](pwa/index.md) (pre-loaded case studies) or the [Excel Add-in](excel/index.md) (free core SPC), then purchase the [Azure App](azure/index.md) for full features.
+!!! tip "Getting Started"
+**Free tools**: Start with the [PWA](pwa/index.md) (free training tool with copy-paste input) or the [Excel Add-in](excel/index.md) (free core SPC). Upgrade to the [Azure App](azure/index.md) for file upload, save/persistence, Performance Mode, and team features.
 
 ---
 
@@ -66,7 +66,7 @@ flowchart LR
 
 ## Feature Comparison
 
-| Feature          | Azure App | Excel       | PWA (Demo) | Power BI         |
+| Feature          | Azure App | Excel       | PWA (Free) | Power BI         |
 | ---------------- | --------- | ----------- | ---------- | ---------------- |
 | I-Chart          | ✓         | ✓           | ✓          | Planned          |
 | Boxplot          | ✓         | ✓           | ✓          | Planned          |
@@ -74,7 +74,9 @@ flowchart LR
 | Capability       | ✓         | ✓           | ✓          | Planned          |
 | Regression       | ✓         | -           | ✓          | -                |
 | Gage R&R         | ✓         | -           | ✓          | -                |
-| Performance Mode | ✓         | -           | ✓          | -                |
+| Performance Mode | ✓         | -           | -          | -                |
+| File Upload      | ✓         | Native      | -          | -                |
+| Save/Persistence | ✓         | In workbook | -          | Power BI Service |
 | Drill-Down       | ✓         | Via slicers | ✓          | Native           |
 | Linked Filtering | ✓         | Via slicers | ✓          | Native           |
 | Offline          | Cached    | ✓           | ✓          | -                |
@@ -130,7 +132,7 @@ This ensures:
 | ------------ | -------------------------------------- | --------------------------- | -------------------------------- |
 | Azure App    | Managed Application to customer tenant | Customer's Azure + OneDrive | Deployment config (all features) |
 | Excel Add-in | AppSource or sideload                  | Excel workbook              | Always free (no detection)       |
-| PWA          | Static hosting (internal)              | Browser (IndexedDB)         | N/A (demo only)                  |
+| PWA          | Static hosting (public)                | Browser (session only)      | Free forever (training)          |
 | Power BI     | AppSource                              | Power BI Service            | TBD                              |
 
 ---

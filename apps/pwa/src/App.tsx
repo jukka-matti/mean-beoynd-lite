@@ -24,7 +24,8 @@ import {
   calculateStats,
   type ExclusionReason,
 } from '@variscout/core';
-import { PerformanceDetectedModal } from '@variscout/ui';
+import { PerformanceDetectedModal, UpgradePrompt } from '@variscout/ui';
+import { useTier } from '@variscout/hooks';
 import type { WideFormatDetection } from '@variscout/core';
 
 type AnalysisView = 'dashboard' | 'regression' | 'gagerr' | 'performance';
@@ -64,6 +65,10 @@ function App() {
     togglePointSelection,
     clearSelection,
   } = useData();
+
+  // Tier gating for free PWA
+  const { isPaid, tier, upgradeUrl } = useTier();
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState<string | null>(null);
 
   // State for performance mode auto-detection
   const [wideFormatDetection, setWideFormatDetection] = useState<WideFormatDetection | null>(null);
@@ -309,6 +314,10 @@ function App() {
   }, [filteredData, outcome, specs, currentProjectName]);
 
   const handleSaveToBrowser = useCallback(async () => {
+    if (!isPaid) {
+      setShowUpgradePrompt('save');
+      return;
+    }
     if (currentProjectName) {
       // Quick save with existing name
       setIsSaving(true);
@@ -322,7 +331,7 @@ function App() {
       setShowSaveInput(true);
       setSaveInputName(`Analysis ${new Date().toLocaleDateString()}`);
     }
-  }, [currentProjectName, saveProject]);
+  }, [currentProjectName, saveProject, isPaid]);
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -376,6 +385,10 @@ function App() {
   ]);
 
   const handleSaveWithName = useCallback(async () => {
+    if (!isPaid) {
+      setShowUpgradePrompt('save');
+      return;
+    }
     if (!saveInputName.trim()) return;
     setIsSaving(true);
     try {
@@ -385,7 +398,7 @@ function App() {
     } finally {
       setIsSaving(false);
     }
-  }, [saveInputName, saveProject]);
+  }, [saveInputName, saveProject, isPaid]);
 
   const handleDownloadFile = useCallback(() => {
     const filename = currentProjectName || `variscout-${new Date().toISOString().split('T')[0]}`;
@@ -579,6 +592,11 @@ function App() {
   // Handle enabling performance mode from detection modal
   const handleEnablePerformanceMode = useCallback(
     (columns: string[], label: string) => {
+      if (!isPaid) {
+        setWideFormatDetection(null);
+        setShowUpgradePrompt('Performance Mode');
+        return;
+      }
       // Clear selection when entering Performance Mode (Phase 4)
       clearSelection();
       setMeasureColumns(columns);
@@ -587,7 +605,7 @@ function App() {
       setWideFormatDetection(null);
       setActiveView('performance');
     },
-    [setMeasureColumns, setMeasureLabel, setPerformanceMode, clearSelection]
+    [setMeasureColumns, setMeasureLabel, setPerformanceMode, clearSelection, isPaid]
   );
 
   // Handle declining performance mode from detection modal
@@ -803,9 +821,6 @@ function App() {
             <ManualEntry onAnalyze={handleManualDataAnalyze} onCancel={handleManualEntryCancel} />
           ) : rawData.length === 0 ? (
             <HomeScreen
-              onFileUpload={handleFileUpload}
-              onImportFile={handleImportFile}
-              onOpenProjects={() => setIsProjectsOpen(true)}
               onLoadSample={loadSample}
               onOpenManualEntry={handleOpenManualEntry}
               onOpenSettings={() => setIsSettingsOpen(true)}
@@ -919,12 +934,64 @@ function App() {
       )}
 
       {/* Performance Mode Detection Modal */}
-      {wideFormatDetection && (
-        <PerformanceDetectedModal
-          detection={wideFormatDetection}
-          onEnable={handleEnablePerformanceMode}
-          onDecline={handleDeclinePerformanceMode}
-        />
+      {wideFormatDetection &&
+        (isPaid ? (
+          <PerformanceDetectedModal
+            detection={wideFormatDetection}
+            onEnable={handleEnablePerformanceMode}
+            onDecline={handleDeclinePerformanceMode}
+          />
+        ) : (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-surface-secondary border border-edge rounded-xl shadow-xl p-5 w-full max-w-sm">
+              <p className="text-sm text-content mb-3">
+                {wideFormatDetection.channels.length} measure columns detected — Performance Mode is
+                available in the Azure App.
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={handleDeclinePerformanceMode}
+                  className="px-4 py-2 text-sm font-medium text-white bg-surface-tertiary hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+
+      {/* Upgrade Prompt Modal */}
+      {showUpgradePrompt && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="relative w-full max-w-md">
+            <button
+              onClick={() => setShowUpgradePrompt(null)}
+              className="absolute top-3 right-3 text-content-secondary hover:text-white z-10"
+            >
+              <span className="sr-only">Close</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <UpgradePrompt
+              tier={tier}
+              feature={showUpgradePrompt}
+              upgradeUrl={upgradeUrl}
+              variant="card"
+            />
+          </div>
+        </div>
       )}
     </div>
   );

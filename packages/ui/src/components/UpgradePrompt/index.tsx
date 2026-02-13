@@ -122,7 +122,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
             View Upgrade Options
             <ArrowRight size={14} />
           </a>
-          <span className="text-xs text-slate-500">Starting at just 99/year</span>
+          <span className="text-xs text-slate-500">€150/month with Azure App</span>
         </div>
       </div>
     );

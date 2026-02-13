@@ -164,7 +164,7 @@ variscout-lite/
 | ------------ | ----------------- | ---------------------------------------------- | ----------- |
 | Azure App    | Azure Marketplace | €150/month (Managed Application, all features) | **PRIMARY** |
 | Excel Add-in | AppSource         | FREE (forever, core SPC only)                  | Production  |
-| PWA          | Internal          | N/A (demo only)                                | Deprecated  |
+| PWA          | Public URL        | FREE (forever, training & education)           | Production  |
 
 See [ADR-007](docs/07-decisions/adr-007-azure-marketplace-distribution.md) for the distribution strategy.
 

@@ -62,11 +62,11 @@ These findings led to a simplified model: one paid product (Azure App as Managed
 
 ### Product Hierarchy
 
-| Product          | Role                    | Distribution      | Price                            |
-| ---------------- | ----------------------- | ----------------- | -------------------------------- |
-| **Azure App**    | ONLY PAID PRODUCT       | Azure Marketplace | €150/month (Managed Application) |
-| **Excel Add-in** | FREE (marketing funnel) | AppSource         | Free forever, core SPC only      |
-| **PWA**          | DEPRECATED (demo only)  | Internal/website  | N/A                              |
+| Product          | Role                        | Distribution      | Price                                                                |
+| ---------------- | --------------------------- | ----------------- | -------------------------------------------------------------------- |
+| **Azure App**    | ONLY PAID PRODUCT           | Azure Marketplace | €150/month (Managed Application)                                     |
+| **Excel Add-in** | FREE (marketing funnel)     | AppSource         | Free forever, core SPC only                                          |
+| **PWA**          | FREE (training & education) | Public website    | Free forever (core SPC + Green Belt, copy-paste input, session-only) |
 
 ### Pricing Rationale
 
@@ -162,9 +162,11 @@ variscout-managed-app.zip
    - Monthly billing may create higher churn risk
    - But also lower purchase friction (no large upfront commitment)
 
-3. **PWA deprecation**
-   - Existing PWA users need migration path
-   - PWA remains as demo/reference implementation only
+3. **PWA as free training tool**
+   - PWA repositioned as free SPC training and education tool
+   - Core analysis (I-Chart, Boxplot, Pareto, Capability, Regression, Gage R&R) included
+   - No file upload, no save, no Performance Mode (Azure App differentiators)
+   - Copy-paste from Excel/Sheets + pre-loaded sample datasets
 
 4. **Excel Add-in feature reduction**
    - Performance Mode removed from Excel (Azure App exclusive)
@@ -221,17 +223,18 @@ The original ADR-007 proposed using Graph API to detect Azure App registration i
 
 ## Migration Path
 
-### For Existing PWA Users
+### For PWA Users
 
-1. PWA continues to function for demo/evaluation
-2. Direct to Azure Marketplace for full-featured deployment
-3. Provide migration documentation
+1. PWA is a genuine free product for training and education
+2. Core SPC + Green Belt analysis always available
+3. Copy-paste from Excel/Sheets for own data analysis
+4. Upgrade to Azure App for file upload, save, Performance Mode, and team features
 
 ### For New Customers
 
-1. Direct to Azure Marketplace for purchase
-2. Excel Add-in available free on AppSource (core SPC)
-3. PWA available for evaluation only
+1. Start with free PWA (training) or free Excel Add-in (core SPC)
+2. Azure Marketplace for full-featured deployment (€150/month)
+3. Clear upgrade path from free tools to Azure App
 
 ---
 

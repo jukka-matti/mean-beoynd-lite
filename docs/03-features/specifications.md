@@ -779,7 +779,7 @@ NO backend. NO API calls. Works offline after first visit.
 | ------------ | ----------------- | ---------------------------------------------- | ----------- |
 | Azure App    | Azure Marketplace | €150/month (Managed Application, all features) | **PRIMARY** |
 | Excel Add-in | AppSource         | FREE (forever, core SPC only)                  | Production  |
-| PWA          | Internal          | N/A (demo only)                                | Deprecated  |
+| PWA          | Public URL        | FREE (forever, training & education)           | Production  |
 
 ### Free (PWA Demo / Excel Add-in)
 
