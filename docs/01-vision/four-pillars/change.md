@@ -1,6 +1,8 @@
-# CHANGE Pillar: I-Chart
+# CHANGE Lens: I-Chart
 
-> The Adaptive Pillar
+> The Adaptive Lens — look at the same data through time
+
+The CHANGE lens asks what happens when you arrange your data along a time axis. The same measurements that look fine as an average can reveal shifts, trends, and cycles when viewed through this lens.
 
 ---
 

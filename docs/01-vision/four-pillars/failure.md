@@ -1,6 +1,8 @@
-# FAILURE Pillar: Pareto
+# FAILURE Lens: Pareto
 
-> The Integrity Pillar
+> The Integrity Lens — look at where problems concentrate
+
+The FAILURE lens asks what happens when you count and rank the things that go wrong. The same data that averages describe as "95% good" reveals that most problems cluster in a few specific categories when viewed through this lens.
 
 ---
 

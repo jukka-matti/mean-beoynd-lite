@@ -43,16 +43,18 @@ This isn't a marketing claim — it's what the drill-down methodology routinely 
 
 ---
 
-## The Process Detective's Toolkit
+## The Process Detective's Toolkit: Four Lenses
 
-VariScout's four core charts map to four detective questions:
+VariScout's four core charts are **four lenses** — parallel ways to examine the same data. Like a detective switching between UV light, a magnifying glass, and a timeline reconstruction, each lens reveals something different:
 
-| Tool                   | Detective Question                                                         |
+| Lens                   | Detective Question                                                         |
 | ---------------------- | -------------------------------------------------------------------------- |
 | **I-Chart (CHANGE)**   | "What changed between yesterday's shift and today's shift?"                |
 | **Boxplot (FLOW)**     | "Retrace the footprints upstream. Where did this come from?"               |
 | **Pareto (FAILURE)**   | "Where is the 'blood spatter'? The chaotic, mixed data?"                   |
 | **Capability (VALUE)** | "Am I looking at a clue (customer issue) or just noise (irrelevant spec)?" |
+
+The first three lenses (CHANGE, FLOW, FAILURE) analyze internal process behavior. The VALUE lens is a different type of question — it brings in an external reference (customer specifications) to ask "does it actually matter?"
 
 **Add-on:**
 
@@ -93,6 +95,6 @@ VariScout is **the first step** — finding where to focus before investing in d
 
 ## See Also
 
-- [Four Pillars](four-pillars/index.md) — The methodology framework
+- [Four Lenses](four-pillars/index.md) — The methodology framework
 - [Two Voices](two-voices/index.md) — Control limits vs specification limits
 - [Drill-Down](four-pillars/drilldown.md) — Progressive analysis methodology

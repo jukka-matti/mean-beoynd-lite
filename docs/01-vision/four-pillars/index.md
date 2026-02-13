@@ -1,14 +1,22 @@
-# Watson's Four Pillars of Process Knowledge
+# Watson's Four Lenses of Process Knowledge
 
-> "VariScout doesn't just display charts — it embodies a methodology for profound process understanding."
+> "VariScout doesn't just display charts — it gives you four lenses to see what averages hide."
+
+---
+
+## Why Lenses?
+
+The Four Pillars are not sequential steps — they are **parallel lenses** on the same data. Each lens asks a fundamentally different question. Apply them in any order, combine them through drill-down, and the same dataset reveals different truths depending on which lens you look through.
+
+Think of a detective examining a crime scene: the same evidence looks different under UV light, through a magnifying glass, or in a timeline reconstruction. VariScout's four charts work the same way — four lenses, one dataset, four kinds of insight.
 
 ---
 
 ## The Core Insight
 
-VariScout's four core charts aren't random statistical outputs. Each chart directly maps to one of Watson's Four Pillars of Process Knowledge:
+VariScout's four core charts aren't random statistical outputs. Each chart directly maps to one of Watson's Four Pillars of Process Knowledge — each a distinct **lens** on your data:
 
-| Chart                    | Pillar      | Core Question                     |
+| Chart                    | Lens        | Core Question                     |
 | ------------------------ | ----------- | --------------------------------- |
 | **I-Chart**              | **CHANGE**  | "What's shifting over time?"      |
 | **Boxplot**              | **FLOW**    | "Where does variation come from?" |
@@ -26,11 +34,11 @@ Regression in VariScout serves as a **first step** to visually check if correlat
 
 ---
 
-## The Pillars
+## The Four Lenses
 
 <div class="grid cards" markdown>
 
-- :material-chart-line:{ .lg .middle } **CHANGE**
+- :material-chart-line:{ .lg .middle } **CHANGE lens**
 
   ***
 
@@ -38,7 +46,7 @@ Regression in VariScout serves as a **first step** to visually check if correlat
 
   [:octicons-arrow-right-24: Learn more](change.md)
 
-- :material-chart-box:{ .lg .middle } **FLOW**
+- :material-chart-box:{ .lg .middle } **FLOW lens**
 
   ***
 
@@ -46,7 +54,7 @@ Regression in VariScout serves as a **first step** to visually check if correlat
 
   [:octicons-arrow-right-24: Learn more](flow.md)
 
-- :material-chart-bar:{ .lg .middle } **FAILURE**
+- :material-chart-bar:{ .lg .middle } **FAILURE lens**
 
   ***
 
@@ -54,11 +62,12 @@ Regression in VariScout serves as a **first step** to visually check if correlat
 
   [:octicons-arrow-right-24: Learn more](failure.md)
 
-- :material-chart-histogram:{ .lg .middle } **VALUE**
+- :material-chart-histogram:{ .lg .middle } **VALUE lens**
 
   ***
 
   Capability compares to customer specs. "Are we meeting needs?"
+  A different type of question — VALUE brings in an external reference (customer specs) rather than analyzing internal process behavior.
 
   [:octicons-arrow-right-24: Learn more](value.md)
 
@@ -68,7 +77,7 @@ Regression in VariScout serves as a **first step** to visually check if correlat
 
 ## The System Dynamics
 
-The four pillars don't work in isolation — they're meshed gears:
+The four lenses don't work in isolation — they're meshed gears:
 
 ```
         ┌─────────┐
@@ -93,7 +102,7 @@ The four pillars don't work in isolation — they're meshed gears:
 
 **VariScout's Linked Filtering = Gear Meshing**
 
-When you click on one chart, all others respond. This isn't just a UI feature — it's how the pillars interconnect:
+When you click on one chart, all others respond. This isn't just a UI feature — it's how the lenses interconnect:
 
 | Action                       | System Response                                            |
 | ---------------------------- | ---------------------------------------------------------- |
@@ -107,7 +116,7 @@ When you click on one chart, all others respond. This isn't just a UI feature �
 
 ## Progressive Analysis: Drill-Down
 
-The pillars support progressive analysis through drill-down:
+The lenses support progressive analysis through drill-down:
 
 1. **Level 1:** All Data — identify top-level patterns
 2. **Level 2:** Filter to dominant factor — zoom in
@@ -120,4 +129,4 @@ The pillars support progressive analysis through drill-down:
 
 ## Reference
 
-Based on Watson's Four Pillars framework, the Sock Mystery experiential exercise, and the VariScout product design.
+Based on Watson's Four Pillars framework (reframed as four lenses), the Sock Mystery experiential exercise, and the VariScout product design.

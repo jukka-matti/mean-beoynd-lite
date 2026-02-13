@@ -1,6 +1,10 @@
-# VALUE Pillar: Capability Histogram
+# VALUE Lens: Capability Histogram
 
-> The Alignment Pillar
+> The Alignment Lens — a different type of question
+
+The VALUE lens is fundamentally different from the other three. While CHANGE, FLOW, and FAILURE analyze internal process behavior (what the process is doing), VALUE brings in an **external reference** — the customer's specification. It asks: "does the variation we found actually matter to the customer?"
+
+This makes VALUE a different kind of question, and often a different kind of story. The detective lenses (CHANGE, FLOW, FAILURE) find the source of variation. The VALUE lens determines whether it's worth fixing.
 
 ---
 

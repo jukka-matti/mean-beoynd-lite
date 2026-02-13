@@ -1,6 +1,8 @@
-# FLOW Pillar: Boxplot
+# FLOW Lens: Boxplot
 
-> The Structural Pillar
+> The Structural Lens — look at the same data grouped by factor
+
+The FLOW lens asks what happens when you split your data by a categorical factor (machine, shift, operator). The same measurements that look uniform as one distribution reveal very different spreads when viewed through this lens.
 
 ---
 

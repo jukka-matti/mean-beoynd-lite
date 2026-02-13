@@ -33,16 +33,18 @@ VariScout is built on a philosophy of **EDA for process improvement** — not st
 
 ## Core Frameworks
 
-### Watson's Four Pillars
+### Watson's Four Pillars — Four Lenses on Variation
 
-Four core charts map directly to four pillars of process knowledge:
+Watson's Four Pillars of Process Knowledge give you four distinct **lenses** — each revealing a different dimension of your process:
 
-| Chart                    | Pillar      | Core Question                     |
+| Chart                    | Lens        | What You See Through It           |
 | ------------------------ | ----------- | --------------------------------- |
 | **I-Chart**              | **CHANGE**  | "What's shifting over time?"      |
 | **Boxplot**              | **FLOW**    | "Where does variation come from?" |
 | **Pareto**               | **FAILURE** | "Where do problems cluster?"      |
 | **Capability Histogram** | **VALUE**   | "Does it meet customer specs?"    |
+
+No single lens tells the full story — you need all four to see clearly.
 
 [:octicons-arrow-right-24: Four Pillars](four-pillars/index.md)
 
@@ -91,7 +93,7 @@ VariScout is designed for practitioners who need to **find and act on variation 
 
 ## The System Dynamics
 
-The four pillars don't work in isolation — they're meshed gears:
+The four lenses don't work in isolation — they're meshed gears:
 
 ```
         ┌─────────┐
@@ -116,7 +118,7 @@ The four pillars don't work in isolation — they're meshed gears:
 
 **Linked Filtering = Gear Meshing**
 
-When you click on one chart, all others respond. This isn't just a UI feature — it's how the pillars interconnect.
+When you click on one chart, all others respond. This isn't just a UI feature — it's how the lenses interconnect.
 
 ---
 
