@@ -29,8 +29,11 @@ const { lang } = Astro.params;
 // Helper to render visual components
 function getComparisonClasses(color: string) {
 	const colorMap: Record<string, { bg: string; text: string; border: string }> = {
-		blue: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' },
-		green: { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/20' },
+		blue: { bg: 'bg-pillar-change/10', text: 'text-pillar-change', border: 'border-pillar-change/20' },
+		green: { bg: 'bg-pillar-value/10', text: 'text-pillar-value', border: 'border-pillar-value/20' },
+		orange: { bg: 'bg-pillar-flow/10', text: 'text-pillar-flow', border: 'border-pillar-flow/20' },
+		red: { bg: 'bg-pillar-failure/10', text: 'text-pillar-failure', border: 'border-pillar-failure/20' },
+		purple: { bg: 'bg-purple-500/10', text: 'text-purple-500', border: 'border-purple-500/20' },
 		cyan: { bg: 'bg-cyan-500/10', text: 'text-cyan-500', border: 'border-cyan-500/20' },
 		amber: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
 		neutral: { bg: 'bg-neutral-100', text: 'text-neutral-600', border: 'border-neutral-200' },

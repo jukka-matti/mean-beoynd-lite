@@ -21,10 +21,10 @@ const nextTool = nextToolSlug ? getToolBySlug(nextToolSlug) : null;
 
 // Pillar color classes
 const pillarColors: Record<string, { bg: string; text: string; border: string }> = {
-	VALUE: { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/30' },
-	CHANGE: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/30' },
-	FLOW: { bg: 'bg-orange-500/10', text: 'text-orange-500', border: 'border-orange-500/30' },
-	FAILURE: { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/30' },
+	VALUE: { bg: 'bg-pillar-value/10', text: 'text-pillar-value', border: 'border-pillar-value/30' },
+	CHANGE: { bg: 'bg-pillar-change/10', text: 'text-pillar-change', border: 'border-pillar-change/30' },
+	FLOW: { bg: 'bg-pillar-flow/10', text: 'text-pillar-flow', border: 'border-pillar-flow/30' },
+	FAILURE: { bg: 'bg-pillar-failure/10', text: 'text-pillar-failure', border: 'border-pillar-failure/30' },
 };
 
 // Journey section IDs for anchor links

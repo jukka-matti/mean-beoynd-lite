@@ -48,6 +48,9 @@
    the marketing site uses a distinct neutral palette. */
 
 @theme {
+  /* Brand blue (#2563eb / blue-600) is for CTAs, links, and focus rings.
+     Pillar CHANGE blue (#3b82f6 / blue-500) is for data identity.
+     These are intentionally different shades — don't unify them. */
   --color-brand-primary: #2563eb;
   --color-brand-primary-dark: #1d4ed8;
   --color-brand-primary-light: #3b82f6;
@@ -55,18 +58,19 @@
 
   --color-neutral-900: #0f172a;
   --color-neutral-700: #334155;
+  --color-neutral-600: #475569;
   --color-neutral-500: #64748b;
+  --color-neutral-400: #94a3b8;
   --color-neutral-300: #cbd5e1;
+  --color-neutral-200: #e2e8f0;
   --color-neutral-100: #f1f5f9;
   --color-neutral-50: #f8fafc;
 
-  --color-chart-primary: #2563eb;
-  --color-chart-secondary: #8b5cf6;
-  --color-chart-tertiary: #ec4899;
-  --color-chart-quaternary: #f59e0b;
-  --color-chart-control-limit: #ef4444;
-  --color-chart-center-line: #10b981;
-  --color-chart-spec-limit: #6b7280;
+  /* Four Pillar identity colors (see also brand-primary for CTA/link blue) */
+  --color-pillar-change: #3b82f6;
+  --color-pillar-flow: #f97316;
+  --color-pillar-failure: #ef4444;
+  --color-pillar-value: #22c55e;
 
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;

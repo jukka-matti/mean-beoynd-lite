@@ -1,5 +1,24 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 
+/** Pillar identity colors — matches CSS --color-pillar-* tokens in global.css */
+const PILLAR_HEX = {
+  change: '#3b82f6',
+  changeLight: '#60a5fa',
+  flow: '#f97316',
+  failure: '#ef4444',
+  value: '#22c55e',
+} as const;
+
+/** Non-pillar animation colors */
+const ACCENT_HEX = {
+  neutral: '#94a3b8',
+  staged: '#a855f7',
+  stagedLight: '#c084fc',
+  cumulative: '#fbbf24',
+  paretoWarn: '#f59e0b',
+  paretoNeutral: '#6b7280',
+} as const;
+
 // --- Seeded PRNG (Mulberry32) ---
 function seededRandom(seed: number): number {
   let t = seed + 0x6d2b79f5;
@@ -62,12 +81,12 @@ const PHASE_LABELS: Record<Phase, string> = {
 };
 
 const PHASE_COLORS: Record<Phase, string> = {
-  bars: '#94a3b8',
-  boxplot: '#f97316',
-  ichart: '#3b82f6',
-  staged: '#a855f7',
-  pareto: '#ef4444',
-  conclusion: '#22c55e',
+  bars: ACCENT_HEX.neutral,
+  boxplot: PILLAR_HEX.flow,
+  ichart: PILLAR_HEX.change,
+  staged: ACCENT_HEX.staged,
+  pareto: PILLAR_HEX.failure,
+  conclusion: PILLAR_HEX.value,
 };
 
 // --- Scroll thresholds ---
@@ -227,8 +246,8 @@ export default function LensAnimation() {
   // Stable data for Factors A and C (used in bar/boxplot phases)
   const sideFactors = useMemo(() => {
     return [
-      { label: 'Factor A', mean: 96, color: '#22c55e' },
-      { label: 'Factor C', mean: 95, color: '#22c55e' },
+      { label: 'Factor A', mean: 96, color: PILLAR_HEX.value },
+      { label: 'Factor C', mean: 95, color: PILLAR_HEX.value },
     ];
   }, []);
 
@@ -259,32 +278,32 @@ export default function LensAnimation() {
     bars: {
       title: 'Average looks fine',
       sub: '94% average. Management is satisfied.',
-      color: '#94a3b8',
+      color: PHASE_COLORS.bars,
     },
     boxplot: {
       title: 'FLOW lens: Which factor drives variation?',
       sub: 'Same average. Very different spread. Factor B has 3\u00d7 the variation.',
-      color: '#f97316',
+      color: PHASE_COLORS.boxplot,
     },
     ichart: {
       title: 'CHANGE lens: What\u2019s shifting over time?',
       sub: 'Something changed around observation 25. The average hid a process shift.',
-      color: '#3b82f6',
+      color: PHASE_COLORS.ichart,
     },
     staged: {
       title: 'Drill-down: Filter to isolate',
       sub: 'Night shift explains 67% of the variation. Now we see exactly where.',
-      color: '#a855f7',
+      color: PHASE_COLORS.staged,
     },
     pareto: {
       title: 'FAILURE lens: Where do problems concentrate?',
       sub: 'Setup procedure on Night shift: 46% of all out-of-control points.',
-      color: '#ef4444',
+      color: PHASE_COLORS.pareto,
     },
     conclusion: {
       title: 'Three lenses. Same data. Found it.',
       sub: 'FLOW found the factor. CHANGE showed when. FAILURE showed why.',
-      color: '#22c55e',
+      color: PHASE_COLORS.conclusion,
     },
   };
 
@@ -397,7 +416,7 @@ export default function LensAnimation() {
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 rounded-t-lg transition-all duration-700 z-10"
                   style={{
                     height: `${stats.mean}%`,
-                    backgroundColor: '#3b82f6',
+                    backgroundColor: PILLAR_HEX.change,
                     opacity: phase === 'bars' ? 1 : 0,
                     transform: `translateX(-50%) scaleY(${phase === 'bars' ? 1 : 0})`,
                     transformOrigin: 'bottom',
@@ -527,7 +546,7 @@ export default function LensAnimation() {
                         .map(d => `${d.chartX},${100 - scaleY(d.val)}`)
                         .join(' ')}
                       fill="none"
-                      stroke={phase === 'staged' ? '#c084fc' : '#60a5fa'}
+                      stroke={phase === 'staged' ? ACCENT_HEX.stagedLight : PILLAR_HEX.changeLight}
                       strokeWidth="0.5"
                       vectorEffect="non-scaling-stroke"
                       strokeLinecap="round"
@@ -566,12 +585,12 @@ export default function LensAnimation() {
                               height: `${barHeight * paretoProg}%`,
                               backgroundColor:
                                 i === 0
-                                  ? '#ef4444'
+                                  ? PILLAR_HEX.failure
                                   : i === 1
-                                    ? '#f97316'
+                                    ? PILLAR_HEX.flow
                                     : i === 2
-                                      ? '#f59e0b'
-                                      : '#6b7280',
+                                      ? ACCENT_HEX.paretoWarn
+                                      : ACCENT_HEX.paretoNeutral,
                             }}
                           />
                           {/* Category label */}
@@ -607,7 +626,7 @@ export default function LensAnimation() {
                           })
                           .join(' ')}
                         fill="none"
-                        stroke="#fbbf24"
+                        stroke={ACCENT_HEX.cumulative}
                         strokeWidth="2"
                         vectorEffect="non-scaling-stroke"
                         strokeLinecap="round"
@@ -622,7 +641,7 @@ export default function LensAnimation() {
                             cx={x}
                             cy={y}
                             r="3"
-                            fill="#fbbf24"
+                            fill={ACCENT_HEX.cumulative}
                             vectorEffect="non-scaling-stroke"
                           />
                         );
@@ -639,7 +658,7 @@ export default function LensAnimation() {
                     let y: number;
                     let opacity = 1;
                     let size = 6;
-                    let color = '#60a5fa';
+                    let color = PILLAR_HEX.changeLight;
 
                     if (phase === 'bars') {
                       // Hidden in bar phase
@@ -659,7 +678,7 @@ export default function LensAnimation() {
                       y = scaleY(d.val);
                       size = 6;
                       // Color by whether OOC
-                      if (d.isOutOfControl) color = '#ef4444';
+                      if (d.isOutOfControl) color = PILLAR_HEX.failure;
                     } else if (phase === 'staged') {
                       // I-chart positions, color by shift
                       x = d.chartX;
@@ -667,10 +686,10 @@ export default function LensAnimation() {
                       size = 7;
 
                       if (d.shift === 'Night') {
-                        color = '#c084fc'; // purple for Night
+                        color = ACCENT_HEX.stagedLight; // purple for Night
                         opacity = 1;
                       } else {
-                        color = '#60a5fa'; // blue for Day
+                        color = PILLAR_HEX.changeLight; // blue for Day
                         opacity = Math.max(0.15, 1 - nightFilterProg * 1.2);
                       }
                     } else if (phase === 'pareto') {
@@ -679,7 +698,7 @@ export default function LensAnimation() {
                       y = scaleY(d.val);
                       opacity = Math.max(0, 1 - paretoProg * 2);
                       if (d.isOutOfControl) {
-                        color = '#ef4444';
+                        color = PILLAR_HEX.failure;
                         opacity = Math.max(0.3, 1 - paretoProg * 1.5);
                       }
                     } else {

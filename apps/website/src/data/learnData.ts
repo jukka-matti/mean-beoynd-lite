@@ -398,7 +398,7 @@ export const LEARN_TOPICS: LearnTopic[] = [
     description:
       'When your process changes, your control limits should too. Staged analysis reveals improvements that combined data hides.',
     color: '#3b82f6',
-    colorClass: 'text-blue-500',
+    colorClass: 'text-pillar-change',
     icon: '📊',
     sections: [
       {
@@ -567,7 +567,7 @@ export const LEARN_TOPICS: LearnTopic[] = [
     description:
       'Understand how VariScout calculates control limits and why we chose the standard 3-sigma approach.',
     color: '#3b82f6',
-    colorClass: 'text-blue-500',
+    colorClass: 'text-pillar-change',
     icon: '📐',
     sections: [
       {
@@ -684,7 +684,7 @@ export const LEARN_TOPICS: LearnTopic[] = [
     description:
       'Learn how VariScout calculates process capability indices and when to trust them.',
     color: '#22c55e',
-    colorClass: 'text-green-500',
+    colorClass: 'text-pillar-value',
     icon: '🎯',
     sections: [
       {
@@ -1056,7 +1056,7 @@ export const LEARN_TOPICS: LearnTopic[] = [
     description:
       'When you enable staged analysis, each phase gets its own control limits calculated independently, revealing improvements that combined analysis hides.',
     color: '#3b82f6',
-    colorClass: 'text-blue-500',
+    colorClass: 'text-pillar-change',
     icon: '📊',
     sections: [
       {
@@ -1180,7 +1180,7 @@ export const LEARN_TOPICS: LearnTopic[] = [
     description:
       'Learn how control charts distinguish special cause variation (unusual events) from common cause variation (random noise), enabling data-driven process improvement.',
     color: '#ef4444',
-    colorClass: 'text-red-500',
+    colorClass: 'text-pillar-change',
     icon: '🎯',
     sections: [
       {

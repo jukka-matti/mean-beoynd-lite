@@ -48,14 +48,14 @@ export const GLOSSARY_CATEGORIES: Record<GlossaryCategory, CategoryMeta> = {
     description: 'Boundaries that define expected process behavior and customer requirements',
     icon: '🎯',
     color: '#3b82f6',
-    colorClass: 'text-blue-500',
+    colorClass: 'text-pillar-change',
   },
   capability: {
     name: 'Capability',
     description: 'Metrics that compare process performance to customer specifications',
     icon: '📊',
     color: '#22c55e',
-    colorClass: 'text-green-500',
+    colorClass: 'text-pillar-value',
   },
   statistics: {
     name: 'Statistics',
@@ -69,7 +69,7 @@ export const GLOSSARY_CATEGORIES: Record<GlossaryCategory, CategoryMeta> = {
     description: 'Visual tools for exploring and understanding process variation',
     icon: '📈',
     color: '#f97316',
-    colorClass: 'text-orange-500',
+    colorClass: 'text-pillar-flow',
   },
   methodology: {
     name: 'Methodology',
