@@ -84,7 +84,12 @@ const CapabilityHistogramBase: React.FC<CapabilityHistogramProps> = ({
   }
 
   return (
-    <svg width={parentWidth} height={parentHeight}>
+    <svg
+      width={parentWidth}
+      height={parentHeight}
+      role="img"
+      aria-label="Capability histogram: process distribution"
+    >
       <Group left={margin.left} top={margin.top}>
         {/* Histogram bars */}
         {bins.map((binData, i) => {

@@ -113,7 +113,12 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label={`Boxplot: ${yAxisLabel} distribution`}
+      >
         <Group left={margin.left} top={margin.top}>
           {/* Spec Lines */}
           {specs.usl !== undefined && (

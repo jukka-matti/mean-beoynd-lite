@@ -121,7 +121,12 @@ const InteractionPlotBase: React.FC<InteractionPlotProps> = ({
 
   return (
     <>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label="Interaction plot: factor analysis"
+      >
         <Group left={margin.left} top={margin.top}>
           {/* Lines for each operator */}
           {operators.map(op => {

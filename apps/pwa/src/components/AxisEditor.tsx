@@ -65,7 +65,11 @@ const AxisEditor = ({
         <span className="text-xs font-bold text-white flex items-center gap-1">
           <Edit2 size={12} /> {title}
         </span>
-        <button onClick={onClose} className="text-content-secondary hover:text-white">
+        <button
+          onClick={onClose}
+          className="text-content-secondary hover:text-white"
+          aria-label="Close axis editor"
+        >
           <X size={14} />
         </button>
       </div>
@@ -84,6 +88,7 @@ const AxisEditor = ({
               onChange={e => setNewAlias(e.target.value)}
               placeholder={originalName}
               className="w-full bg-surface border border-edge rounded pl-7 pr-2 py-1 text-xs text-white outline-none focus:border-blue-500"
+              aria-label="Axis display name"
             />
           </div>
           {originalName !== newAlias && (
@@ -109,6 +114,7 @@ const AxisEditor = ({
                     value={localValueLabels[val] !== undefined ? localValueLabels[val] : val}
                     onChange={e => handleValueChange(val, e.target.value)}
                     className="flex-1 bg-surface border border-edge rounded px-2 py-1 text-xs text-white outline-none focus:border-blue-500"
+                    aria-label={`Label for ${val}`}
                   />
                 </div>
               ))}

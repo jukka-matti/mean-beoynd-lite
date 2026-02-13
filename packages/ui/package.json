@@ -13,6 +13,7 @@
     "lint": "eslint src"
   },
   "peerDependencies": {
+    "lucide-react": "^0.330.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "tailwindcss": "^3.0.0"
@@ -23,7 +24,6 @@
     "@variscout/hooks": "workspace:*",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
-    "lucide-react": "^0.330.0",
     "tailwind-merge": "^2.2.0",
     "tailwindcss-animate": "^1.0.7"
   },

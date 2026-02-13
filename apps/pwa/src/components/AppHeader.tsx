@@ -73,6 +73,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           : 'text-content-secondary hover:text-white hover:bg-surface-secondary'
       }`}
       title={title}
+      aria-label={title}
+      aria-pressed={isActive}
       style={{ minWidth: 40, minHeight: 40 }}
     >
       {icon}
@@ -86,6 +88,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         onClick={onNewAnalysis}
         className="flex items-center gap-2 sm:gap-3 group hover:opacity-90 transition-opacity"
         title="New Analysis"
+        aria-label="New Analysis"
       >
         <div className="p-1.5 sm:p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-shadow">
           <Activity className="text-white" size={18} />
@@ -110,45 +113,51 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         {hasData ? (
           <>
             {/* Desktop: Icon toolbar */}
-            <div className="hidden sm:flex items-center gap-1">
-              {/* Data Table Toggle */}
-              {onToggleDataPanel && (
+            <nav aria-label="Analysis tools">
+              <div className="hidden sm:flex items-center gap-1">
+                {/* Data Table Toggle */}
+                {onToggleDataPanel && (
+                  <IconButton
+                    icon={<Table2 size={18} />}
+                    title={isDataPanelOpen ? 'Hide Data Table' : 'Show Data Table'}
+                    onClick={onToggleDataPanel}
+                    isActive={isDataPanelOpen}
+                  />
+                )}
+
+                {/* Variation Funnel Toggle */}
+                {onToggleFunnelPanel && (
+                  <IconButton
+                    icon={<Filter size={18} />}
+                    title={isFunnelPanelOpen ? 'Hide Variation Funnel' : 'Show Variation Funnel'}
+                    onClick={onToggleFunnelPanel}
+                    isActive={isFunnelPanelOpen}
+                  />
+                )}
+
+                {/* Fullscreen / Presentation Mode */}
                 <IconButton
-                  icon={<Table2 size={18} />}
-                  title={isDataPanelOpen ? 'Hide Data Table' : 'Show Data Table'}
-                  onClick={onToggleDataPanel}
-                  isActive={isDataPanelOpen}
+                  icon={<Maximize size={18} />}
+                  title="Presentation Mode"
+                  onClick={onEnterPresentationMode}
                 />
-              )}
 
-              {/* Variation Funnel Toggle */}
-              {onToggleFunnelPanel && (
+                {/* Export */}
                 <IconButton
-                  icon={<Filter size={18} />}
-                  title={isFunnelPanelOpen ? 'Hide Variation Funnel' : 'Show Variation Funnel'}
-                  onClick={onToggleFunnelPanel}
-                  isActive={isFunnelPanelOpen}
+                  icon={<Share2 size={18} />}
+                  title="Export"
+                  onClick={() => setIsShareOpen(true)}
+                  buttonRef={shareButtonRef}
                 />
-              )}
 
-              {/* Fullscreen / Presentation Mode */}
-              <IconButton
-                icon={<Maximize size={18} />}
-                title="Presentation Mode"
-                onClick={onEnterPresentationMode}
-              />
-
-              {/* Export */}
-              <IconButton
-                icon={<Share2 size={18} />}
-                title="Export"
-                onClick={() => setIsShareOpen(true)}
-                buttonRef={shareButtonRef}
-              />
-
-              {/* Settings */}
-              <IconButton icon={<Settings size={18} />} title="Settings" onClick={onOpenSettings} />
-            </div>
+                {/* Settings */}
+                <IconButton
+                  icon={<Settings size={18} />}
+                  title="Settings"
+                  onClick={onOpenSettings}
+                />
+              </div>
+            </nav>
 
             {/* Mobile: Menu button */}
             <div className="flex sm:hidden items-center gap-1">
@@ -156,6 +165,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 onClick={() => setIsMobileMenuOpen(true)}
                 className="p-2 text-content-secondary hover:text-white hover:bg-surface-secondary rounded-lg transition-colors touch-feedback"
                 title="Menu"
+                aria-label="Menu"
+                aria-expanded={isMobileMenuOpen}
                 style={{ minWidth: 44, minHeight: 44 }}
               >
                 <MoreVertical size={18} />

@@ -125,7 +125,12 @@ const GageRRChartBase: React.FC<GageRRChartProps> = ({
 
   return (
     <>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label="Gage R&R chart: measurement system analysis"
+      >
         <Group left={margin.left} top={margin.top}>
           {/* Bars */}
           {barData.map(d => {

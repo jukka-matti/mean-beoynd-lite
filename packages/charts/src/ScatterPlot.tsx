@@ -167,6 +167,8 @@ const ScatterPlotBase: React.FC<ScatterPlotProps> = ({
       <svg
         width={parentWidth}
         height={parentHeight}
+        role="img"
+        aria-label="Scatter plot: regression analysis"
         onClick={onClick}
         style={{ cursor: onClick ? 'pointer' : 'default' }}
       >

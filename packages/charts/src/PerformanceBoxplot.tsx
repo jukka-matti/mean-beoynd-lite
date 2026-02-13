@@ -164,7 +164,12 @@ export const PerformanceBoxplotBase: React.FC<PerformanceBoxplotProps> = ({
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label="Performance boxplot: channel distributions"
+      >
         <Group left={margin.left} top={margin.top}>
           {/* Spec limits */}
           {specs.usl !== undefined && (

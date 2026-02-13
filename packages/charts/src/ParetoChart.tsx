@@ -64,7 +64,12 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
 
   return (
     <>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label="Pareto chart: category frequency analysis"
+      >
         <Group left={margin.left} top={margin.top}>
           <GridRows scale={yScale} width={width} stroke={chromeColors.gridLine} />
 

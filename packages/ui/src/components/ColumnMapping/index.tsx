@@ -182,6 +182,7 @@ export const ColumnMapping: React.FC<ColumnMappingProps> = ({
                     className="hidden" // Custom styling
                     checked={outcome === col}
                     onChange={() => handleOutcomeChange(col)}
+                    aria-label={`Select ${col} as outcome column`}
                   />
                   <div
                     className={`w-4 h-4 rounded-full border flex items-center justify-center ${
@@ -281,6 +282,7 @@ export const ColumnMapping: React.FC<ColumnMappingProps> = ({
                     onClick={onClearParetoFile}
                     className="text-slate-400 hover:text-red-400 p-1 transition-colors"
                     title="Remove Pareto file"
+                    aria-label="Remove Pareto file"
                   >
                     <X size={16} />
                   </button>
@@ -307,6 +309,7 @@ export const ColumnMapping: React.FC<ColumnMappingProps> = ({
                     accept=".csv,.xlsx,.xls"
                     onChange={handleParetoFileChange}
                     className="hidden"
+                    aria-label="Upload Pareto data file"
                   />
                   <Upload size={20} className="text-slate-500 mb-2" />
                   <span className="text-xs text-slate-500">

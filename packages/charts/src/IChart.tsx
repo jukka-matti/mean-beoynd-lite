@@ -324,6 +324,8 @@ const IChartBase: React.FC<IChartProps> = ({
       <svg
         width={parentWidth}
         height={parentHeight}
+        role="img"
+        aria-label={`I-Chart: ${yAxisLabel} control chart with ${data.length} data points`}
         onMouseDown={enableBrushSelection ? handleBrushStart : undefined}
         onMouseMove={enableBrushSelection ? handleBrushMove : undefined}
         onMouseUp={enableBrushSelection ? handleBrushEnd : undefined}

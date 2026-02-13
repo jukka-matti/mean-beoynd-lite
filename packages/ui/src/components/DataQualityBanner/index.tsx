@@ -61,7 +61,11 @@ export const DataQualityBanner: React.FC<DataQualityBannerProps> = ({
   };
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+    <div
+      className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden"
+      role="status"
+      aria-label="Data quality summary"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex items-center gap-3">

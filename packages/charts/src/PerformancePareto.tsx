@@ -137,7 +137,12 @@ export const PerformanceParetoBase: React.FC<PerformanceParetoProps> = ({
 
   return (
     <div style={{ position: 'relative' }}>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label="Performance Pareto: Cpk ranking"
+      >
         <Group left={margin.left} top={margin.top}>
           <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
 

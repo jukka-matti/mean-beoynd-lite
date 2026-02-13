@@ -251,7 +251,12 @@ export const PerformanceIChartBase: React.FC<PerformanceIChartBaseProps> = ({
 
   return (
     <div style={{ position: 'relative' }}>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label="Performance scatter: Cpk by channel"
+      >
         <Group left={margin.left} top={margin.top}>
           <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
 

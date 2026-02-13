@@ -117,19 +117,13 @@ Excel Add-in startup
 - Complex caching, offline fallback, and error handling needed
 - Spoofing risk (localStorage-based tier could be modified by user)
 
-The code files referenced in the original plan (`licenseDetection.ts`, `useLicense.ts`) exist as stubs and will be removed in a future cleanup.
+The code files referenced in the original plan (`licenseDetection.ts`, `useLicense.ts`) were never created.
 
 ---
 
-## Code Cleanup (Future)
+## Code Cleanup (Completed)
 
-Files to simplify or remove:
-
-| File                                           | Action                        |
-| ---------------------------------------------- | ----------------------------- |
-| `apps/excel-addin/src/lib/licenseDetection.ts` | Remove (no detection needed)  |
-| `apps/excel-addin/src/hooks/useLicense.ts`     | Remove                        |
-| `apps/excel-addin/src/lib/featureLimits.ts`    | Simplify (hardcode free tier) |
+No stubs or dead code remain. The Excel Add-in hardcodes to free tier via `featureLimits.ts`.
 
 ---
 

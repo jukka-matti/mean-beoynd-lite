@@ -74,6 +74,7 @@ const SpecEditor = ({ specs, grades, onSave, onClose, style }: SpecEditorProps) 
                 onChange={e => setLocalSpecs({ ...localSpecs, lsl: e.target.value })}
                 className="w-full bg-surface border border-edge rounded px-2 py-2 sm:py-1 text-sm sm:text-xs text-white outline-none focus:border-blue-500"
                 style={{ minHeight: isMobile ? 44 : undefined }}
+                aria-label="Lower specification limit"
               />
             </div>
             <div>
@@ -87,6 +88,7 @@ const SpecEditor = ({ specs, grades, onSave, onClose, style }: SpecEditorProps) 
                 onChange={e => setLocalSpecs({ ...localSpecs, target: e.target.value })}
                 className="w-full bg-surface border border-edge rounded px-2 py-2 sm:py-1 text-sm sm:text-xs text-white outline-none focus:border-blue-500"
                 style={{ minHeight: isMobile ? 44 : undefined }}
+                aria-label="Target specification"
               />
             </div>
             <div>
@@ -100,6 +102,7 @@ const SpecEditor = ({ specs, grades, onSave, onClose, style }: SpecEditorProps) 
                 onChange={e => setLocalSpecs({ ...localSpecs, usl: e.target.value })}
                 className="w-full bg-surface border border-edge rounded px-2 py-2 sm:py-1 text-sm sm:text-xs text-white outline-none focus:border-blue-500"
                 style={{ minHeight: isMobile ? 44 : undefined }}
+                aria-label="Upper specification limit"
               />
             </div>
           </div>
@@ -205,6 +208,7 @@ const SpecEditor = ({ specs, grades, onSave, onClose, style }: SpecEditorProps) 
               onClick={onClose}
               className="p-2 text-content-secondary hover:text-white touch-feedback rounded-lg"
               style={{ minWidth: 44, minHeight: 44 }}
+              aria-label="Close specification editor"
             >
               <X size={20} />
             </button>
@@ -225,7 +229,11 @@ const SpecEditor = ({ specs, grades, onSave, onClose, style }: SpecEditorProps) 
     >
       <div className="flex justify-between items-center border-b border-edge pb-3">
         <h3 className="text-sm font-bold text-white">Edit Specifications</h3>
-        <button onClick={onClose} className="text-content-secondary hover:text-white">
+        <button
+          onClick={onClose}
+          className="text-content-secondary hover:text-white"
+          aria-label="Close specification editor"
+        >
           <X size={16} />
         </button>
       </div>

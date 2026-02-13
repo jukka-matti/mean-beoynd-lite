@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 /**
@@ -44,6 +44,24 @@ const Modal: React.FC<ModalProps> = ({
   footer,
   closeOnBackdropClick = true,
 }) => {
+  const titleId = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      // Small delay to ensure the modal is rendered before focusing
+      requestAnimationFrame(() => closeRef.current?.focus());
+    }
+    return () => {
+      if (previousFocusRef.current) {
+        previousFocusRef.current?.focus();
+        previousFocusRef.current = null;
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -52,19 +70,32 @@ const Modal: React.FC<ModalProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={handleBackdropClick}
+      onKeyDown={handleKeyDown}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         className={`bg-surface-secondary border border-edge rounded-2xl w-full ${maxWidth} shadow-2xl flex flex-col max-h-[90vh]`}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-edge">
-          <h2 className="text-xl font-bold text-white">{title}</h2>
+          <h2 id={titleId} className="text-xl font-bold text-white">
+            {title}
+          </h2>
           <button
+            ref={closeRef}
             onClick={onClose}
             className="text-content-secondary hover:text-white transition-colors"
             aria-label="Close modal"

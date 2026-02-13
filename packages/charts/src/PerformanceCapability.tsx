@@ -129,7 +129,12 @@ export const PerformanceCapabilityBase: React.FC<PerformanceCapabilityProps> = (
 
   return (
     <div style={{ position: 'relative' }}>
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label={`Capability histogram: ${channel.label} distribution`}
+      >
         <Group left={margin.left} top={margin.top}>
           <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
 

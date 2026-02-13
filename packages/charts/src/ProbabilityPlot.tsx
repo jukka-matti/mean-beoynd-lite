@@ -155,7 +155,12 @@ const ProbabilityPlotBase: React.FC<ProbabilityPlotProps> = ({
 
   if (data.length === 0 || !xScale) {
     return (
-      <svg width={parentWidth} height={parentHeight}>
+      <svg
+        width={parentWidth}
+        height={parentHeight}
+        role="img"
+        aria-label="Probability plot: no data available"
+      >
         <text
           x={parentWidth / 2}
           y={parentHeight / 2}
@@ -190,7 +195,12 @@ const ProbabilityPlotBase: React.FC<ProbabilityPlotProps> = ({
   const tickPercentiles = parentWidth < 300 ? PROB_TICK_PERCENTILES_COMPACT : PROB_TICK_PERCENTILES;
 
   return (
-    <svg width={parentWidth} height={parentHeight}>
+    <svg
+      width={parentWidth}
+      height={parentHeight}
+      role="img"
+      aria-label="Probability plot: normality analysis"
+    >
       <Group left={margin.left} top={margin.top}>
         {/* Grid lines at standard percentile positions */}
         <GridRows

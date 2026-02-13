@@ -224,7 +224,10 @@ const FilterBreadcrumb: React.FC<FilterBreadcrumbProps> = ({
     if (!showVariationBar) return null;
 
     return (
-      <div className={`flex flex-col ${colorScheme.containerBg} border-b ${colorScheme.border}`}>
+      <div
+        className={`flex flex-col ${colorScheme.containerBg} border-b ${colorScheme.border}`}
+        aria-live="polite"
+      >
         <div className="flex items-center gap-2 px-4 sm:px-6 py-2">
           <span className={`text-sm ${colorScheme.textMuted}`}>No filters applied</span>
         </div>
@@ -241,7 +244,10 @@ const FilterBreadcrumb: React.FC<FilterBreadcrumbProps> = ({
   }
 
   return (
-    <div className={`flex flex-col ${colorScheme.containerBg} border-b ${colorScheme.border}`}>
+    <div
+      className={`flex flex-col ${colorScheme.containerBg} border-b ${colorScheme.border}`}
+      aria-live="polite"
+    >
       {/* Chips row */}
       <div className="flex flex-wrap items-center gap-2 px-4 sm:px-6 py-2">
         {/* Filter chips */}

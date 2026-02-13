@@ -93,6 +93,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <button
             onClick={onClose}
             className="text-content-secondary hover:text-white transition-colors"
+            aria-label="Close settings"
           >
             <X size={24} />
           </button>
