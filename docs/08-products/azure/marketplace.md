@@ -28,63 +28,84 @@ Azure Marketplace is Microsoft's enterprise application store. Publishing VariSc
 
 | Requirement          | Status   |
 | -------------------- | -------- |
-| Azure Static Web App | ✓        |
-| ARM template         | ✓        |
-| MSAL integration     | ✓        |
+| Azure Static Web App | Required |
+| ARM template         | Required |
+| MSAL integration     | Required |
 | Privacy policy URL   | Required |
 | Terms of service URL | Required |
 | Support URL          | Required |
 
 ---
 
-## Offer Types
+## Offer Type
 
-### Azure Application (Recommended)
+### Managed Application (Required for Billing)
 
-VariScout uses **Solution Template** offer type:
+VariScout uses the **Managed Application** offer type:
 
 ```
-Azure Application > Solution Template
-├── Deploys ARM template to customer subscription
-├── Customer owns all resources
-├── No managed app access needed
-└── Supports BYOL (Bring Your Own License)
+Azure Application > Managed Application
+├── Deploys ARM template to customer subscription (managed RG)
+├── Customer has full access to deployed resources
+├── Publisher management DISABLED (zero access)
+├── Microsoft handles billing (3% fee)
+└── Monthly pricing at €150/month
 ```
 
-**Why Solution Template:**
+**Why Managed Application (not Solution Template):**
 
-- Customer fully controls their deployment
-- No Azure Managed Application overhead
-- Simple billing model (pay-per-tier)
+- **Solution Templates are not transactable** — Microsoft will not bill customers for them
+- Managed Applications support Microsoft-billed monthly subscriptions
+- Customer still controls their deployment (publisher access disabled)
 - Data stays in customer environment
+- No backend needed
+
+**Permission configuration:**
+
+| Setting              | Value        | Notes                                     |
+| -------------------- | ------------ | ----------------------------------------- |
+| Publisher Management | **Disabled** | No publisher access to customer resources |
+| Customer Access      | **Enabled**  | Full customer control                     |
+
+These settings are **immutable after publishing**.
+
+### Deployment Package
+
+Partner Center requires a `.zip` package for Managed Application offers:
+
+```
+variscout-managed-app.zip
+├── mainTemplate.json         # ARM template for resources
+└── createUiDefinition.json   # Azure portal deployment wizard UI
+```
+
+See [ARM Template Documentation](arm-template.md) for the full template.
 
 ---
 
 ## Pricing Configuration
 
-### Tier Setup in Partner Center
+### Single Plan
 
-| Plan ID      | Display Name    | Price (EUR) | Billing |
-| ------------ | --------------- | ----------- | ------- |
-| `individual` | Individual Plan | €99         | Annual  |
-| `team`       | Team Plan       | €499        | Annual  |
-| `enterprise` | Enterprise Plan | €1,790      | Annual  |
+| Plan ID | Display Name   | Price (EUR) | Billing |
+| ------- | -------------- | ----------- | ------- |
+| `full`  | VariScout Full | €150        | Monthly |
 
 ### Price Breakdown
 
 ```
-Gross Price:    €99  / €499  / €1,790
-Microsoft Fee:  -€3  / -€15  / -€54   (3%)
-Net Revenue:    €96  / €484  / €1,736
+Gross Price:    €150/month
+Microsoft Fee:  -€4.50 (3%)
+Net Revenue:    €145.50/month (€1,746/year)
 ```
 
 ### Regional Pricing
 
 Partner Center supports per-region pricing. Recommended approach:
 
-- **EUR zone**: Base prices (€99/€499/€1,790)
-- **USD zone**: Equivalent prices ($109/$549/$1,969)
-- **GBP zone**: Equivalent prices (£85/£425/£1,529)
+- **EUR zone**: €150/month
+- **USD zone**: $165/month
+- **GBP zone**: £128/month
 
 Microsoft handles currency conversion and VAT.
 
@@ -140,16 +161,14 @@ Analyze hundreds of measurement channels simultaneously:
 - Consultants conducting capability assessments
 - Students learning statistical quality control
 
-### Pricing Tiers
+### Pricing
 
-- **Individual** (€99/year): Single user, full features
-- **Team** (€499/year): Up to 10 users, shared projects
-- **Enterprise** (€1,790/year): Unlimited users, priority support
+**€150/month** — All features, unlimited users in your tenant.
 
 ### Integration
 
-Works seamlessly with the FREE VariScout Excel Add-in from AppSource.
-Azure deployment automatically unlocks full Excel features.
+Works alongside the FREE VariScout Excel Add-in from AppSource
+for Excel-native SPC analysis.
 ```
 
 ### Screenshots (Required: 5-10)
@@ -172,40 +191,11 @@ Azure deployment automatically unlocks full Excel features.
 
 ## Technical Configuration
 
-### ARM Template Publication
-
-Partner Center requires ARM template for Solution Template offers:
-
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "tier": {
-      "type": "string",
-      "allowedValues": ["individual", "team", "enterprise"],
-      "metadata": {
-        "description": "VariScout license tier"
-      }
-    }
-  },
-  "resources": [
-    // Static Web App resource
-    // App Registration resource
-    // Configuration settings
-  ]
-}
-```
-
-See [ARM Template Documentation](arm-template.md) for full template.
-
 ### Plan Visibility
 
-| Plan       | Visibility | Audience            |
-| ---------- | ---------- | ------------------- |
-| Individual | Public     | All Azure customers |
-| Team       | Public     | All Azure customers |
-| Enterprise | Public     | All Azure customers |
+| Plan | Visibility | Audience            |
+| ---- | ---------- | ------------------- |
+| Full | Public     | All Azure customers |
 
 ---
 
@@ -213,9 +203,11 @@ See [ARM Template Documentation](arm-template.md) for full template.
 
 ### Pre-Submission Checklist
 
-- [ ] ARM template validates successfully
-- [ ] App deploys without errors
-- [ ] MSAL authentication works
+- [ ] Deployment package (.zip) validates successfully
+- [ ] mainTemplate.json passes ARM TTK validation
+- [ ] createUiDefinition.json renders correctly in sandbox
+- [ ] App deploys without errors from marketplace flow
+- [ ] MSAL authentication works post-deployment
 - [ ] Privacy policy URL accessible
 - [ ] Terms of service URL accessible
 - [ ] Support contact information complete
@@ -224,16 +216,17 @@ See [ARM Template Documentation](arm-template.md) for full template.
 
 ### Microsoft Review (~5-10 business days)
 
-1. **Automated validation**: Template syntax, resource definitions
+1. **Automated validation**: Template syntax, resource definitions, package structure
 2. **Manual review**: Listing content, pricing, policies
 3. **Security scan**: Vulnerability assessment
-4. **Functionality test**: Deployment verification
+4. **Functionality test**: Deployment verification via marketplace flow
 
 ### Common Rejection Reasons
 
 | Issue                      | Fix                                    |
 | -------------------------- | -------------------------------------- |
-| Invalid ARM template       | Validate with Azure CLI before submit  |
+| Invalid ARM template       | Validate with ARM TTK and Azure CLI    |
+| Invalid createUiDefinition | Test in sandbox portal                 |
 | Missing privacy policy     | Add public URL to listing              |
 | Screenshot quality         | Minimum 1280x720, PNG format           |
 | Description too short      | Expand feature descriptions            |
@@ -251,17 +244,15 @@ See [ARM Template Documentation](arm-template.md) for full template.
 
 ### Updates
 
-1. Update ARM template version
+1. Update deployment package (.zip)
 2. Submit for re-certification
 3. Typically 2-3 day review for updates
 
 ### Customer Support
 
-| Tier       | Response Time | Channel       |
-| ---------- | ------------- | ------------- |
-| Individual | 48 hours      | Email         |
-| Team       | 24 hours      | Email         |
-| Enterprise | 8 hours       | Email + Phone |
+| Response Time | Channel |
+| ------------- | ------- |
+| 24 hours      | Email   |
 
 ---
 

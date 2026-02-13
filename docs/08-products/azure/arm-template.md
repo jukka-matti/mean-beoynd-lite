@@ -1,18 +1,28 @@
 # ARM Template Documentation
 
-Azure Resource Manager (ARM) template for VariScout deployment.
+Azure Resource Manager (ARM) template for VariScout Managed Application deployment.
 
 ---
 
 ## Overview
 
-The ARM template deploys VariScout to a customer's Azure subscription with:
+The ARM template deploys VariScout to a customer's Azure subscription as a Managed Application with:
 
 - Azure Static Web App (hosting)
-- App Registration (authentication)
-- Configuration settings (tier, branding)
+- App Registration (authentication via deployment script)
+- Configuration settings (all features enabled)
 
 **No backend resources** - the app runs entirely in the browser.
+
+### Managed Application Package
+
+The template is packaged as a `.zip` file for Partner Center:
+
+```
+variscout-managed-app.zip
+├── mainTemplate.json         # ARM template (this document)
+└── createUiDefinition.json   # Azure portal deployment wizard
+```
 
 ---
 
@@ -23,7 +33,7 @@ The ARM template deploys VariScout to a customer's Azure subscription with:
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "metadata": {
-    "description": "Deploys VariScout Azure App to customer subscription"
+    "description": "Deploys VariScout Azure App as a Managed Application"
   },
   "parameters": {
     /* ... */
@@ -44,12 +54,6 @@ The ARM template deploys VariScout to a customer's Azure subscription with:
 
 ## Parameters
 
-### Required Parameters
-
-| Parameter | Type   | Description                               |
-| --------- | ------ | ----------------------------------------- |
-| `tier`    | string | License tier (individual/team/enterprise) |
-
 ### Optional Parameters
 
 | Parameter  | Type   | Default                 | Description                 |
@@ -58,18 +62,13 @@ The ARM template deploys VariScout to a customer's Azure subscription with:
 | `appName`  | string | `variscout-{unique}`    | Name for Static Web App     |
 | `sku`      | string | `Standard`              | Static Web App SKU          |
 
+All Managed Application deployments get full features — no tier parameter needed.
+
 ### Parameter Definitions
 
 ```json
 {
   "parameters": {
-    "tier": {
-      "type": "string",
-      "allowedValues": ["individual", "team", "enterprise"],
-      "metadata": {
-        "description": "VariScout license tier"
-      }
-    },
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
@@ -104,24 +103,7 @@ The ARM template deploys VariScout to a customer's Azure subscription with:
 {
   "variables": {
     "staticWebAppName": "[parameters('appName')]",
-    "appRegistrationName": "[concat(parameters('appName'), '-app')]",
-    "tierConfig": {
-      "individual": {
-        "maxUsers": 1,
-        "maxChannels": 200,
-        "features": ["core", "performance"]
-      },
-      "team": {
-        "maxUsers": 10,
-        "maxChannels": 500,
-        "features": ["core", "performance", "sharing"]
-      },
-      "enterprise": {
-        "maxUsers": -1,
-        "maxChannels": -1,
-        "features": ["core", "performance", "sharing", "priority-support"]
-      }
-    }
+    "appRegistrationName": "[concat(parameters('appName'), '-app')]"
   }
 }
 ```
@@ -162,13 +144,14 @@ The ARM template deploys VariScout to a customer's Azure subscription with:
   "name": "[concat(variables('staticWebAppName'), '/appsettings')]",
   "dependsOn": ["[resourceId('Microsoft.Web/staticSites', variables('staticWebAppName'))]"],
   "properties": {
-    "VITE_LICENSE_TIER": "[parameters('tier')]",
-    "VITE_MAX_USERS": "[string(variables('tierConfig')[parameters('tier')].maxUsers)]",
-    "VITE_MAX_CHANNELS": "[string(variables('tierConfig')[parameters('tier')].maxChannels)]",
-    "VITE_AZURE_CLIENT_ID": "[reference(resourceId('Microsoft.Graph/applications', variables('appRegistrationName'))).appId]"
+    "VITE_LICENSE_TIER": "enterprise",
+    "VITE_MAX_CHANNELS": "1500",
+    "VITE_AZURE_CLIENT_ID": "[reference('createAppRegistration').outputs.appId]"
   }
 }
 ```
+
+All Managed Application deployments are configured as `enterprise` tier with full features.
 
 ### 3. App Registration (via Deployment Script)
 
@@ -232,14 +215,6 @@ App Registration requires Microsoft Graph API, deployed via deployment script:
     "appRegistrationId": {
       "type": "string",
       "value": "[reference('createAppRegistration').outputs.appId]"
-    },
-    "tier": {
-      "type": "string",
-      "value": "[parameters('tier')]"
-    },
-    "maxUsers": {
-      "type": "int",
-      "value": "[variables('tierConfig')[parameters('tier')].maxUsers]"
     }
   }
 }
@@ -247,16 +222,52 @@ App Registration requires Microsoft Graph API, deployed via deployment script:
 
 ---
 
+## createUiDefinition.json
+
+The `createUiDefinition.json` defines the Azure portal wizard shown to customers during deployment:
+
+```json
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "appName",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Application Name",
+        "defaultValue": "variscout",
+        "constraints": {
+          "required": true,
+          "regex": "^[a-z0-9-]{3,24}$",
+          "validationMessage": "Name must be 3-24 lowercase letters, numbers, or hyphens."
+        }
+      }
+    ],
+    "steps": [],
+    "outputs": {
+      "appName": "[basics('appName')]",
+      "location": "[location()]"
+    }
+  }
+}
+```
+
+The wizard is intentionally minimal — there are no tiers or configuration options to choose. The customer provides an app name and selects a region, then the template deploys everything.
+
+---
+
 ## Deployment Methods
 
-### Azure Marketplace (Recommended)
+### Azure Marketplace (Primary)
 
 1. Customer finds VariScout on Azure Marketplace
-2. Selects pricing tier
-3. Clicks "Create"
-4. ARM template deploys automatically
+2. Clicks "Create"
+3. Enters app name and selects region
+4. ARM template deploys automatically to managed resource group
 
-### Azure CLI
+### Azure CLI (Development/Testing)
 
 ```bash
 # Create resource group
@@ -265,40 +276,22 @@ az group create --name rg-variscout --location westeurope
 # Deploy template
 az deployment group create \
   --resource-group rg-variscout \
-  --template-uri https://raw.githubusercontent.com/variscout/azure-deploy/main/azuredeploy.json \
-  --parameters tier=team
+  --template-file mainTemplate.json
 
 # Get outputs
 az deployment group show \
   --resource-group rg-variscout \
-  --name azuredeploy \
+  --name mainTemplate \
   --query properties.outputs
-```
-
-### Azure Portal
-
-1. Navigate to "Deploy a custom template"
-2. Paste template JSON or provide URI
-3. Fill in parameters
-4. Review and create
-
-### PowerShell
-
-```powershell
-# Deploy template
-New-AzResourceGroupDeployment `
-  -ResourceGroupName "rg-variscout" `
-  -TemplateUri "https://raw.githubusercontent.com/variscout/azure-deploy/main/azuredeploy.json" `
-  -tier "enterprise"
 ```
 
 ---
 
 ## Post-Deployment Configuration
 
-### 1. Admin Consent (Required for Team/Enterprise)
+### 1. Admin Consent (Required)
 
-For multi-user deployments, an admin must grant consent:
+An admin must grant consent for MSAL authentication:
 
 ```
 https://login.microsoftonline.com/{tenant-id}/adminconsent
@@ -306,15 +299,7 @@ https://login.microsoftonline.com/{tenant-id}/adminconsent
   &redirect_uri={static-web-app-url}
 ```
 
-### 2. User Assignment (Optional)
-
-For Enterprise tier, assign users via Azure AD:
-
-1. Navigate to Enterprise Applications
-2. Find VariScout app registration
-3. Users and groups > Add assignment
-
-### 3. Custom Domain (Optional)
+### 2. Custom Domain (Optional)
 
 Add custom domain to Static Web App:
 
@@ -384,22 +369,24 @@ The template:
 - Each deployment is isolated to customer's tenant
 - No cross-tenant data access
 - No outbound connections to publisher systems
+- Publisher management is disabled (zero publisher access)
 
 ---
 
 ## Template Versioning
 
-| Version | Date       | Changes                             |
-| ------- | ---------- | ----------------------------------- |
-| 1.0.0   | 2026-02-01 | Initial release                     |
-| 1.1.0   | TBD        | Add custom domain support           |
-| 1.2.0   | TBD        | Add Application Insights (optional) |
+| Version | Date       | Changes                                 |
+| ------- | ---------- | --------------------------------------- |
+| 1.0.0   | 2026-02-01 | Initial release (Solution Template)     |
+| 2.0.0   | 2026-02-13 | Managed Application format, single plan |
+| 2.1.0   | TBD        | Add custom domain support               |
+| 2.2.0   | TBD        | Add Application Insights (optional)     |
 
 ---
 
 ## See Also
 
 - [Azure Marketplace Guide](marketplace.md)
-- [Pricing Tiers](pricing-tiers.md)
+- [Pricing](pricing-tiers.md)
 - [MSAL Authentication](msal-auth.md)
 - [Azure ARM Template Reference](https://docs.microsoft.com/azure/azure-resource-manager/templates/)

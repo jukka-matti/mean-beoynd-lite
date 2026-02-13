@@ -1,17 +1,33 @@
 # Excel Add-in
 
-VariScout charts embedded in Microsoft Excel.
+VariScout core SPC charts embedded in Microsoft Excel. **Free forever** on AppSource.
 
 ---
 
 ## Overview
 
-The Excel Add-in brings VariScout's statistical charts into Excel workbooks:
+The Excel Add-in brings VariScout's core statistical charts into Excel workbooks:
 
 - Works with Excel data directly
 - Uses native Excel slicers for filtering
 - Visx charts in Content Add-in
 - Fluent UI for task pane
+- **Always free** — no license detection, no Graph API
+
+### Feature Scope
+
+| Feature              | Excel Add-in | Azure App |
+| -------------------- | :----------: | :-------: |
+| I-Chart              |      ✓       |     ✓     |
+| Boxplot              |      ✓       |     ✓     |
+| Pareto               |      ✓       |     ✓     |
+| Capability Histogram |      ✓       |     ✓     |
+| Performance Mode     |      -       |     ✓     |
+| Gage R&R             |      -       |     ✓     |
+| Regression           |      -       |     ✓     |
+| Probability Plot     |      -       |     ✓     |
+
+The Excel Add-in provides core SPC analysis. Users who need multi-channel Performance Mode, Gage R&R, or team collaboration upgrade to the [Azure App](../azure/index.md) (€150/month).
 
 ---
 
@@ -88,5 +104,6 @@ const styles = {
 ## See Also
 
 - [Architecture](architecture.md)
-- [Office.js API](office-js-api.md)
+- [Strategy](strategy.md)
 - [Design System](design-system.md)
+- [License Model](license-detection.md)

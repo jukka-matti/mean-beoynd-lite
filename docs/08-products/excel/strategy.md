@@ -1,79 +1,63 @@
-# Excel Add-in Strategy: Feature Parity & Implementation Roadmap
+# Excel Add-in Strategy
 
 ## Executive Summary
 
-The Excel Add-in achieves **~85% feature parity** with the Azure App, focusing on core capability analysis features while respecting Excel-native UX patterns. This document outlines the current state, architectural decisions, and future roadmap.
+The Excel Add-in provides **core SPC analysis** (I-Chart, Boxplot, Pareto, Capability) as a **free forever** product on AppSource. It serves as a marketing funnel to the Azure App, which provides full features at €150/month. Performance Mode and advanced analysis are Azure App exclusive.
 
 ---
 
 ## Distribution Model
 
-### AppSource (FREE)
+### AppSource (FREE FOREVER)
 
-The Excel Add-in is distributed **FREE** via Microsoft AppSource with a freemium model:
+The Excel Add-in is distributed **FREE** via Microsoft AppSource. No license detection, no Graph API, no tier unlocking.
 
-| Tier     | Price | Access                      | Features                       |
-| -------- | ----- | --------------------------- | ------------------------------ |
-| **Free** | €0    | All AppSource users         | Basic charts, 50 channel limit |
-| **Full** | €0    | Auto-unlocks with Azure App | All features, unlimited        |
-
-### License Detection
-
-The Add-in uses Microsoft Graph API to detect if the user's tenant has VariScout Azure App deployed:
-
-```typescript
-// If Azure App exists in tenant → unlock full features
-const hasAzureApp = await checkAzureAppRegistration();
-const tier = hasAzureApp ? 'full' : 'free';
-```
-
-See [License Detection](license-detection.md) for implementation details.
+| Aspect       | Value                                          |
+| ------------ | ---------------------------------------------- |
+| **Price**    | Free (forever)                                 |
+| **Features** | Core SPC: I-Chart, Boxplot, Pareto, Capability |
+| **Auth**     | None required (no Graph API, no admin consent) |
+| **Upgrade**  | Azure App for Performance Mode, Gage R&R, etc. |
 
 ### Strategic Rationale
 
-1. **Lead generation**: Free tier brings users into ecosystem
-2. **Upsell path**: Power users upgrade to Azure App
-3. **No payment friction**: Microsoft handles all billing via Azure
-4. **Excel-native discovery**: AppSource is where Excel users find add-ins
+1. **Lead generation**: Free Add-in brings users into ecosystem
+2. **Upsell path**: Power users upgrade to Azure App (€150/month)
+3. **Zero friction**: No permission popups, no admin consent
+4. **IT-friendly**: No Graph API permissions to approve
+5. **Excel-native discovery**: AppSource is where Excel users find add-ins
+
+### Previous Model (Superseded)
+
+The original plan used Graph API license detection to auto-unlock full features when the tenant had Azure App deployed. This was abandoned because `Application.Read.All` requires admin consent (blocking adoption) and the approach was over-engineered. See [License Model](license-detection.md) for details.
 
 ---
 
 ## Current State (Feb 2026)
 
-### Feature Parity Status
+### Feature Scope
 
-| Category              | Feature                 | Azure App    | Excel             | Status            |
-| --------------------- | ----------------------- | ------------ | ----------------- | ----------------- |
-| **Performance Mode**  | Multi-channel analysis  | ✅           | ✅                | Complete          |
-|                       | PerformancePareto chart | ✅           | ✅                | Complete          |
-|                       | PerformanceIChart       | ✅           | ✅                | Complete          |
-|                       | PerformanceBoxplot      | ✅           | ✅                | Complete          |
-|                       | PerformanceCapability   | ✅           | ✅                | Complete          |
-|                       | Cpk Target              | ✅           | ✅                | Complete          |
-|                       | Drill-down by channel   | ✅           | ✅                | Complete          |
-|                       | Cp/Cpk toggle           | ✅           | ✅                | Complete          |
-| **Filtering**         | Native controls         | Filter chips | Excel slicers     | Platform-specific |
-|                       | Multi-select            | ✅           | ✅                | Slicer-based      |
-|                       | Filter persistence      | ✅           | ✅                | Slicer state      |
-| **State Management**  | Persistence             | localStorage | Custom Properties | Platform-specific |
-|                       | Configuration save      | ✅           | ✅                | Complete          |
-|                       | Settings UI             | ✅           | ✅                | Task Pane         |
-| **Theming**           | Dark theme              | ✅           | ✅                | Complete          |
-|                       | Light theme             | ✅           | ❌                | Not implemented   |
-|                       | System theme            | ✅           | ❌                | Not implemented   |
-| **Data Input**        | Sample datasets         | ✅           | Via website       | See below         |
-|                       | File upload             | ✅           | Direct table      | Native Excel      |
-|                       | Data validation         | ✅           | ✅                | Complete          |
-| **Advanced Features** | Variation funnel        | ✅           | ❌                | Not implemented   |
-|                       | Separate Pareto mode    | ✅           | ❌                | Not implemented   |
-|                       | Data quality banner     | ✅           | ❌                | Not implemented   |
-|                       | Time extraction         | ✅           | N/A               | Not needed        |
+| Category              | Feature              | Excel Add-in  | Azure App    |
+| --------------------- | -------------------- | ------------- | ------------ |
+| **Core SPC**          | I-Chart              | ✓             | ✓            |
+|                       | Boxplot              | ✓             | ✓            |
+|                       | Pareto               | ✓             | ✓            |
+|                       | Capability Histogram | ✓             | ✓            |
+| **Advanced Analysis** | Performance Mode     | -             | ✓            |
+|                       | Gage R&R             | -             | ✓            |
+|                       | Regression           | -             | ✓            |
+|                       | Probability Plot     | -             | ✓            |
+| **Filtering**         | Native controls      | Excel slicers | Filter chips |
+|                       | Multi-select         | ✓             | ✓            |
+|                       | Filter persistence   | ✓             | ✓            |
+| **State Management**  | Persistence          | Custom Props  | localStorage |
+|                       | Configuration save   | ✓             | ✓            |
+|                       | Settings UI          | Task Pane     | ✓            |
+| **Theming**           | Dark theme           | ✓             | ✓            |
+|                       | Light theme          | -             | ✓            |
+|                       | System theme         | -             | ✓            |
 
-### Overall Parity: 85%
-
-**Core features:** 100% parity
-**Advanced features:** 60% parity
-**UI/UX features:** 70% parity
+---
 
 ## Architectural Philosophy
 
@@ -92,22 +76,25 @@ See [License Detection](license-detection.md) for implementation details.
 - Native controls are more performant
 - Better integration with Excel workflows
 
-### 2. Core Features First
+### 2. Core SPC Focus
 
-**Priority:** Capability analysis > Advanced visualization
+**Priority:** Core statistical process control charts only
 
-**Implemented:**
+**Included:**
 
-- ✅ Performance Mode (multi-channel Cpk analysis)
-- ✅ Cpk target customization (single requirement value)
-- ✅ Drill-down navigation
-- ✅ State persistence
+- ✓ I-Chart with Nelson Rules
+- ✓ Boxplot comparisons
+- ✓ Pareto charts
+- ✓ Capability Histogram (Cp/Cpk)
+- ✓ State persistence
 
-**Deferred:**
+**Excluded (Azure App exclusive):**
 
-- Variation funnel (complex, low demand)
-- Separate Pareto mode (requires file upload UI)
-- Light theme (Excel users mostly use dark mode)
+- Performance Mode (multi-channel Cpk analysis)
+- Gage R&R (measurement system analysis)
+- Regression / Probability plots
+- Variation funnel
+- OneDrive sync / team collaboration
 
 ### 3. Sample Datasets via Website
 
@@ -127,15 +114,7 @@ See [License Detection](license-detection.md) for implementation details.
 - SEO benefit from website traffic
 - Easy to update samples without app release
 
-**Files to create:**
-
-```
-docs/cases/coffee/coffee-demo.xlsx
-docs/cases/sachets/sachets-demo.xlsx
-docs/cases/oven-zones/oven-zones-demo.xlsx
-docs/cases/bottleneck/bottleneck-demo.xlsx
-docs/cases/journey/journey-demo.xlsx
-```
+---
 
 ## Panel Sizing & Responsive Design
 
@@ -160,19 +139,6 @@ docs/cases/journey/journey-demo.xlsx
 - User CAN resize the Excel window
 - Charts respond to window resize automatically
 
-**Implementation (ContentPerformanceDashboard.tsx:241-256):**
-
-```typescript
-useEffect(() => {
-  const observer = new ResizeObserver(entries => {
-    const { width, height } = entries[0].contentRect;
-    setDimensions({ width, height });
-    // Charts re-render with new dimensions
-  });
-  observer.observe(containerRef.current);
-}, []);
-```
-
 #### 2. Task Panes (Setup Wizard)
 
 **Variable width:**
@@ -183,252 +149,53 @@ useEffect(() => {
 
 ### What's NOT Possible
 
-❌ Split pane / draggable divider between Task Pane and Content Add-in
-❌ Programmatic resize of Content Add-in dimensions
-❌ User-controlled panel dimensions (drag to resize charts)
+- Split pane / draggable divider between Task Pane and Content Add-in
+- Programmatic resize of Content Add-in dimensions
+- User-controlled panel dimensions (drag to resize charts)
 
 ### What IS Possible
 
-✅ Task Pane users can drag to resize width
-✅ Content Add-ins adapt to window size changes
-✅ Charts use responsive utilities from `@variscout/charts`
+- Task Pane users can drag to resize width
+- Content Add-ins adapt to window size changes
+- Charts use responsive utilities from `@variscout/charts`
 
-**Responsive Chart Utilities:**
+---
 
-- `getResponsiveMargins(width, chartType)` - Dynamic chart margins
-- `getResponsiveFonts(width)` - Font scaling
-- `getResponsiveTickCount(size, axis)` - Optimal tick density
-
-## Cpk Target: Simplified Approach (Feb 2026)
+## Cpk Target: Simplified Approach
 
 ### Overview
 
 All apps (PWA, Azure, Excel) use a **single Cpk requirement value** instead of multiple threshold zones. This matches how real manufacturing companies work: one minimum acceptable Cpk value.
 
-| Feature        | PWA            | Azure          | Excel           | Status                              |
-| -------------- | -------------- | -------------- | --------------- | ----------------------------------- |
-| Cpk Target     | ✅ Setup panel | ✅ Setup panel | ✅ Inline input | Active - single requirement value   |
-| Cpk Thresholds | ❌ Removed     | ❌ Removed     | ❌ Removed      | Deprecated - unnecessary complexity |
-
-**Rationale for Simplification:**
-
-- Most companies have ONE minimum Cpk requirement (e.g., "must be ≥ 1.33")
-- Standard I-Charts use control limits for statistical control, not arbitrary color zones
-- Consistent behavior across all apps (PWA, Azure, Excel)
-- Simpler to understand and maintain
-
-### Implementation
-
-**File**: `apps/excel-addin/src/content/ContentPerformanceDashboard.tsx`
-
-**State Management** (line 240):
-
-```typescript
-const [cpkTarget, setCpkTarget] = useState<number>(1.33);
-```
-
-**UI Control** (lines 425-463):
-
-- Inline input field in I-Chart header
-- Range: 0.5 - 3.0, Step: 0.01
-- Default: 1.33 (industry standard)
-- Width: 60px (compact)
-- Tooltip: Industry standards reference
-
-**Chart Integration** (line 498):
-
-```typescript
-<PerformanceIChartBase
-  cpkTarget={cpkTarget}  // Single requirement value
-  // cpkThresholds prop removed - uses control-based coloring
-/>
-```
-
-### I-Chart Coloring
-
-**Standard Control-Based Approach**:
-
-- **Blue points**: Within control limits (in statistical control)
-- **Red points**: Outside control limits (out of statistical control)
-- **Target line**: Dashed green horizontal line at cpkTarget value
-- **Control limits**: UCL/LCL calculated from Cpk distribution (mean ± 3σ)
-
-**Interpretation**:
-
-1. **Blue point above target**: Process is stable and meeting requirement ✅
-2. **Blue point below target**: Process is stable but not meeting requirement ⚠️
-3. **Red point**: Process is out of control (investigate special cause) 🔴
-
-### User Experience
-
-**Setup Flow**:
-
-1. Run Setup Wizard (5 steps: Data, Columns, Stages, Slicers, Specs)
-2. Select measure columns
-3. Set specification limits
-4. Review and enable
-
-**Performance Dashboard**:
-
-1. View I-Chart with control-based coloring
-2. Adjust Cpk Target inline (default: 1.33)
-3. Target line updates immediately
-4. Points colored by statistical control status
-
-### Future Enhancements
-
-- Persist cpkTarget to Custom Document Properties
-- Add preset buttons (1.33, 1.67, 2.00)
-- Optional: Below-target indicator (highlight without changing base color)
+**Note:** In the Excel Add-in, Cpk target is relevant only for the core Capability Histogram view, not for Performance Mode (which is Azure App exclusive).
 
 ---
 
 ## Future Roadmap
 
-### Phase 1: Quality of Life (6-8 hours total)
-
-**Goal:** Small enhancements to existing features
+### Phase 1: Quality of Life
 
 | Feature                         | Effort | Value  | Priority |
 | ------------------------------- | ------ | ------ | -------- |
 | Data Quality Banner (Task Pane) | 3-4h   | Medium | P2       |
 | Light Theme support             | 4-5h   | Low    | P3       |
-| Threshold presets dropdown      | 2h     | Medium | P2       |
 
-**Data Quality Banner:**
+### Phase 2: Won't Implement in Excel
 
-- Show validation warnings in Task Pane
-- Reuse `@variscout/ui` DataQualityBanner component
-- Display before Step 2 (Columns) if data issues detected
+| Feature                | Reason                                  |
+| ---------------------- | --------------------------------------- |
+| Performance Mode       | Azure App exclusive (business decision) |
+| Gage R&R               | Azure App exclusive                     |
+| Regression             | Azure App exclusive                     |
+| License detection      | No longer needed (free forever)         |
+| Graph API integration  | No longer needed                        |
+| Sample datasets import | Use website downloads instead           |
+| Time extraction        | Excel handles dates natively            |
+| IndexedDB              | Excel has built-in persistence          |
+| PWA-specific features  | Offline mode, service workers           |
+| User-draggable panels  | Office.js API limitation                |
 
-**Light Theme:**
-
-- Add theme toggle to Task Pane settings
-- Update `darkTheme.ts` to `theme.ts` with toggle
-- Content Add-in charts use `useChartTheme` hook
-
-**Cpk Target Presets:**
-
-- Preset buttons for common Cpk targets: 1.33 (4σ), 1.67 (5σ), 2.00 (6σ)
-- One-click selection in Performance Dashboard header
-- User can still enter custom values
-
-### Phase 2: Advanced Features (15-25 hours total)
-
-**Goal:** High-value features from PWA
-
-| Feature               | Effort | Value  | Priority |
-| --------------------- | ------ | ------ | -------- |
-| Variation Funnel      | 6-8h   | High   | P1       |
-| Filter contribution % | 8-10h  | Medium | P2       |
-| Separate Pareto mode  | 15-20h | Low    | P3       |
-
-**Variation Funnel:**
-
-- Add to Content Add-in layout (top-right corner)
-- Shows cumulative η² for drill-down
-- Reuse `@variscout/pwa` FunnelPanel component
-- Adapt for Fluent UI styling
-
-**Filter Contribution %:**
-
-- Display contribution % in Task Pane filter summary
-- Requires ANOVA calculation on filtered data
-- Show next to slicer selections
-
-**Separate Pareto mode:**
-
-- File upload UI in Task Pane
-- Parse multiple Excel sheets or ranges
-- Aggregate Cpk across files
-- Complex, defer until user demand
-
-### Phase 3: Won't Implement
-
-| Feature                | Reason                         |
-| ---------------------- | ------------------------------ |
-| Sample datasets import | Use website downloads instead  |
-| Time extraction        | Excel handles dates natively   |
-| IndexedDB              | Excel has built-in persistence |
-| PWA-specific features  | Offline mode, service workers  |
-| User-draggable panels  | Office.js API limitation       |
-
-## Strategic Decisions
-
-### 1. FREE on AppSource with Azure Unlock
-
-**Rationale:**
-
-- Zero friction for Excel users to try VariScout
-- Free tier provides value, creates awareness
-- Azure App purchase unlocks full potential
-- Microsoft handles all billing complexity
-
-**Result:**
-
-- Excel Add-in drives Azure App sales
-- No separate purchase flow needed
-- Enterprise compliance (no external payment processors)
-
-### 2. 85% Parity is Optimal
-
-**Rationale:**
-
-- Core features (Performance Mode, Cpk analysis) fully supported
-- Excel-specific UX patterns respected (slicers > chips)
-- Sample datasets provided via website (better UX, SEO benefit)
-- Time extraction unnecessary (Excel native dates)
-- Development effort focused on high-value features
-
-**Result:**
-
-- Excel Add-in is "first-class" but not "identical"
-- Azure App remains reference implementation for innovation
-- Excel users get best-in-class capability analysis
-
-### 2. Sample Datasets via Website Downloads
-
-**Implementation:**
-
-```
-website/cases/coffee/
-  ├── coffee-demo.xlsx          # Pre-configured table + slicers
-  ├── coffee-teaching-brief.pdf # Learning materials
-  └── coffee-preview.png        # Screenshot
-
-website/cases/sachets/
-  ├── sachets-demo.xlsx
-  ├── sachets-teaching-brief.pdf
-  └── sachets-preview.png
-```
-
-**Website Landing Page:**
-
-- `/cases` route with case study gallery
-- Download button for each .xlsx file
-- Instructions: "Download → Open in Excel → Insert VariScout Charts"
-- SEO-optimized descriptions
-
-**Benefits:**
-
-- No Excel Add-in development needed
-- Users get working example immediately
-- Website traffic increase (SEO)
-- Easy to update samples without app release
-
-### 3. Task Pane for Config, Content for Viz
-
-**Pattern:**
-
-- Task Pane: Setup wizard, settings, configuration display
-- Content Add-in: Charts, data visualization
-- No overlap, clear separation of concerns
-
-**Why:**
-
-- Office.js doesn't support Task Pane ↔ Content communication
-- Custom Document Properties bridge the gap
-- Polling-based updates (Content Add-in checks for state changes)
+---
 
 ## Excel-Specific Technical Details
 
@@ -452,20 +219,7 @@ const state = JSON.parse(item.value);
 - No external dependencies
 - Works offline
 
-**Limitations:**
-
-- Max ~32KB per property (plenty for our state)
-- No real-time updates (polling required)
-
-### 2. Filtering (Excel Slicers vs Filter Chips)
-
-**PWA Approach:**
-
-```typescript
-<FilterChip label="Operator" values={['A', 'B']} onClick={...} />
-```
-
-**Excel Approach:**
+### 2. Filtering (Excel Slicers)
 
 ```typescript
 // Create native Excel slicers
@@ -478,42 +232,22 @@ setInterval(() => {
 }, 1000);
 ```
 
-**Why Excel approach is better:**
-
-- Excel users expect Excel controls
-- Multi-select built-in
-- Visual feedback (highlighted selections)
-- No custom UI needed
-
 ### 3. Chart Rendering (Base Variants)
 
-**PWA Uses Responsive Wrappers:**
+**Excel Uses Base Variants (explicit sizing):**
 
 ```typescript
-import { PerformancePareto } from '@variscout/charts';
+import { IChartBase } from '@variscout/charts';
 
-<PerformancePareto data={channels} /> // Auto-sizing with withParentSize
-```
-
-**Excel Uses Base Variants:**
-
-```typescript
-import { PerformanceParetoBase } from '@variscout/charts';
-
-<PerformanceParetoBase
-  data={channels}
-  parentWidth={bottomChartWidth}   // Explicit sizing
-  parentHeight={bottomChartHeight}
-  showBranding={false}
+<IChartBase
+  data={filteredData}
+  parentWidth={chartWidth}
+  parentHeight={chartHeight}
+  showBranding={true} // Free tier always shows branding
 />
 ```
 
-**Why:**
-
-- Content Add-in has fixed dimensions (manifest.xml)
-- No withParentSize HOC needed
-- Explicit control over chart sizing
-- Better performance (no resize observer per chart)
+---
 
 ## Deployment & Distribution
 
@@ -525,14 +259,6 @@ import { PerformanceParetoBase } from '@variscout/charts';
 
 - **Primary**: Microsoft AppSource (FREE listing)
 - **Secondary**: Sideload for enterprise testing
-
-**License Model:**
-
-- Free tier: Basic features for all users
-- Full tier: Auto-unlocks when tenant has Azure App
-- Detection: Graph API checks for Azure App registration
-
-See [AppSource Guide](appsource.md) for publication details.
 
 ### Development
 
@@ -548,12 +274,6 @@ pnpm dev:excel  # localhost:3000
 pnpm build --filter @variscout/excel-addin
 ```
 
-**Manifest:**
-
-- `apps/excel-addin/manifest.xml`
-- Defines Task Pane and Content Add-in URLs
-- Production URLs: Azure Static Web Apps
-
 ### Publishing Checklist
 
 - [ ] Production hosting setup (Azure Static Web Apps)
@@ -561,138 +281,31 @@ pnpm build --filter @variscout/excel-addin
 - [ ] AppSource submission materials (screenshots, descriptions)
 - [ ] Privacy policy and terms of service
 - [ ] Security review (OWASP, dependency audit)
-- [ ] Performance testing (large datasets, 500+ channels)
+- [ ] Performance testing (large datasets)
 - [ ] Accessibility audit (WCAG AA)
-- [ ] Localization (i18n setup, translations)
-- [ ] Graph API license detection implementation
-- [ ] Free tier feature gating
+- [ ] Hardcode featureLimits.ts to free tier
+- [ ] Remove license detection code
+- [ ] Remove Performance Mode from UI
 
-## Performance Considerations
-
-### 1. Large Datasets (10K+ rows)
-
-**PWA:** In-memory processing, very fast
-**Excel:** Network round-trips to Excel host, slower
-
-**Optimization:**
-
-- Limit polling frequency (1s interval)
-- Cache filtered data, only update on change
-- Use ExcelApi batch operations
-- Consider Web Workers for heavy calculations
-
-### 2. Many Channels (200+ channels)
-
-**Chart Rendering:**
-
-- PerformancePareto: Max 20 channels (worst first)
-- PerformanceBoxplot: Max 5 channels (selected)
-- PerformanceIChart: All channels, virtualization needed
-
-**Current Limits:**
-
-```typescript
-export const CHANNEL_LIMITS = {
-  warn: 200, // Show warning
-  max: 500, // Hard limit
-} as const;
-```
-
-**Future Optimization:**
-
-- Virtual scrolling for PerformanceIChart
-- Paginated Pareto chart
-- Summary statistics only for 500+ channels
-
-## Documentation Plan
-
-### User Documentation
-
-**Excel Add-in Guide (Planned):**
-
-- Installation from AppSource
-- Setup wizard walkthrough
-- Cpk target configuration
-- Sample dataset downloads
-- Troubleshooting common issues
-
-**Case Studies:**
-
-- Each case study includes .xlsx download
-- Teaching brief explains analysis steps
-- Expected results documented
-
-### Developer Documentation
-
-**Architecture Decision Records:**
-
-- ADR-011: Excel Slicers vs Custom Filter UI
-- ADR-012: Custom Document Properties for State
-- ADR-013: Sample Datasets via Website
-- ADR-014: 85% Feature Parity Strategy
-
-**Testing Documentation:**
-
-- Manual test plan for each release
-- Excel version compatibility matrix
-- Performance benchmarks
-
-## Success Metrics
-
-### Feature Parity (Current)
-
-- ✅ Performance Mode: 100%
-- ✅ Cpk Target: 100%
-- ✅ State Persistence: 100%
-- ⚠️ Advanced Features: 60%
-- ⚠️ UI/UX: 70%
-- **Overall: 85%** ✅
-
-### Performance
-
-- Chart render time: < 500ms (target)
-- Slicer update latency: < 1s (polling interval)
-- Large dataset (10K rows): < 2s load
-
-### User Experience
-
-- Setup wizard completion rate: > 80% (target)
-- Cpk target customization adoption: > 30% (target)
-- Sample dataset downloads: Track via website analytics
+---
 
 ## Conclusion
 
-The Excel Add-in strategy balances feature parity with platform-appropriate UX. By achieving 85% parity and focusing on core capability analysis, we deliver maximum value while respecting Excel conventions.
+The Excel Add-in strategy focuses on **core SPC analysis for free**, serving as a marketing funnel to the Azure App. By providing genuine value (I-Chart, Boxplot, Pareto, Capability) without friction (no auth, no admin consent, no license detection), we maximize adoption and create a natural upgrade path to the Azure App for users who need Performance Mode and team collaboration.
 
-**Key Achievements:**
+**Key Decisions:**
 
-- ✅ Full Performance Mode implementation
-- ✅ Cpk target customization (single requirement value)
-- ✅ Excel-native filtering (slicers)
-- ✅ Persistent configuration
-- ✅ Sample datasets via website
-
-**Next Steps:**
-
-1. Implement Graph API license detection
-2. Define free tier feature limits
-3. Create sample dataset .xlsx files for website
-4. Publish AppSource listing (Q2 2026)
-5. Monitor user adoption and conversion to Azure
-
-**Strategic Decisions Affirmed:**
-
-- FREE on AppSource with Azure unlock
-- 85% feature parity is optimal
-- Sample datasets via website downloads
-- Excel-native UX patterns over Azure App clones
-- Task Pane for config, Content for viz
+- ✓ Free forever on AppSource (no license detection)
+- ✓ Core SPC only (Performance Mode is Azure App exclusive)
+- ✓ Excel-native UX patterns (slicers, Custom Document Properties)
+- ✓ Sample datasets via website downloads
+- ✓ Task Pane for config, Content for viz
 
 ---
 
 ## See Also
 
 - [AppSource Guide](appsource.md)
-- [License Detection](license-detection.md)
+- [License Model](license-detection.md)
 - [Azure App (Primary Product)](../azure/index.md)
 - [ADR-007: Azure Marketplace Distribution](../../07-decisions/adr-007-azure-marketplace-distribution.md)

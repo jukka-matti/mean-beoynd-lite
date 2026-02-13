@@ -152,12 +152,10 @@ This ensures rapid iteration while maintaining code quality across all platforms
 
 After evaluating in the PWA:
 
-| Ready For...          | Next Step                                                        |
-| --------------------- | ---------------------------------------------------------------- |
-| Individual use        | [Azure App Individual](../azure/index.md) (€99/year)             |
-| Team use              | [Azure App Team](../azure/index.md) (€499/year)                  |
-| Enterprise deployment | [Azure App Enterprise](../azure/index.md) (€1,790/year)          |
-| Excel-native workflow | [Excel Add-in](../excel/index.md) (FREE, unlocks with Azure App) |
+| Ready For...     | Next Step                                                 |
+| ---------------- | --------------------------------------------------------- |
+| Full features    | [Azure App](../azure/index.md) (€150/month, all features) |
+| Excel-native SPC | [Excel Add-in](../excel/index.md) (FREE, core SPC charts) |
 
 ---
 

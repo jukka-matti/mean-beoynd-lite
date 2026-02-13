@@ -75,15 +75,18 @@ pnpm --filter @variscout/azure-app test
 | `VITE_AZURE_TENANT_ID`    | Azure AD tenant ID         | Yes      | ARM template |
 | `VITE_AZURE_REDIRECT_URI` | OAuth redirect URI         | Yes      | ARM template |
 | `VITE_LICENSE_TIER`       | License tier               | Yes      | ARM template |
-| `VITE_MAX_USERS`          | User limit for tier        | Yes      | ARM template |
+| `VITE_MAX_CHANNELS`       | Channel limit              | Yes      | ARM template |
+
+> **Note**: `VITE_MAX_USERS` is no longer used. The single Managed Application plan provides unlimited users.
 
 ### Excel Add-in Environment Variables
 
-| Variable               | Description           | Default   |
-| ---------------------- | --------------------- | --------- |
-| `VITE_ADDIN_ID`        | Office Add-in ID      | Dev ID    |
-| `VITE_MANIFEST_URL`    | Manifest XML location | localhost |
-| `VITE_AZURE_CLIENT_ID` | Graph API client ID   | Required  |
+| Variable            | Description           | Default   |
+| ------------------- | --------------------- | --------- |
+| `VITE_ADDIN_ID`     | Office Add-in ID      | Dev ID    |
+| `VITE_MANIFEST_URL` | Manifest XML location | localhost |
+
+> **Note**: `VITE_AZURE_CLIENT_ID` was previously used for Graph API license detection but is no longer needed. The Excel Add-in is always free with no license detection.
 
 ### PWA Environment Variables (Demo Only)
 
@@ -99,14 +102,12 @@ pnpm --filter @variscout/azure-app test
 
 ### Overview
 
-The Azure App is published to Azure Marketplace as a Solution Template:
+The Azure App is published to Azure Marketplace as a **Managed Application**:
 
 ```
 Azure Marketplace
-└── VariScout
-    ├── Individual Plan (€99/year)
-    ├── Team Plan (€499/year)
-    └── Enterprise Plan (€1,790/year)
+└── VariScout (Managed Application)
+    └── Full Plan (€150/month, all features, unlimited users)
 ```
 
 ### Publication Process
@@ -117,14 +118,16 @@ Azure Marketplace
    - Enable Azure Marketplace program
 
 2. **Create Azure Application Offer**
-   - Offer type: Solution Template
-   - Create plans for each pricing tier
-   - Upload ARM template
+   - Offer type: Managed Application
+   - Single plan at €150/month
+   - Upload deployment package (.zip with mainTemplate.json + createUiDefinition.json)
+   - Publisher management: Disabled (zero access)
+   - Customer access: Enabled (full control)
 
 3. **Configure Pricing**
-   - Set annual prices per tier
+   - Set monthly price (€150/month)
    - Configure regional pricing (EUR, USD, GBP)
-   - Microsoft handles VAT and billing
+   - Microsoft handles VAT and billing (3% fee)
 
 4. **Submit for Certification**
    - Microsoft reviews listing content

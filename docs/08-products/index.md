@@ -1,6 +1,6 @@
 # Products
 
-VariScout is distributed through Microsoft's ecosystem with the **Azure App as the primary commercial product**.
+VariScout is distributed through Microsoft's ecosystem with the **Azure App as the only paid product**.
 
 ---
 
@@ -10,35 +10,31 @@ Per [ADR-007](../07-decisions/adr-007-azure-marketplace-distribution.md):
 
 ```mermaid
 flowchart LR
-    subgraph Commercial["Commercial Products"]
-        A[Azure App<br/>PRIMARY]
-        B[Excel Add-in<br/>SECONDARY]
+    subgraph Paid["Paid Product"]
+        A[Azure App<br/>€150/month]
     end
 
-    subgraph Demo["Evaluation"]
-        C[PWA<br/>DEMO TOOL]
-    end
-
-    subgraph Future["Planned"]
-        D[Power BI]
+    subgraph Free["Free Products"]
+        B[Excel Add-in<br/>Core SPC]
+        C[PWA<br/>Demo Tool]
     end
 
     C -->|"Try before buy"| A
-    A -->|"Unlocks"| B
+    B -->|"Need advanced features"| A
 ```
 
 ## Product Matrix
 
-| Product                         | Status      | Distribution      | Use Case                  | Pricing                   |
-| ------------------------------- | ----------- | ----------------- | ------------------------- | ------------------------- |
-| **[Azure App](azure/index.md)** | **PRIMARY** | Azure Marketplace | Teams & enterprises       | €99/€499/€1,790/year      |
-| [Excel Add-in](excel/index.md)  | Production  | AppSource         | Excel-native workflows    | FREE (unlocks with Azure) |
-| [PWA](pwa/index.md)             | Demo only   | Direct URL        | Evaluation & learning     | N/A                       |
-| [Power BI](powerbi/index.md)    | Planned     | AppSource         | Dashboard integration     | TBD                       |
-| [Website](website/index.md)     | Production  | Public            | Marketing & documentation | N/A                       |
+| Product                         | Status      | Distribution      | Use Case                  | Pricing        |
+| ------------------------------- | ----------- | ----------------- | ------------------------- | -------------- |
+| **[Azure App](azure/index.md)** | **PRIMARY** | Azure Marketplace | Teams & enterprises       | €150/month     |
+| [Excel Add-in](excel/index.md)  | Production  | AppSource         | Excel-native core SPC     | FREE (forever) |
+| [PWA](pwa/index.md)             | Demo only   | Direct URL        | Evaluation & learning     | N/A            |
+| [Power BI](powerbi/index.md)    | Planned     | AppSource         | Dashboard integration     | TBD            |
+| [Website](website/index.md)     | Production  | Public            | Marketing & documentation | N/A            |
 
 !!! tip "Evaluation Path"
-**Try → Buy → Extend**: Start with the [PWA demo](pwa/index.md) (pre-loaded case studies), purchase [Azure App](azure/index.md) for production use, and the [Excel Add-in](excel/index.md) unlocks automatically.
+**Try → Buy**: Start with the [PWA demo](pwa/index.md) (pre-loaded case studies) or the [Excel Add-in](excel/index.md) (free core SPC), then purchase the [Azure App](azure/index.md) for full features.
 
 ---
 
@@ -48,20 +44,21 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────┐
 │  VariScout on Azure Marketplace (PRIMARY)                   │
 │                                                             │
-│  Individual Plan     €99/year    Single user               │
-│  Team Plan           €499/year   Up to 10 users            │
-│  Enterprise Plan     €1,790/year Unlimited tenant users    │
+│  Single Plan       €150/month   All features               │
+│                                  Unlimited users in tenant  │
 │                                                             │
-│  Billing: Microsoft (3% fee)                               │
+│  Offer type: Managed Application                           │
+│  Billing: Microsoft (3% fee, monthly)                      │
 │  Data: Stays in customer's Azure tenant                    │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│  Excel Add-in on AppSource (FREE)                          │
+│  Excel Add-in on AppSource (FREE FOREVER)                   │
 │                                                             │
-│  • Free tier: Basic features for all users                 │
-│  • Full tier: Auto-unlocks when tenant has Azure App       │
-│  • Detection: Graph API checks for Azure App registration  │
+│  • Core SPC: I-Chart, Boxplot, Pareto, Capability          │
+│  • No Performance Mode (Azure App exclusive)               │
+│  • No license detection, no Graph API                      │
+│  • Marketing funnel → users upgrade to Azure App           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -75,28 +72,32 @@ flowchart LR
 | Boxplot          | ✓         | ✓           | ✓          | Planned          |
 | Pareto           | ✓         | ✓           | ✓          | Planned          |
 | Capability       | ✓         | ✓           | ✓          | Planned          |
-| Regression       | ✓         | ✓           | ✓          | -                |
-| Gage R&R         | ✓         | ✓           | ✓          | -                |
-| Performance Mode | ✓         | ✓           | ✓          | -                |
+| Regression       | ✓         | -           | ✓          | -                |
+| Gage R&R         | ✓         | -           | ✓          | -                |
+| Performance Mode | ✓         | -           | ✓          | -                |
 | Drill-Down       | ✓         | Via slicers | ✓          | Native           |
 | Linked Filtering | ✓         | Via slicers | ✓          | Native           |
 | Offline          | Cached    | ✓           | ✓          | -                |
-| Cloud Sync       | OneDrive  | OneDrive    | -          | Power BI Service |
-| SSO              | Microsoft | Microsoft   | -          | Microsoft        |
+| Cloud Sync       | OneDrive  | -           | -          | Power BI Service |
+| SSO              | Microsoft | -           | -          | Microsoft        |
+
+> Excel Add-in provides core SPC charts only. Advanced analysis requires the Azure App.
 
 ---
 
-## Pricing Tiers (Azure App)
+## Pricing (Azure App)
 
-| Tier       | Price/Year | Users     | Features                              |
-| ---------- | ---------- | --------- | ------------------------------------- |
-| Individual | €99        | 1         | Full analysis, OneDrive sync          |
-| Team       | €499       | Up to 10  | + Shared projects, collaboration      |
-| Enterprise | €1,790     | Unlimited | + Priority support, custom deployment |
+| Aspect      | Value                                              |
+| ----------- | -------------------------------------------------- |
+| Price       | €150/month (all features, unlimited users)         |
+| Billing     | Monthly (Microsoft handles billing, 3% fee)        |
+| Net revenue | €145.50/month (€1,746/year)                        |
+| Model       | Per-deployment (one subscription per Azure tenant) |
 
-All tiers include:
+All features included:
 
 - All chart types and analysis features
+- Performance Mode (multi-channel Cpk)
 - Microsoft Entra ID (Azure AD) SSO
 - OneDrive project sync
 - Offline support (cached)
@@ -125,23 +126,21 @@ This ensures:
 
 ## Deployment Models
 
-| Product      | Deployment                      | Data Location               | License Detection        |
-| ------------ | ------------------------------- | --------------------------- | ------------------------ |
-| Azure App    | ARM template to customer tenant | Customer's Azure + OneDrive | Deployment tier config   |
-| Excel Add-in | AppSource or sideload           | Excel workbook              | Graph API (tenant check) |
-| PWA          | Static hosting (internal)       | Browser (IndexedDB)         | N/A (demo only)          |
-| Power BI     | AppSource                       | Power BI Service            | TBD                      |
+| Product      | Deployment                             | Data Location               | License                          |
+| ------------ | -------------------------------------- | --------------------------- | -------------------------------- |
+| Azure App    | Managed Application to customer tenant | Customer's Azure + OneDrive | Deployment config (all features) |
+| Excel Add-in | AppSource or sideload                  | Excel workbook              | Always free (no detection)       |
+| PWA          | Static hosting (internal)              | Browser (IndexedDB)         | N/A (demo only)                  |
+| Power BI     | AppSource                              | Power BI Service            | TBD                              |
 
 ---
 
 ## Support Model
 
-| Tier       | Included In            | Support Channel               |
-| ---------- | ---------------------- | ----------------------------- |
-| Community  | Free Excel Add-in tier | GitHub Issues                 |
-| Standard   | Individual Azure tier  | Email (48h response)          |
-| Team       | Team Azure tier        | Email (24h response)          |
-| Enterprise | Enterprise Azure tier  | Email + deployment assistance |
+| Level     | Included In  | Support Channel      |
+| --------- | ------------ | -------------------- |
+| Community | Excel Add-in | GitHub Issues        |
+| Standard  | Azure App    | Email (24h response) |
 
 ---
 

@@ -1,14 +1,14 @@
 # Azure App (Primary Product)
 
-VariScout for Microsoft 365 enterprises - the primary distribution channel via Azure Marketplace.
+VariScout for Microsoft 365 enterprises - the only paid product, distributed via Azure Marketplace as a Managed Application.
 
 ---
 
 ## Overview
 
-The Azure App is the **primary VariScout product**, offering:
+The Azure App is the **only paid VariScout product**, offering:
 
-- Full-featured variation analysis
+- Full-featured variation analysis (all chart types + Performance Mode)
 - Microsoft Entra ID (Azure AD) authentication
 - OneDrive sync for projects
 - Team collaboration features
@@ -20,17 +20,22 @@ The Azure App is the **primary VariScout product**, offering:
 
 ## Distribution
 
-VariScout Azure App is available on **Azure Marketplace** with three pricing tiers:
+VariScout Azure App is available on **Azure Marketplace** as a Managed Application:
 
-| Tier       | Price/Year | Users     | Target Customer                 |
-| ---------- | ---------- | --------- | ------------------------------- |
-| Individual | €99        | 1         | Quality engineers, consultants  |
-| Team       | €499       | Up to 10  | Small QA teams, departments     |
-| Enterprise | €1,790     | Unlimited | Manufacturing companies, plants |
+| Aspect           | Value                                        |
+| ---------------- | -------------------------------------------- |
+| Offer type       | Managed Application                          |
+| Price            | €150/month (all features, unlimited users)   |
+| Billing          | Monthly (Microsoft, 3% fee)                  |
+| Net revenue      | €145.50/month (€1,746/year)                  |
+| Publisher access | Disabled (zero access to customer resources) |
+| Customer access  | Full control                                 |
 
-All tiers include:
+All features included:
 
 - All chart types and analysis features
+- Performance Mode (multi-channel Cpk analysis)
+- Gage R&R (measurement system analysis)
 - Microsoft Entra ID SSO
 - OneDrive project sync
 - Offline support (cached)
@@ -49,7 +54,7 @@ All tiers include:
 │                                                                  │
 │  ┌───────────────────────────────────────────────────────────┐  │
 │  │              AZURE STATIC WEB APP                         │  │
-│  │            (Deployed via ARM Template)                    │  │
+│  │         (Deployed via Managed Application)                │  │
 │  │                                                           │  │
 │  │   ┌─────────────────────────────────────────────────────┐ │  │
 │  │   │              VARISCOUT AZURE APP                    │ │  │
@@ -75,15 +80,16 @@ All tiers include:
         │ No data leaves customer tenant
         │ No external API calls
         │ No backend servers
+        │ Publisher management DISABLED
         ↓
 
 ┌─────────────────────────────────────────────────────────────────┐
 │               VARISCOUT (Publisher)                             │
 │                                                                 │
 │  • Azure Marketplace listing                                    │
-│  • ARM template distribution                                    │
+│  • Managed Application package distribution                     │
 │  • Documentation & support                                      │
-│  • No access to customer data                                   │
+│  • No access to customer data or resources                      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -115,18 +121,13 @@ This architecture ensures:
 | Purchase orders   | Enterprise procurement support            |
 | VAT handling      | Microsoft handles international tax       |
 
-### License Detection
+### Tier Configuration
 
-License tier is set at deployment time via ARM template parameters:
+All Managed Application deployments get full features:
 
 ```typescript
-// Deployment configuration sets tier
-const tier = import.meta.env.VITE_LICENSE_TIER; // 'individual' | 'team' | 'enterprise'
-
-// Feature gating based on tier
-if (tier === 'enterprise') {
-  // Enable unlimited users
-}
+// Deployment configuration always sets enterprise tier
+const tier = import.meta.env.VITE_LICENSE_TIER; // Always 'enterprise' for Managed App
 ```
 
 ---
@@ -141,6 +142,7 @@ if (tier === 'enterprise') {
 | Offline          | Cached locally, syncs when online          |
 | All Chart Types  | I-Chart, Boxplot, Pareto, Capability, etc. |
 | Performance Mode | Multi-channel Cpk analysis                 |
+| Gage R&R         | Measurement system analysis                |
 | Drill-Down       | Interactive filter navigation              |
 
 ---
@@ -150,20 +152,19 @@ if (tier === 'enterprise') {
 One-click deployment from Azure Marketplace:
 
 1. **Find** VariScout on Azure Marketplace
-2. **Select** pricing tier (Individual/Team/Enterprise)
-3. **Deploy** to your Azure subscription
-4. **Configure** app registration (automated)
+2. **Click** "Create"
+3. **Configure** app name and region
+4. **Deploy** to your Azure subscription (managed resource group)
 5. **Access** at your custom Azure URL
 
 ### Manual Deployment (ARM Template)
 
-For advanced scenarios, deploy directly with Azure CLI:
+For development/testing, deploy directly with Azure CLI:
 
 ```bash
 az deployment group create \
   --resource-group rg-variscout \
-  --template-uri https://raw.githubusercontent.com/variscout/azure-deploy/main/azuredeploy.json \
-  --parameters tier=team
+  --template-file mainTemplate.json
 ```
 
 See [ARM Template Documentation](arm-template.md) for details.
@@ -185,16 +186,14 @@ All data stays in the customer's tenant:
 
 ---
 
-## Excel Add-in Integration
+## Excel Add-in Companion
 
-Customers with Azure App deployment automatically unlock full features in the [Excel Add-in](../excel/index.md):
+The [Excel Add-in](../excel/index.md) is a **free companion product** available on AppSource:
 
-- Excel Add-in is FREE on AppSource
-- Detects Azure deployment via Graph API
-- Auto-unlocks full tier when Azure App is present
-- Provides seamless Excel workflow integration
-
-See [License Detection](../excel/license-detection.md) for implementation details.
+- Provides core SPC charts (I-Chart, Boxplot, Pareto, Capability)
+- Always free — no license detection needed
+- Performance Mode and advanced analysis are Azure App exclusive
+- Serves as a marketing funnel for users who need full features
 
 ---
 
@@ -214,7 +213,7 @@ The Azure app includes a development-only tier switching component at `apps/azur
 ## See Also
 
 - [Azure Marketplace Guide](marketplace.md)
-- [Pricing Tiers](pricing-tiers.md)
+- [Pricing](pricing-tiers.md)
 - [ARM Template](arm-template.md)
 - [MSAL Authentication](msal-auth.md)
 - [OneDrive Sync](onedrive-sync.md)

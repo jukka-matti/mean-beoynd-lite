@@ -1,146 +1,91 @@
-# Pricing Tiers
+# Pricing
 
-VariScout Azure App pricing structure and tier definitions.
-
----
-
-## Tier Overview
-
-| Tier       | Price/Year | Users     | Target Customer                 |
-| ---------- | ---------- | --------- | ------------------------------- |
-| Individual | €99        | 1         | Quality engineers, consultants  |
-| Team       | €499       | Up to 10  | Small QA teams, departments     |
-| Enterprise | €1,790     | Unlimited | Manufacturing companies, plants |
+VariScout Azure App pricing structure.
 
 ---
 
-## Feature Matrix
+## Plan Overview
 
-| Feature                  | Individual | Team | Enterprise |
-| ------------------------ | ---------- | ---- | ---------- |
-| **Core Analysis**        |            |      |            |
-| I-Chart                  | ✓          | ✓    | ✓          |
-| Boxplot                  | ✓          | ✓    | ✓          |
-| Pareto                   | ✓          | ✓    | ✓          |
-| Capability (Cp/Cpk)      | ✓          | ✓    | ✓          |
-| Regression               | ✓          | ✓    | ✓          |
-| Gage R&R                 | ✓          | ✓    | ✓          |
-| **Performance Mode**     |            |      |            |
-| Multi-channel analysis   | ✓          | ✓    | ✓          |
-| Channel limit            | 200        | 500  | Unlimited  |
-| **Collaboration**        |            |      |            |
-| OneDrive sync            | ✓          | ✓    | ✓          |
-| Shared projects          | -          | ✓    | ✓          |
-| Team dashboard           | -          | ✓    | ✓          |
-| **Integration**          |            |      |            |
-| Excel Add-in unlock      | ✓          | ✓    | ✓          |
-| SSO (Microsoft Entra ID) | ✓          | ✓    | ✓          |
-| **Support**              |            |      |            |
-| Email support            | ✓          | ✓    | ✓          |
-| Response time            | 48h        | 24h  | 8h         |
-| Deployment assistance    | -          | -    | ✓          |
-| Custom training          | -          | -    | ✓          |
+| Plan          | Price      | Users     | Features     | Billing |
+| ------------- | ---------- | --------- | ------------ | ------- |
+| **Full Plan** | €150/month | Unlimited | All features | Monthly |
+
+**Model**: Per-deployment (one subscription per Azure tenant). All users in the tenant have access.
 
 ---
 
-## Individual Plan (€99/year)
+## Feature Highlights
 
-### Target User
+All features are included in the single plan:
 
-- Quality engineers working independently
-- Consultants doing capability assessments
-- Small business quality managers
-
-### Key Features
-
-- Full analysis capabilities (all chart types)
-- Performance Mode (up to 200 channels)
-- Personal OneDrive sync
-- Excel Add-in integration
-- Standard email support (48h response)
-
-### Limitations
-
-- Single user only
-- No project sharing
-- No team features
-
-### Pricing Rationale
-
-€99/year (~€8/month) is competitive with:
-
-- Minitab: €150+/month
-- JMP: €200+/month
-- SigmaXL: €249/year
-
-Lower price point because:
-
-- No server costs (customer's Azure)
-- Targeted feature set (SPC focus)
-- Self-service deployment
+| Feature                  | Included |
+| ------------------------ | :------: |
+| **Core Analysis**        |          |
+| I-Chart                  |    ✓     |
+| Boxplot                  |    ✓     |
+| Pareto                   |    ✓     |
+| Capability (Cp/Cpk)      |    ✓     |
+| Probability Plot         |    ✓     |
+| Regression               |    ✓     |
+| Gage R&R                 |    ✓     |
+| **Performance Mode**     |          |
+| Multi-channel analysis   |    ✓     |
+| Channel limit            |  1,500   |
+| **Collaboration**        |          |
+| OneDrive sync            |    ✓     |
+| Shared projects          |    ✓     |
+| **Integration**          |          |
+| SSO (Microsoft Entra ID) |    ✓     |
+| **Support**              |          |
+| Email support            |    ✓     |
+| Response time            |   24h    |
 
 ---
 
-## Team Plan (€499/year)
+## Pricing Rationale
 
-### Target User
+### Why Single Plan
 
-- QA departments (5-10 people)
-- Manufacturing teams
-- Quality consulting firms
+Managed Applications on Azure Marketplace are **per-deployment**, not per-user. There is no mechanism to enforce different user-count tiers within a tenant. A single all-inclusive plan:
 
-### Key Features
+- Is simpler to market and purchase
+- Eliminates "which tier do I need?" confusion
+- Requires no user-count enforcement logic
+- Aligns with the per-deployment billing model
 
-Everything in Individual, plus:
+### Why €150/month
 
-- Up to 10 users
-- Shared project folders (OneDrive)
-- Team dashboard with project overview
-- Priority email support (24h response)
-- Higher channel limit (500)
+€150/month (€1,800/year equivalent) is competitive with established SPC tools while reflecting the value of unlimited tenant-wide access:
 
-### Pricing Rationale
+- Cheaper than Minitab for any team size (Minitab charges per-seat)
+- Comparable to SigmaXL for 2+ users
+- Significantly cheaper than InfinityQS for any team
+- No hidden infrastructure costs (runs on customer's Azure)
 
-€499/year ≈ €50/user/year for 10 users
-
-Breakeven vs Individual: 5 users
-
-- 5 × €99 = €495
-- Team plan: €499
-
-Attractive for any team >5 users.
+For a team of 10 users: €15/user/month — well below any competitor.
 
 ---
 
-## Enterprise Plan (€1,790/year)
+## Revenue
 
-### Target User
+### Price Breakdown
 
-- Manufacturing plants
-- Large organizations
-- Multi-site deployments
+```
+Gross Price:     €150/month
+Microsoft Fee:   -€4.50/month (3%)
+Net Revenue:     €145.50/month
+Annual Net:      €1,746/year
+```
 
-### Key Features
+### Currency Table
 
-Everything in Team, plus:
+| Region | Currency | Price/Month |
+| ------ | -------- | ----------- |
+| EU     | EUR      | €150        |
+| US     | USD      | ~$165       |
+| UK     | GBP      | ~£128       |
 
-- Unlimited users in tenant
-- Unlimited channels in Performance Mode
-- Priority support (8h response)
-- Deployment assistance
-- Custom training sessions
-- Named account manager (optional)
-
-### Pricing Rationale
-
-€1,790/year ≈ 18 Individual licenses
-
-Breakeven scenarios:
-
-- vs Individual: 18 users
-- vs Team: 4 team licenses (40 users)
-
-Attractive for any organization with 20+ users.
+Microsoft handles currency conversion automatically.
 
 ---
 
@@ -151,16 +96,7 @@ Attractive for any organization with 20+ users.
 - **Processor**: Microsoft Commerce
 - **Fee**: 3% of transaction
 - **Payout**: Monthly, net 30
-
-### Currency Support
-
-| Region | Currency | Individual | Team | Enterprise |
-| ------ | -------- | ---------- | ---- | ---------- |
-| EU     | EUR      | €99        | €499 | €1,790     |
-| US     | USD      | $109       | $549 | $1,969     |
-| UK     | GBP      | £85        | £425 | £1,529     |
-
-Microsoft handles currency conversion automatically.
+- **Billing cycle**: Monthly with automatic renewal
 
 ### Tax Handling
 
@@ -178,63 +114,33 @@ Enterprise customers can use:
 
 ---
 
-## Upgrades & Downgrades
+## Free Tier (Excel Add-in & PWA)
 
-### Upgrade Path
+Non-paying users still get value through:
 
-```
-Individual → Team → Enterprise
-     ↓           ↓
-  Prorated billing at any time
-```
+| Product          | Price | Features                                       |
+| ---------------- | ----- | ---------------------------------------------- |
+| **Excel Add-in** | Free  | Core SPC: I-Chart, Boxplot, Pareto, Capability |
+| **PWA**          | Free  | Demo only: all features with sample data       |
 
-Customers can upgrade at any time:
-
-- Prorated credit for unused subscription
-- Immediate access to new tier features
-
-### Downgrade Path
-
-Downgrades take effect at renewal:
-
-- Current tier features until subscription ends
-- New tier activates at renewal
-- No prorated refunds for early downgrades
+The Excel Add-in serves as a marketing funnel — users who need Performance Mode, Gage R&R, or team collaboration upgrade to the Azure App.
 
 ---
 
-## Trial & Evaluation
+## Cancellation
 
-### No Free Trial
-
-VariScout does not offer a free trial of the Azure App because:
-
-1. **PWA available for evaluation**: Free, full-featured demo
-2. **Low-friction purchase**: €99 annual is low-risk
-3. **Refund policy**: 30-day money-back guarantee
-
-### Money-Back Guarantee
-
-30-day refund policy for all tiers:
-
-- Full refund if requested within 30 days
-- No questions asked
-- Processed via Microsoft billing
+- Cancel any time in Azure portal
+- Service continues until end of billing period
+- No prorated refunds for partial months
+- Data remains in customer's tenant after cancellation
 
 ---
 
 ## Discounts
 
-### Annual Commitment
-
-All plans are annual:
-
-- No monthly option (reduces admin overhead)
-- Annual pricing is already discounted vs. monthly equivalent
-
 ### Volume Discounts
 
-For Enterprise customers needing multi-tenant deployments:
+For customers needing multi-tenant deployments (e.g., multi-site manufacturing):
 
 | Tenants | Discount |
 | ------- | -------- |
@@ -248,26 +154,25 @@ Contact sales for multi-tenant pricing.
 
 - 50% off for verified educational institutions
 - Requires .edu email verification
-- Available for Team and Enterprise tiers
 
 ---
 
 ## Competitor Comparison
 
-| Product    | Entry Price | Enterprise  | Deployment      |
-| ---------- | ----------- | ----------- | --------------- |
-| VariScout  | €99/year    | €1,790/year | Customer Azure  |
-| Minitab    | €150/month  | Custom      | Minitab Cloud   |
-| JMP        | €200/month  | Custom      | Local/SAS Cloud |
-| SigmaXL    | €249/year   | €999/year   | Excel Add-in    |
-| InfinityQS | Custom      | $50k+/year  | SaaS            |
+| Product    | Entry Price | Team of 10     | Deployment      |
+| ---------- | ----------- | -------------- | --------------- |
+| VariScout  | €150/month  | €150/month     | Customer Azure  |
+| Minitab    | ~€150/month | ~€1,500/month  | Minitab Cloud   |
+| JMP        | ~€200/month | ~€2,000/month  | Local/SAS Cloud |
+| SigmaXL    | ~€21/month  | ~€83/month     | Excel Add-in    |
+| InfinityQS | Custom      | ~$4,000+/month | SaaS            |
 
 ### VariScout Advantages
 
-- **Lowest entry price** for full SPC capabilities
+- **Flat pricing** regardless of team size
 - **Customer-controlled data** (no vendor lock-in)
 - **No backend costs** for publisher
-- **Microsoft billing integration**
+- **Microsoft billing integration** (familiar for enterprises)
 
 ---
 
