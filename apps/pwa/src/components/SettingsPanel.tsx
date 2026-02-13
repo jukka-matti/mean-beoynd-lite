@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, BarChart3, TrendingUp, Target, Gauge, Activity, Settings } from 'lucide-react';
+import { X, Plus, BarChart3, TrendingUp, Target } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useTheme, type ChartFontScale } from '../context/ThemeContext';
-import { useTier } from '@variscout/hooks';
-import { UpgradePrompt } from '@variscout/ui';
 import ThemeToggle from './ThemeToggle';
 import CompanyColorPicker from './CompanyColorPicker';
 
-type AnalysisView = 'dashboard' | 'regression' | 'gagerr' | 'performance';
+type AnalysisView = 'dashboard' | 'regression' | 'gagerr';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -15,7 +13,6 @@ interface SettingsPanelProps {
   activeView: AnalysisView;
   onViewChange: (view: AnalysisView) => void;
   onNewAnalysis: () => void;
-  onConfigurePerformance?: () => void;
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -24,18 +21,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   activeView,
   onViewChange,
   onNewAnalysis,
-  onConfigurePerformance,
 }) => {
-  const {
-    displayOptions,
-    setDisplayOptions,
-    isPerformanceMode,
-    setPerformanceMode,
-    measureColumns,
-    measureLabel,
-  } = useData();
+  const { displayOptions, setDisplayOptions } = useData();
   const { theme, setTheme } = useTheme();
-  const { isPaid, tier, upgradeUrl } = useTier();
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Local state for display options
@@ -181,12 +169,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 label="Gage R&R"
                 description="Measurement system analysis"
               />
-              <ViewOption
-                view="performance"
-                icon={<Gauge size={18} />}
-                label="Performance"
-                description="Multi-channel Cpk analysis"
-              />
             </div>
           </div>
 
@@ -282,96 +264,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 </div>
               </label>
             </div>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-surface-tertiary" />
-
-          {/* Performance Mode Section */}
-          <div>
-            <h3 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-3">
-              Performance Mode
-            </h3>
-            {isPaid ? (
-              <div className="bg-surface/50 rounded-lg p-3 border border-edge space-y-3">
-                {/* Toggle */}
-                <label className="flex items-center justify-between cursor-pointer group">
-                  <div className="flex items-center gap-2">
-                    <Activity size={16} className="text-content-secondary" />
-                    <div>
-                      <span className="text-sm text-content group-hover:text-white transition-colors block">
-                        Multi-Measure Analysis
-                      </span>
-                      <span className="text-xs text-content-muted">
-                        Cpk comparison across measures
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    className={`relative w-10 h-6 rounded-full transition-colors ${
-                      isPerformanceMode ? 'bg-blue-600' : 'bg-surface-tertiary'
-                    }`}
-                    onClick={() => {
-                      if (isPerformanceMode) {
-                        setPerformanceMode(false);
-                      } else if (measureColumns.length >= 3) {
-                        setPerformanceMode(true);
-                      } else if (onConfigurePerformance) {
-                        onConfigurePerformance();
-                        onClose();
-                      }
-                    }}
-                  >
-                    <div
-                      className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                        isPerformanceMode ? 'translate-x-5' : 'translate-x-1'
-                      }`}
-                    />
-                  </div>
-                </label>
-
-                {/* Measure count indicator */}
-                {measureColumns.length > 0 && (
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-content-muted">
-                      {measureColumns.length} {measureLabel.toLowerCase()}s configured
-                    </span>
-                    {onConfigurePerformance && (
-                      <button
-                        onClick={() => {
-                          onConfigurePerformance();
-                          onClose();
-                        }}
-                        className="text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
-                      >
-                        <Settings size={12} />
-                        Configure
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Empty state */}
-                {measureColumns.length === 0 && onConfigurePerformance && (
-                  <button
-                    onClick={() => {
-                      onConfigurePerformance();
-                      onClose();
-                    }}
-                    className="w-full text-xs text-content-muted hover:text-white py-2 text-center border border-dashed border-edge hover:border-blue-500 rounded-lg transition-colors"
-                  >
-                    Configure measure columns
-                  </button>
-                )}
-              </div>
-            ) : (
-              <UpgradePrompt
-                tier={tier}
-                feature="Performance Mode"
-                upgradeUrl={upgradeUrl}
-                variant="banner"
-              />
-            )}
           </div>
 
           {/* Divider */}

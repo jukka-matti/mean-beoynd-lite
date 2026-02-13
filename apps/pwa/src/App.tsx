@@ -22,11 +22,9 @@ import {
   calculateStats,
   type ExclusionReason,
 } from '@variscout/core';
-import { PerformanceDetectedModal, UpgradePrompt } from '@variscout/ui';
-import { useTier } from '@variscout/hooks';
 import type { WideFormatDetection } from '@variscout/core';
 
-type AnalysisView = 'dashboard' | 'regression' | 'gagerr' | 'performance';
+type AnalysisView = 'dashboard' | 'regression' | 'gagerr';
 
 // Breakpoint for desktop panel (vs modal on mobile)
 const DESKTOP_BREAKPOINT = 1024;
@@ -46,9 +44,6 @@ function App() {
     setFactors,
     setFilters,
     setSpecs,
-    setMeasureColumns,
-    setMeasureLabel,
-    setPerformanceMode,
     setDataFilename,
     setDataQualityReport,
     factors,
@@ -59,17 +54,10 @@ function App() {
     clearSelection,
   } = useData();
 
-  // Tier gating for free PWA
-  const { isPaid, tier, upgradeUrl } = useTier();
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState<string | null>(null);
-
-  // State for performance mode auto-detection
+  // State for performance mode auto-detection (wide format dismissal)
   const [wideFormatDetection, setWideFormatDetection] = useState<WideFormatDetection | null>(null);
-  const [isPerformanceSetupOpen, setIsPerformanceSetupOpen] = useState(false);
   // State for manual data entry view
   const [isManualEntry, setIsManualEntry] = useState(false);
-  // State for drill navigation from Performance Mode to standard I-Chart
-  const [drillFromPerformance, setDrillFromPerformance] = useState<string | null>(null);
   // Callback for wide format detection
   const handleWideFormatDetected = useCallback((result: WideFormatDetection) => {
     setWideFormatDetection(result);
@@ -462,52 +450,10 @@ function App() {
     [clearSelection]
   );
 
-  // Handle enabling performance mode from detection modal
-  const handleEnablePerformanceMode = useCallback(
-    (columns: string[], label: string) => {
-      if (!isPaid) {
-        setWideFormatDetection(null);
-        setShowUpgradePrompt('Performance Mode');
-        return;
-      }
-      // Clear selection when entering Performance Mode (Phase 4)
-      clearSelection();
-      setMeasureColumns(columns);
-      setMeasureLabel(label);
-      setPerformanceMode(true);
-      setWideFormatDetection(null);
-      setActiveView('performance');
-    },
-    [setMeasureColumns, setMeasureLabel, setPerformanceMode, clearSelection, isPaid]
-  );
-
-  // Handle declining performance mode from detection modal
-  const handleDeclinePerformanceMode = useCallback(() => {
+  // Handle dismissing wide format detection (Performance Mode is Azure-only)
+  const handleDismissWideFormat = useCallback(() => {
     setWideFormatDetection(null);
   }, []);
-
-  // Handle opening performance setup from settings
-  const handleConfigurePerformance = useCallback(() => {
-    setActiveView('performance');
-  }, []);
-
-  // Handle drilling from Performance Mode to standard I-Chart for a specific measure
-  const handleDrillToMeasure = useCallback(
-    (measureId: string) => {
-      setDrillFromPerformance(measureId);
-      setOutcome(measureId);
-      setActiveView('dashboard');
-    },
-    [setOutcome]
-  );
-
-  // Handle returning to Performance Mode from drilled I-Chart
-  const handleBackToPerformance = useCallback(() => {
-    // Clear selection when returning to Performance Mode (Phase 4)
-    clearSelection();
-    setDrillFromPerformance(null);
-    setActiveView('performance');
-  }, [clearSelection]);
 
   // Handle manual data entry completion
   const handleManualDataAnalyze = useCallback(
@@ -517,57 +463,25 @@ function App() {
         outcome: string;
         factors: string[];
         specs?: { usl?: number; lsl?: number };
-        isPerformanceMode?: boolean;
-        measureColumns?: string[];
-        measureLabel?: string;
       }
     ) => {
-      // Set raw data
       setRawData(data);
       setDataFilename('Manual Entry');
-
-      // Set outcome and factors
       setOutcome(config.outcome);
       setFactors(config.factors);
 
-      // Set specs if provided
       if (config.specs) {
         setSpecs(config.specs);
       }
 
-      // Run validation
       const report = validateData(data, config.outcome);
       setDataQualityReport(report);
 
-      // Handle performance mode
-      if (config.isPerformanceMode && config.measureColumns && config.measureColumns.length >= 3) {
-        // Clear selection when entering Performance Mode (Phase 4)
-        clearSelection();
-        setMeasureColumns(config.measureColumns);
-        setMeasureLabel(config.measureLabel || 'Channel');
-        setPerformanceMode(true);
-        setActiveView('performance');
-      } else {
-        clearSelection();
-        setMeasureColumns([]);
-        setPerformanceMode(false);
-        setActiveView('dashboard');
-      }
-
-      // Exit manual entry view
+      clearSelection();
+      setActiveView('dashboard');
       setIsManualEntry(false);
     },
-    [
-      setRawData,
-      setDataFilename,
-      setOutcome,
-      setFactors,
-      setSpecs,
-      setDataQualityReport,
-      setMeasureColumns,
-      setMeasureLabel,
-      setPerformanceMode,
-    ]
+    [setRawData, setDataFilename, setOutcome, setFactors, setSpecs, setDataQualityReport]
   );
 
   // Handle canceling manual entry
@@ -689,9 +603,6 @@ function App() {
               onSpecEditorOpened={() => setOpenSpecEditorRequested(false)}
               activeView={activeView}
               highlightedPointIndex={highlightedChartPoint}
-              drillFromPerformance={drillFromPerformance}
-              onBackToPerformance={handleBackToPerformance}
-              onDrillToMeasure={handleDrillToMeasure}
             />
           )}
         </div>
@@ -722,7 +633,6 @@ function App() {
           setIsSettingsOpen(false);
           handleResetRequest();
         }}
-        onConfigurePerformance={handleConfigurePerformance}
       />
 
       {/* Funnel Panel (slide-in from right) */}
@@ -755,63 +665,22 @@ function App() {
         <AppFooter filteredCount={filteredData.length} totalCount={rawData.length} />
       )}
 
-      {/* Performance Mode Detection Modal */}
-      {wideFormatDetection &&
-        (isPaid ? (
-          <PerformanceDetectedModal
-            detection={wideFormatDetection}
-            onEnable={handleEnablePerformanceMode}
-            onDecline={handleDeclinePerformanceMode}
-          />
-        ) : (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-surface-secondary border border-edge rounded-xl shadow-xl p-5 w-full max-w-sm">
-              <p className="text-sm text-content mb-3">
-                {wideFormatDetection.channels.length} measure columns detected — Performance Mode is
-                available in the Azure App.
-              </p>
-              <div className="flex justify-end">
-                <button
-                  onClick={handleDeclinePerformanceMode}
-                  className="px-4 py-2 text-sm font-medium text-white bg-surface-tertiary hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-
-      {/* Upgrade Prompt Modal */}
-      {showUpgradePrompt && (
+      {/* Wide Format Detection — inform user Performance Mode is Azure-only */}
+      {wideFormatDetection && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="relative w-full max-w-md">
-            <button
-              onClick={() => setShowUpgradePrompt(null)}
-              className="absolute top-3 right-3 text-content-secondary hover:text-white z-10"
-            >
-              <span className="sr-only">Close</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+          <div className="bg-surface-secondary border border-edge rounded-xl shadow-xl p-5 w-full max-w-sm">
+            <p className="text-sm text-content mb-3">
+              {wideFormatDetection.channels.length} measure columns detected — Performance Mode is
+              available in the Azure App.
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={handleDismissWideFormat}
+                className="px-4 py-2 text-sm font-medium text-white bg-surface-tertiary hover:bg-surface-elevated rounded-lg transition-colors"
               >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <UpgradePrompt
-              tier={tier}
-              feature={showUpgradePrompt}
-              upgradeUrl={upgradeUrl}
-              variant="card"
-            />
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}
