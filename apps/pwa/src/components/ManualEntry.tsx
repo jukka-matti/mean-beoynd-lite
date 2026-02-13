@@ -471,6 +471,7 @@ const ManualEntry = ({ onAnalyze, onCancel }: ManualEntryProps) => {
                             onChange={e => updateRow(idx, f, e.target.value)}
                             onKeyDown={e => handleKeyDown(e, idx, colIdx, columns)}
                             placeholder="..."
+                            aria-label={`${f} value for row ${idx + 1}`}
                           />
                         </td>
                       ))}
@@ -485,12 +486,14 @@ const ManualEntry = ({ onAnalyze, onCancel }: ManualEntryProps) => {
                           type="number"
                           placeholder="0.00"
                           onKeyDown={e => handleKeyDown(e, idx, factors.length, columns)}
+                          aria-label={`${outcomeName} value for row ${idx + 1}`}
                         />
                       </td>
                       <td className="p-0 text-center min-h-[56px]">
                         <button
                           onClick={() => deleteRow(idx)}
                           className="p-3 text-content-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label={`Delete row ${idx + 1}`}
                         >
                           <Trash2 size={18} />
                         </button>

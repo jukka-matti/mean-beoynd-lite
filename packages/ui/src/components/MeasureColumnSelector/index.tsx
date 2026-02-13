@@ -109,6 +109,8 @@ export const MeasureColumnSelector: React.FC<MeasureColumnSelectorProps> = ({
             <button
               key={column.id}
               onClick={() => toggleColumn(column.id)}
+              aria-pressed={isSelected}
+              aria-label={`${column.label} measure column`}
               className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-all ${
                 isSelected
                   ? 'bg-blue-600/20 border-blue-500 shadow-[0_0_10px_rgba(37,99,235,0.2)]'

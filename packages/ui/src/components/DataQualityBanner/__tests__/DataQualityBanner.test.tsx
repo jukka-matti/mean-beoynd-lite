@@ -49,13 +49,13 @@ describe('DataQualityBanner', () => {
     const report = makeReport({
       validRows: 95,
       excludedRows: [
-        { index: 0, reasons: ['missing'] },
-        { index: 1, reasons: ['missing'] },
-        { index: 2, reasons: ['non_numeric'] },
-        { index: 3, reasons: ['missing'] },
-        { index: 4, reasons: ['missing'] },
+        { index: 0, reasons: [{ type: 'missing', column: 'weight' }] },
+        { index: 1, reasons: [{ type: 'missing', column: 'weight' }] },
+        { index: 2, reasons: [{ type: 'non_numeric', column: 'weight' }] },
+        { index: 3, reasons: [{ type: 'missing', column: 'weight' }] },
+        { index: 4, reasons: [{ type: 'missing', column: 'weight' }] },
       ],
-      columnIssues: [{ column: 'weight', type: 'missing', count: 5 }],
+      columnIssues: [{ column: 'weight', type: 'missing', count: 5, severity: 'warning' }],
     });
     render(<DataQualityBanner report={report} />);
 
@@ -67,8 +67,8 @@ describe('DataQualityBanner', () => {
     const onView = vi.fn();
     const report = makeReport({
       validRows: 95,
-      excludedRows: [{ index: 0, reasons: ['missing'] }],
-      columnIssues: [{ column: 'weight', type: 'missing', count: 1 }],
+      excludedRows: [{ index: 0, reasons: [{ type: 'missing', column: 'weight' }] }],
+      columnIssues: [{ column: 'weight', type: 'missing', count: 1, severity: 'warning' }],
     });
     render(<DataQualityBanner report={report} onViewExcludedRows={onView} />);
 
@@ -108,7 +108,7 @@ describe('DataQualityBanner', () => {
 
   it('shows no variation info message', () => {
     const report = makeReport({
-      columnIssues: [{ column: 'weight', type: 'no_variation', count: 100 }],
+      columnIssues: [{ column: 'weight', type: 'no_variation', count: 100, severity: 'info' }],
     });
     render(<DataQualityBanner report={report} />);
 
