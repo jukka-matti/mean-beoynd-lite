@@ -87,12 +87,13 @@ VariScout is EDA (Exploratory Data Analysis) for process improvement - not stati
 
 ---
 
-## Editions
+## Products & Pricing
 
-| Edition       | Branding       | Theming                                | Price    |
-| ------------- | -------------- | -------------------------------------- | -------- |
-| **Community** | VariScout logo | Dark only                              | Free     |
-| **Licensed**  | No branding    | Light/Dark/System + Accents (PWA only) | €99/year |
+| Product      | Distribution      | Pricing                                        | Status      |
+| ------------ | ----------------- | ---------------------------------------------- | ----------- |
+| Azure App    | Azure Marketplace | €150/month (Managed Application, all features) | **PRIMARY** |
+| Excel Add-in | AppSource         | FREE (forever, core SPC only)                  | Production  |
+| PWA          | Internal          | N/A (demo only)                                | Deprecated  |
 
 ---
 

@@ -226,8 +226,8 @@ Carlos learns the methodology:
 **Updated Journey:**
 
 1. Case study → "Find YOUR 46%" → Try Demo with samples
-2. Like it? → "Install to Upload" → Install PWA (free)
-3. Want to save? → Upgrade to Licensed (€99/year)
+2. Like it? → "Install to Upload" → Install PWA (free demo)
+3. Need team features? → Azure App (€150/month)
 
 ---
 

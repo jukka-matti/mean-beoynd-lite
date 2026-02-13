@@ -73,7 +73,7 @@ flowchart LR
     end
 
     subgraph Scenario D [New Device]
-        D1[New device] --> D2[Re-enter license] --> D3[Upload fresh]
+        D1[New device] --> D2[Sign in via SSO] --> D3[Upload fresh]
     end
 ```
 
@@ -139,7 +139,7 @@ journey
 
 VaRiScout is 100% client-side:
 
-- License key stored in IndexedDB
+- Auth state stored locally (MSAL cache for Azure App)
 - Data stored in IndexedDB
 - No server-side accounts
 - "We don't have your data" (GDPR simple)
@@ -168,7 +168,7 @@ For frequent users:
 
 | What's Saved      | Where           | Retention     |
 | ----------------- | --------------- | ------------- |
-| License key       | IndexedDB       | Until cleared |
+| Auth session      | IndexedDB/MSAL  | Until cleared |
 | Uploaded datasets | IndexedDB       | Until deleted |
 | Analysis settings | IndexedDB       | Per dataset   |
 | Edition branding  | License-derived | N/A           |
@@ -201,7 +201,7 @@ For frequent users:
 ### Scenario D: New Device
 
 1. User goes to variscout.com on new device
-2. Needs to re-enter license key (Settings)
+2. Signs in via Azure SSO (Azure App) or starts fresh (PWA/Excel)
 3. Uploads data fresh
 4. Continue working
 
@@ -276,7 +276,7 @@ Upgrade prompts should be helpful, not blocking.
 
 - Datasets stored per-project
 - Settings stored globally
-- License key encrypted at rest
+- Auth tokens managed by MSAL (Azure App)
 - Clear browser data = lose everything (warn users)
 
 ### PWA Manifest
@@ -290,7 +290,7 @@ Upgrade prompts should be helpful, not blocking.
 
 Since there are no accounts:
 
-- New device = fresh start (except license key re-entry)
+- New device = fresh start (Azure App: sign in via SSO; PWA/Excel: upload fresh)
 - No "forgot password" flow
 - No email verification
 - Privacy-friendly design

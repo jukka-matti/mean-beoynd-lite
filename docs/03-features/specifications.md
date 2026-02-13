@@ -8,7 +8,7 @@
 
 ## What Is It?
 
-A lightweight, offline variation analysis tool for quality professionals. No AI, no subscriptions, no API keys — just fast, linked charts that reveal hidden variation.
+A lightweight, offline variation analysis tool for quality professionals. No AI, no API keys — just fast, linked charts that reveal hidden variation.
 
 **Tagline:** _"Cut through your watermelons — without the cloud."_
 
@@ -773,55 +773,35 @@ NO backend. NO API calls. Works offline after first visit.
 
 ---
 
-## Editions & Freemium Model
+## Products & Pricing
 
-### Editions
+| Product      | Distribution      | Pricing                                        | Status      |
+| ------------ | ----------------- | ---------------------------------------------- | ----------- |
+| Azure App    | Azure Marketplace | €150/month (Managed Application, all features) | **PRIMARY** |
+| Excel Add-in | AppSource         | FREE (forever, core SPC only)                  | Production  |
+| PWA          | Internal          | N/A (demo only)                                | Deprecated  |
 
-| Edition       | Footer Bar       | Distribution           | Price    |
-| ------------- | ---------------- | ---------------------- | -------- |
-| **Community** | "VariScout" + n= | Public web             | Free     |
-| **Licensed**  | None (hidden)    | License key activation | €99/year |
+### Free (PWA Demo / Excel Add-in)
 
-### Freemium Model: Free vs Licensed
+- All core chart types (I-Chart, Boxplot, Pareto, Capability)
+- Full analysis features
+- VariScout branding on exports
+- Session-only storage (PWA)
 
-| Feature                      | Free            | Licensed (€99/year) |
-| ---------------------------- | --------------- | ------------------- |
-| All chart types              | ✓               | ✓                   |
-| Full analysis features       | ✓               | ✓                   |
-| Copy to clipboard            | ✓ (watermark)   | ✓                   |
-| Export PNG/CSV               | ✓ (watermark)   | ✓                   |
-| **Save projects**            | ❌ Session only | ✓                   |
-| **Export/import .vrs files** | ❌              | ✓                   |
-| **Save templates**           | ❌              | ✓                   |
-| **Watermark-free exports**   | ❌              | ✓                   |
-| **Theme customization**      | ❌              | ✓ (PWA install)     |
-| Priority support             | ❌              | ✓                   |
+### Enterprise (Azure App — €150/month)
 
-**Key insight:** Save is the upgrade gate, not just watermark removal.
-
-- **Free = Try everything**, do quick one-off analyses
-- **Licensed = Save your work**, share with colleagues
-
-### Upgrade Triggers
-
-| Trigger                         | Action                                     |
-| ------------------------------- | ------------------------------------------ |
-| Click "Save Project"            | Show upgrade prompt with features list     |
-| Browser close with unsaved data | Show warning (optional, can disable)       |
-| Export chart                    | Show watermark, mention upgrade removes it |
-
-**"Don't show again" option:** Users can opt out of upgrade prompts in Settings. The upgrade option remains visible in Settings → License.
+- All features, unlimited users
+- MSAL authentication + OneDrive sync
+- Performance Mode (multi-channel analysis)
+- Watermark-free exports, custom theming
+- Managed Application deployment via Azure Marketplace
 
 **Build Commands:**
 
 ```bash
-pnpm build:pwa:community  # Default public release
-pnpm build:pwa:licensed   # Pre-licensed builds (no branding, theming requires PWA install)
-pnpm build:excel          # Excel Add-in build
+pnpm build              # Build all packages and apps
+pnpm build:excel        # Excel Add-in build
 ```
-
-**Runtime Upgrade:**
-Community users can upgrade to Licensed by entering a valid license key in Settings. Theme customization requires installing the PWA (Add to Home Screen).
 
 ---
 
@@ -902,7 +882,7 @@ Measurement System Analysis (MSA) tab:
 
 | Aspect         | Minitab          | VaRiScout            |
 | -------------- | ---------------- | -------------------- |
-| Price          | $1,000+/year     | €99/year or free     |
+| Price          | $1,000+/year     | €150/month or free   |
 | Installation   | Desktop software | Browser (no install) |
 | Learning curve | Steep            | Minimal              |
 | Feature depth  | Deep (30 years)  | Focused (essentials) |
