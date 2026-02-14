@@ -66,3 +66,20 @@ Each evaluation uses a consistent template:
 - **Pattern files**: The concept described, tensions addressed, philosophy alignment (EDA, Sock Mystery, Four Lenses, Two Voices), persona impact, platform fit (PWA/Azure/Excel), competitive landscape, and strategic verdict.
 
 Content is seeded from [Progressive Stratification](../progressive-stratification.md) Part 2 and expanded with assessments drawn from [persona definitions](../../02-journeys/personas/) and [product philosophy](../philosophy.md).
+
+---
+
+## Competitive Intelligence
+
+| Document                                                | Summary                                                                                                                                                            |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [EDAScout Benchmark](competitive/edascout-benchmark.md) | Technical assessment of EDAScout v4/v6/v7/v9 --- architecture, statistics quality, AI rollback arc, and strategic implications. Based on direct codebase analysis. |
+| [Minitab Benchmark](competitive/minitab-benchmark.md)   | Industry-standard desktop SPC tool (~$1,700/year). Deep feature set, menu-driven workflow, no linked filtering or progressive drill-down.                          |
+| [JMP Benchmark](competitive/jmp-benchmark.md)           | SAS visual analytics platform ($1,785+/year). Strongest EDA heritage (Graph Builder), but model-first for factor analysis. Closest philosophical competitor.       |
+| [Tableau Benchmark](competitive/tableau-benchmark.md)   | Dominant BI platform ($75/user/month). Defines the sidebar filter paradigm VariScout rejects. No SPC capabilities.                                                 |
+| [Power BI Benchmark](competitive/powerbi-benchmark.md)  | Microsoft enterprise BI ($10/user/month). Slicer paradigm, no native SPC. Key Influencers visual provides ML-based factor ranking.                                 |
+| [Minor Competitors](competitive/minor-competitors.md)   | Brief profiles of SigmaXL (Excel add-in, stepwise regression) and Looker (Google BI, filter bar pattern).                                                          |
+
+EDAScout is the closest conceptual competitor to VariScout (browser-based variation analysis for quality professionals). The EDAScout benchmark is based on direct codebase analysis across four versions and maps findings to the tension/pattern framework above. Key takeaways: EDAScout's AI guidance was added in v6, completely rolled back in v7, and restored in v9 --- validating VariScout's methodology-driven approach. Their statistical implementation has critical flaws (hardcoded p-value buckets, misleading within-group SS metric) that VariScout's correct eta-squared and proper F-distribution calculations avoid.
+
+The four major competitor benchmarks (Minitab, JMP, Tableau, Power BI) are based on public documentation and published feature sets, not codebase analysis. Each document maps the competitor's capabilities to VariScout's 6 tension framework and identifies strategic differentiation points. The consistent finding across all competitors: no tool combines linked filtering, progressive stratification, and statistical variation quantification into a unified investigation workflow.

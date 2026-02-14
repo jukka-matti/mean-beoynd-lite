@@ -46,10 +46,10 @@ An additional challenge is mobile display. A grid of mini-charts is inherently h
 
 ## Competitive Landscape
 
-- **Tableau**: Small multiples are a supported layout. Users can create faceted views natively.
-- **JMP**: Graph Builder supports faceted displays across factor levels.
-- **Minitab**: Multi-vari charts are essentially small multiples with specific statistical overlays.
-- **Power BI**: Small multiples feature added in 2021, now a standard visual option.
+- **Tableau**: Small multiples are natively supported through the rows and columns shelves. Dragging a dimension to rows creates a grid of charts — one per dimension value. Any chart type can be faceted. This is one of Tableau's strongest features for visual comparison, and the benchmark implementation for small multiples in analytics tools. See [Tableau Benchmark](../competitive/tableau-benchmark.md).
+- **JMP**: Graph Builder supports faceting through the Wrap and Overlay roles. Dragging a variable to Wrap creates a grid of charts across variable levels. Combined with the Group role, JMP can create multi-dimensional faceted displays. The implementation is flexible but requires the analyst to understand Graph Builder's role system. See [JMP Benchmark](../competitive/jmp-benchmark.md).
+- **Minitab**: Multi-vari charts are a purpose-built small multiples visualization with statistical overlays — factor levels on the X axis, with nested grouping variables shown as connected lines. The chart is specifically designed for comparing variation patterns across factors, making it the most statistically focused small multiples implementation among competitors. However, it's accessed as a separate analysis, not integrated into a drill-down workflow. See [Minitab Benchmark](../competitive/minitab-benchmark.md).
+- **Power BI**: Small multiples were added in 2021 as a standard visual option. The analyst drags a dimension to the "Small multiples" field well, and the selected chart type replicates across dimension values in a grid layout. The implementation is functional but less flexible than Tableau's shelf approach — grid layout options are more constrained. See [Power BI Benchmark](../competitive/powerbi-benchmark.md).
 
 Small multiples are an established pattern in the industry. VariScout's version would integrate them with the progressive stratification workflow --- the grid would show mini-versions of the Four Lenses charts, coordinated with the drill-down state.
 

@@ -45,11 +45,13 @@ The UI footprint is small: a 4x4 grid of colored cells with factor labels takes 
 
 ## Competitive Landscape
 
-- **JMP**: Scatterplot matrix and correlation matrix are available but require navigation to specific platforms. Not integrated into an EDA drill-down workflow.
-- **Minitab**: Multi-vari charts show factor interactions but as a separate analysis, not as an inline pre-flight check.
-- **Tableau/Power BI**: No interaction detection. Users must build custom calculated fields for interaction effects.
+- **JMP**: The Fit Model platform supports interaction terms, and the Interaction Profiler visualizes two-factor interaction surfaces after a model is fitted. Scatterplot matrices and correlation matrices are available in separate platforms for pairwise exploration. However, none of these are integrated into an exploratory drill-down workflow — the analyst must navigate to specific platforms and specify model terms manually. Interaction detection is powerful but requires model-first analysis. See [JMP Benchmark](../competitive/jmp-benchmark.md).
+- **Minitab**: Multi-vari charts are a purpose-built chart type designed to visualize factor interactions across multiple levels simultaneously. They are accessed through menus (Quality Tools > Multi-Vari Chart) as a separate analysis step — the analyst must know to run this analysis and select the right factors. Multi-vari charts are not an inline pre-flight check before drilling; they are a standalone analysis that requires prior knowledge of which factors to examine. See [Minitab Benchmark](../competitive/minitab-benchmark.md).
+- **Tableau**: No interaction detection capability. Calculated fields using LOD (Level of Detail) expressions can approximate interaction effects, but this requires advanced Tableau expertise and produces custom measures rather than interactive visualizations. The vast majority of Tableau users have no way to detect or visualize factor interactions. See [Tableau Benchmark](../competitive/tableau-benchmark.md).
+- **Power BI**: No interaction detection capability. DAX formulas can compute interaction terms, but this requires expert authoring and produces static measures. The Key Influencers visual identifies main effects but does not detect or visualize interactions between factors. See [Power BI Benchmark](../competitive/powerbi-benchmark.md).
+- **EDAScout**: No interaction detection. Their ANOVA implementation is single-factor only --- the `SubgroupExplorerModal` examines one grouping variable at a time. The `CategoryGrid` variance coloring uses within-group SS (how noisy each group is internally), not between-group or interaction effects. An analyst investigating a Machine x Shift interaction would need to manually create the combination. See [EDAScout Benchmark](../competitive/edascout-benchmark.md).
 
-VariScout's version would be unique in integrating interaction detection directly into the drill-down workflow as a compact, visual pre-flight check. The differentiation: proactive interaction visibility rather than reactive analysis.
+VariScout's version would be unique in integrating interaction detection directly into the drill-down workflow as a compact, visual pre-flight check. The differentiation: proactive interaction visibility rather than reactive analysis. No competitor, including EDAScout, addresses interaction effects inline during investigation.
 
 ## Strategic Verdict
 

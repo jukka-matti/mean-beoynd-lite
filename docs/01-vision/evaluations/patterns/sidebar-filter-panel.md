@@ -45,11 +45,12 @@ Additionally, a sidebar panel doesn't naturally show eta-squared or contribution
 
 ## Competitive Landscape
 
-- **Tableau**: Sidebar filters are the primary interaction model. Well-established, familiar to millions of users.
-- **Power BI**: Slicer pane serves the same function. Industry standard in enterprise BI.
-- **Looker**: Filter bar at top of dashboards. Familiar pattern.
+- **Tableau**: Sidebar filters are the defining interaction model — dropdowns, checkboxes, sliders, and date ranges alongside the visualization area. Cross-filtering between dashboard sheets provides immediate visual feedback. Quick filters update charts as selections change. This is the paradigm that millions of users know, and the paradigm that VariScout's chart-integrated filtering deliberately rejects. See [Tableau Benchmark](../competitive/tableau-benchmark.md).
+- **Power BI**: Slicers serve the same function as Tableau's sidebar filters — visual controls for filtering dimensions, with sync groups that propagate selections across pages. The responsive slicer pane collapses into a panel that expands on click, acknowledging that persistent filter controls consume too much screen space. Cross-filtering between visuals mirrors Tableau's behavior. See [Power BI Benchmark](../competitive/powerbi-benchmark.md).
+- **Looker**: Uses a filter bar at the top of dashboards with dropdowns for each filterable dimension. Filters are defined through LookML (Looker's modeling language) and exposed to dashboard consumers, adding a governance layer. The interaction pattern is consistent with Tableau and Power BI — always-visible filter controls that the analyst configures. See [Minor Competitors](../competitive/minor-competitors.md).
+- **EDAScout**: The `CategoryGrid` component inside `SubgroupExplorerModal` is their closest equivalent --- an always-visible grid of category cards with variance-derived coloring from ANOVA. Unlike a traditional sidebar, it opens as a modal overlay rather than being persistently visible. Filters are modal-scoped and do not persist across page navigation. The variance coloring uses within-group SS (how internally noisy each group is), which is conceptually misleading for variation source identification. See [EDAScout Benchmark](../competitive/edascout-benchmark.md).
 
-Adopting a sidebar would make VariScout more familiar but less distinctive. The current chart-integrated filtering is a competitive differentiator precisely because it's different from the Tableau model. Adopting the competitor's pattern removes the differentiation.
+Adopting a sidebar would make VariScout more familiar but less distinctive. The current chart-integrated filtering is a competitive differentiator precisely because it's different from the Tableau model. EDAScout's modal-based approach demonstrates the middle ground (a dedicated filter UI that's not always visible) but still suffers from separating the "seeing" from the "filtering" step. Adopting any competitor's pattern removes the differentiation.
 
 ## Strategic Verdict
 

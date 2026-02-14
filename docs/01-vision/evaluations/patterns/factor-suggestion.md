@@ -44,11 +44,13 @@ The core tension is between guidance and autonomy. The Sock Mystery pedagogy dep
 
 ## Competitive Landscape
 
-- **Minitab**: Assistant feature suggests analyses but not drill-down order. Minitab is hypothesis-driven, not exploratory.
-- **JMP**: Graph Builder highlights correlations but doesn't suggest drill sequences.
-- **Tableau/Power BI**: No concept of suggested filter order; dashboards are fully analyst-driven.
+- **Minitab**: The Assistant feature uses a decision-tree approach to suggest which statistical test to run (e.g., "use a 2-sample t-test"), but it is hypothesis-driven menu guidance — the analyst must already have a question in mind. The Assistant does not suggest drill-down order or factor investigation sequence. It directs the analyst to the right menu item, not through an iterative investigation. See [Minitab Benchmark](../competitive/minitab-benchmark.md).
+- **JMP**: Graph Builder surfaces visual patterns that the analyst interprets — dragging variables onto shelves reveals correlations and distributions interactively. This is the closest major tool to EDA-style exploration guidance, but the analyst must take initiative to try different variable combinations. JMP does not suggest which factor to examine next; the Effect Summary in Fit Model ranks factors by significance, but only after a model has been fitted. See [JMP Benchmark](../competitive/jmp-benchmark.md).
+- **Tableau**: No concept of suggested filter order. Dashboards present all filters equally through sidebar controls — the analyst applies filters based on their own domain knowledge. Tableau is designed for known-structure dashboards, not investigation workflows where the tool guides the analyst toward the most impactful factor. See [Tableau Benchmark](../competitive/tableau-benchmark.md).
+- **Power BI**: Same paradigm as Tableau. Slicers present all filter options without ranking or suggestion. The Key Influencers visual performs automated factor analysis using ML, but it produces a static report visual rather than guiding an interactive investigation sequence. See [Power BI Benchmark](../competitive/powerbi-benchmark.md).
+- **EDAScout**: Smart Cards and a "Socratic Analyst" chatbot sidebar (Gemini 2.0 Flash) suggest next factors via AI dialogue. Added in v6, completely rolled back in v7, restored in v9. Their approach is AI-mediated (the model tells you what to try) rather than statistically transparent (showing eta-squared and letting the analyst decide). The v6-to-v7 rollback --- and subsequent v9 restoration with audit instrumentation --- suggests AI-driven factor suggestion is harder to get right than it appears. See [EDAScout Benchmark](../competitive/edascout-benchmark.md) for details.
 
-VariScout's version would be unique in suggesting factor order within an EDA workflow. The differentiation is the combination of statistical recommendation (eta-squared ranking) with the progressive stratification methodology.
+VariScout's version would be unique in suggesting factor order within an EDA workflow. The differentiation is the combination of statistical recommendation (eta-squared ranking) with the progressive stratification methodology. Unlike EDAScout's AI-mediated approach, VariScout's factor suggestion would be grounded in transparent statistics that the analyst can verify and learn from.
 
 ## Strategic Verdict
 

@@ -43,8 +43,10 @@ The cost is UI complexity and potential information overload. An analyst who jus
 
 ## Competitive Landscape
 
-- **No direct competitor implements this.** Path comparison in drill-down analysis is a novel concept. Closest analog is JMP's "What If" profiler, which varies model inputs rather than comparing analysis paths.
-- **Tableau/Power BI**: No concept of comparing filter sequences.
+- **No direct competitor implements this.** Path comparison in drill-down analysis is a novel concept. No SPC or BI tool frames data exploration as a sequential path through factor space, so there is no precedent for comparing alternative paths.
+- **JMP**: The "What If" Prediction Profiler varies model inputs to show predicted response changes, but this is model-based sensitivity analysis, not comparison of alternative analysis paths. The analyst adjusts factor sliders within a single fitted model — the concept of "what if I had investigated factors in a different order?" does not exist in JMP's paradigm. See [JMP Benchmark](../competitive/jmp-benchmark.md).
+- **Tableau**: No concept of filter sequence or investigation path. Dashboard filters are stateless — applying Machine=A then Shift=Night produces the same view as Shift=Night then Machine=A. There is no sequential narrative to compare because Tableau's interaction model is commutative configuration, not progressive investigation. See [Tableau Benchmark](../competitive/tableau-benchmark.md).
+- **Power BI**: Same as Tableau. Slicer selections are commutative and produce the same result regardless of application order. There is no concept of a drill-down path and therefore no concept of an alternative path. See [Power BI Benchmark](../competitive/powerbi-benchmark.md).
 
 This would be a genuine differentiator --- a feature that no competitor offers because no competitor frames data exploration as a sequential path through factor space.
 

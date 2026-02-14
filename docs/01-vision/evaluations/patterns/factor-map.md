@@ -48,10 +48,10 @@ The implementation complexity is significant. Force-directed graph layouts requi
 
 ## Competitive Landscape
 
-- **No direct competitor implements this for factor analysis.** Network graphs are used in social network analysis, dependency mapping, and knowledge graphs, but not as an entry point for variation analysis.
-- **JMP**: Graph Builder doesn't offer network visualization for factor landscapes.
-- **Minitab**: No spatial factor overview.
-- **Tableau**: Network visualization requires third-party extensions and is not integrated with statistical analysis.
+- **No direct competitor implements this for factor analysis.** Network graphs are used in social network analysis, dependency mapping, and knowledge graphs, but not as an entry point for variation analysis. A factor map would be a genuine innovation in the SPC/EDA tool space.
+- **JMP**: Graph Builder is chart-centric — it builds scatterplots, bar charts, and histograms, not network visualizations. There is no spatial overview of factor relationships or interaction networks. The closest JMP feature is the Scatterplot Matrix, which shows pairwise variable relationships in a grid, but this is a pairwise chart layout, not a connected network showing interaction strength. See [JMP Benchmark](../competitive/jmp-benchmark.md).
+- **Minitab**: No spatial factor overview. Minitab's navigation model is menu-and-dialog — the analyst selects an analysis type and configures it. There is no visualization that shows the entire factor landscape and its internal relationships at a glance. Multi-vari charts show factors on axes but not as a connected network. See [Minitab Benchmark](../competitive/minitab-benchmark.md).
+- **Tableau**: Network visualization requires third-party custom extensions (e.g., from the Tableau Exchange). These extensions are designed for social network and dependency mapping, not for statistical factor analysis. There is no integration between network visuals and SPC calculations. See [Tableau Benchmark](../competitive/tableau-benchmark.md).
 
 A factor map would be a genuine innovation --- a visualization pattern that no SPC or EDA tool currently offers. The risk is that it's innovative enough to be confusing for users who expect traditional chart layouts.
 

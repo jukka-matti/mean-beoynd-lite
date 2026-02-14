@@ -44,9 +44,10 @@ The risk is twofold. First, for learning audiences, it short-circuits the entire
 
 ## Competitive Landscape
 
-- **Minitab**: Response Optimizer and DOE analysis find optimal combinations but require formal experimental design, not observational data.
-- **JMP**: Prediction Profiler shows factor effects but requires a fitted model, not a one-click scan.
-- **SigmaXL**: Multiple regression with stepwise selection is available but requires statistical expertise.
+- **Minitab**: The Response Optimizer finds optimal factor settings but requires designed experiments with controlled factor levels — full factorial, fractional factorial, or response surface designs. This is fundamentally different from scanning observational process data for the highest-impact combination. Minitab's DOE workflow assumes the analyst has already identified which factors to study and has run a controlled experiment. See [Minitab Benchmark](../competitive/minitab-benchmark.md).
+- **JMP**: The Prediction Profiler shows main effects and interactions from a fitted model, allowing the analyst to slide factor inputs and see predicted response changes. However, the model must be specified first — the analyst must choose which factors to include and fit the model before the Profiler becomes available. JMP's approach is model-first exploration, not data-first automatic scanning. See [JMP Benchmark](../competitive/jmp-benchmark.md).
+- **SigmaXL**: An Excel add-in ($299/year) that provides multiple regression with stepwise variable selection — forward, backward, and stepwise algorithms that automate which predictors to include. This is the closest existing tool to automatic combination finding, but it requires the analyst to configure the analysis, understand regression assumptions, and interpret model diagnostics. It is an expert statistical tool, not a guided investigation feature. See [Minor Competitors](../competitive/minor-competitors.md).
+- **EDAScout**: Does not implement automatic combination finding. Their heuristic detection is simpler --- outlier flagging and subgroup suggestions via AI Smart Cards --- without multi-factor combination scanning. Their ANOVA is single-factor only, with no interaction detection. See [EDAScout Benchmark](../competitive/edascout-benchmark.md).
 
 VariScout's version would be unique in combining automatic combination detection with a visual drill-down validation workflow. The differentiation: not just "here's the math" but "here's the finding --- now explore it through Four Lenses."
 
