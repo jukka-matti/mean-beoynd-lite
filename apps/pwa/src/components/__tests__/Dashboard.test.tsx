@@ -25,13 +25,6 @@ vi.mock('../AnovaResults', () => ({
   default: () => <div data-testid="anova-results">ANOVA Results</div>,
 }));
 
-// Mock resizable panels
-vi.mock('react-resizable-panels', () => ({
-  Group: ({ children }: any) => <div>{children}</div>,
-  Panel: ({ children }: any) => <div>{children}</div>,
-  Separator: () => <div>Separator</div>,
-}));
-
 // Mock html-to-image
 vi.mock('html-to-image', () => ({
   toBlob: vi.fn(),

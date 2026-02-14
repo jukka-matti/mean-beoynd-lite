@@ -15,7 +15,6 @@ export { DataQualityBanner, type DataQualityBannerProps } from './components/Dat
 export { ColumnMapping, type ColumnMappingProps } from './components/ColumnMapping';
 export { SelectionPanel, type SelectionPanelProps } from './components/SelectionPanel';
 export { CreateFactorModal, type CreateFactorModalProps } from './components/CreateFactorModal';
-export { TierBadge, type TierBadgeProps } from './components/TierBadge';
 export { UpgradePrompt, type UpgradePromptProps } from './components/UpgradePrompt';
 export {
   AnovaResults,

@@ -329,16 +329,6 @@ button:active:not(:disabled),
   animation: fadeIn 0.15s ease-out;
 }
 
-/* Hide scrollbar while maintaining scroll functionality */
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
 /* CSS-only Tooltips */
 .tooltip-wrapper {
   position: relative;
