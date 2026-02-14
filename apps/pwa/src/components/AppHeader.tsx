@@ -8,10 +8,10 @@ interface AppHeaderProps {
   dataFilename: string | null;
   rowCount: number;
   isDataPanelOpen?: boolean;
-  isFunnelPanelOpen?: boolean;
+  isMindmapPanelOpen?: boolean;
   onNewAnalysis: () => void;
   onToggleDataPanel?: () => void;
-  onToggleFunnelPanel?: () => void;
+  onToggleMindmapPanel?: () => void;
   onOpenDataTable: () => void;
   onExportCSV: () => void;
   onExportImage: () => void;
@@ -34,10 +34,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   dataFilename,
   rowCount,
   isDataPanelOpen = false,
-  isFunnelPanelOpen = false,
+  isMindmapPanelOpen = false,
   onNewAnalysis,
   onToggleDataPanel,
-  onToggleFunnelPanel,
+  onToggleMindmapPanel,
   onOpenDataTable,
   onExportCSV,
   onExportImage,
@@ -126,12 +126,12 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 )}
 
                 {/* Investigation Toggle */}
-                {onToggleFunnelPanel && (
+                {onToggleMindmapPanel && (
                   <IconButton
                     icon={<Filter size={18} />}
-                    title={isFunnelPanelOpen ? 'Hide Investigation' : 'Show Investigation'}
-                    onClick={onToggleFunnelPanel}
-                    isActive={isFunnelPanelOpen}
+                    title={isMindmapPanelOpen ? 'Hide Investigation' : 'Show Investigation'}
+                    onClick={onToggleMindmapPanel}
+                    isActive={isMindmapPanelOpen}
                   />
                 )}
 

@@ -143,7 +143,7 @@ function App() {
     return () => window.removeEventListener('resize', checkDesktop);
   }, []);
 
-  // Handle URL parameters on mount (?sample=xxx&embed=true&chart=ichart&tab=histogram&view=funnel)
+  // Handle URL parameters on mount (?sample=xxx&embed=true&chart=ichart&tab=histogram&view=mindmap)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sampleKey = params.get('sample');
@@ -508,10 +508,10 @@ function App() {
           dataFilename={dataFilename}
           rowCount={rawData.length}
           isDataPanelOpen={isDataPanelOpen}
-          isFunnelPanelOpen={isMindmapPanelOpen}
+          isMindmapPanelOpen={isMindmapPanelOpen}
           onNewAnalysis={handleResetRequest}
           onToggleDataPanel={handleToggleDataPanel}
-          onToggleFunnelPanel={handleToggleMindmapPanel}
+          onToggleMindmapPanel={handleToggleMindmapPanel}
           onOpenDataTable={() => {
             setHighlightRowIndex(null);
             setIsDataTableOpen(true);
