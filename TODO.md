@@ -1,7 +1,7 @@
 # TODO — Remaining Implementation Work
 
 Captured after Investigation Mindmap + What-If Simulator delivery (2026-02-14).
-All 806 tests pass. Both features functional across PWA and Azure.
+All 816 tests pass. Both features functional across PWA and Azure.
 
 ---
 
@@ -11,8 +11,8 @@ All 806 tests pass. Both features functional across PWA and Azure.
 
 ## 2. Azure What-If Gaps
 
-- [ ] **No full-page WhatIfPage** — Azure only has inline WhatIfSimulator in StatsPanel; PWA has a dedicated full-page view with header, back navigation, outcome/filter info
-- [ ] **No settings entry point** — PWA SettingsPanel has a "What-If Simulator" button with beaker icon; Azure has no equivalent entry point
+- [x] **No full-page WhatIfPage** — Added WhatIfPage.tsx with header, back navigation, outcome/filter info (matches PWA)
+- [x] **No settings entry point** — Added Beaker icon button in Editor header bar (shown when specs are set)
 
 ## 3. Documentation Updates
 

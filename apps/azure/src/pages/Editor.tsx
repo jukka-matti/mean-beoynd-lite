@@ -7,6 +7,7 @@ import Dashboard from '../components/Dashboard';
 import DataPanel from '../components/DataPanel';
 import MindmapPanel from '../components/MindmapPanel';
 import ManualEntry from '../components/ManualEntry';
+import WhatIfPage from '../components/WhatIfPage';
 import { validateData, getNelsonRule2ViolationPoints, calculateStats } from '@variscout/core';
 import {
   Upload,
@@ -19,6 +20,7 @@ import {
   Table2,
   Plus,
   Network,
+  Beaker,
 } from 'lucide-react';
 
 interface ManualEntryConfig {
@@ -75,6 +77,9 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
 
   // State for investigation mindmap
   const [isMindmapOpen, setIsMindmapOpen] = useState(false);
+
+  // State for What-If Simulator full page
+  const [isWhatIfOpen, setIsWhatIfOpen] = useState(false);
 
   // Filter navigation (lifted to Editor so mindmap and dashboard share filter state)
   const filterNav = useFilterNavigation({
@@ -335,6 +340,16 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
     );
   }
 
+  // If What-If Simulator is open, show full-page view
+  if (isWhatIfOpen) {
+    return (
+      <WhatIfPage
+        onBack={() => setIsWhatIfOpen(false)}
+        filterCount={filterNav.filterStack.length}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-120px)]">
       {/* Header with back navigation */}
@@ -373,6 +388,19 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
               <span className="text-sm">Add Data</span>
             </button>
           )}
+
+          {/* What-If Simulator */}
+          {rawData.length > 0 &&
+            outcome &&
+            (specs.usl !== undefined || specs.lsl !== undefined) && (
+              <button
+                onClick={() => setIsWhatIfOpen(true)}
+                className="p-2 rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-slate-700"
+                title="What-If Simulator"
+              >
+                <Beaker size={18} />
+              </button>
+            )}
 
           {/* Investigation Toggle */}
           {rawData.length > 0 && outcome && factors.length > 0 && (
