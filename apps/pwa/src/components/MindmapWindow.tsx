@@ -1,23 +1,7 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import {
-  InvestigationMindmapBase,
-  type MindmapNode,
-  type MindmapEdge,
-  type MindmapMode,
-  type NarrativeStep,
-  type CategoryData,
-} from '@variscout/charts';
-import { useDrillPath } from '@variscout/hooks';
-import {
-  type FilterAction,
-  type FilterSource,
-  getCategoryStats,
-  getEtaSquared,
-  getInteractionStrength,
-  applyFilters,
-  filterStackToFilters,
-  createFilterAction,
-} from '@variscout/core';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { InvestigationMindmapBase } from '@variscout/charts';
+import { useMindmapState } from '@variscout/hooks';
+import { type FilterAction, type FilterSource, createFilterAction } from '@variscout/core';
 import { toPng } from 'html-to-image';
 import { Download } from 'lucide-react';
 
@@ -37,28 +21,6 @@ interface MindmapSyncData {
 }
 
 /**
- * Compute pairwise interaction edges for all factor pairs
- */
-function computeInteractionEdges(data: any[], factors: string[], outcome: string): MindmapEdge[] {
-  const edges: MindmapEdge[] = [];
-  for (let i = 0; i < factors.length; i++) {
-    for (let j = i + 1; j < factors.length; j++) {
-      const result = getInteractionStrength(data, factors[i], factors[j], outcome);
-      if (result) {
-        edges.push({
-          factorA: result.factorA,
-          factorB: result.factorB,
-          deltaRSquared: result.deltaRSquared,
-          pValue: result.pValue,
-          standardizedBeta: result.standardizedBeta,
-        });
-      }
-    }
-  }
-  return edges;
-}
-
-/**
  * Standalone mindmap window for dual-screen setups
  *
  * This component is rendered when the URL contains ?view=mindmap
@@ -74,9 +36,6 @@ const MindmapWindow: React.FC = () => {
   const [syncData, setSyncData] = useState<MindmapSyncData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [localFilterStack, setLocalFilterStack] = useState<FilterAction[]>([]);
-  const [mode, setMode] = useState<MindmapMode>('drilldown');
-  const [interactionEdges, setInteractionEdges] = useState<MindmapEdge[] | null>(null);
-  const [annotations, setAnnotations] = useState<Map<number, string>>(new Map());
 
   // Load initial data from localStorage
   useEffect(() => {
@@ -113,6 +72,29 @@ const MindmapWindow: React.FC = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Shared mindmap state
+  const rawData = syncData?.rawData ?? [];
+  const factors = syncData?.factors ?? [];
+  const outcome = syncData?.outcome ?? '';
+  const specs = syncData?.specs;
+
+  const {
+    nodes,
+    drillTrail,
+    cumulativeVariationPct,
+    interactionEdges,
+    narrativeSteps,
+    mode,
+    setMode,
+    handleAnnotationChange,
+  } = useMindmapState({
+    data: rawData,
+    factors,
+    outcome,
+    filterStack: localFilterStack,
+    specs,
+  });
+
   // Drill category — send to main window via postMessage + localStorage fallback
   const handleDrillCategory = useCallback((factor: string, value: string | number) => {
     // Notify main window
@@ -137,165 +119,6 @@ const MindmapWindow: React.FC = () => {
     });
     setLocalFilterStack(prev => [...prev, action]);
   }, []);
-
-  const handleAnnotationChange = useCallback((stepIndex: number, text: string) => {
-    setAnnotations(prev => {
-      const next = new Map(prev);
-      if (text) {
-        next.set(stepIndex, text);
-      } else {
-        next.delete(stepIndex);
-      }
-      return next;
-    });
-  }, []);
-
-  // Compute mindmap data
-  const rawData = syncData?.rawData ?? [];
-  const factors = syncData?.factors ?? [];
-  const outcome = syncData?.outcome ?? '';
-  const specs = syncData?.specs;
-
-  const { drillPath, cumulativeVariationPct } = useDrillPath(
-    rawData,
-    localFilterStack,
-    outcome,
-    specs
-  );
-
-  const currentFilters = useMemo(() => filterStackToFilters(localFilterStack), [localFilterStack]);
-  const filteredData = useMemo(
-    () => applyFilters(rawData, currentFilters),
-    [rawData, currentFilters]
-  );
-
-  // Reset interaction edges when data/factors change
-  useEffect(() => {
-    setInteractionEdges(null);
-  }, [filteredData, factors, outcome]);
-
-  // Compute interaction edges on demand when switching to interactions or narrative mode
-  useEffect(() => {
-    if (mode !== 'interactions' && mode !== 'narrative') return;
-    if (interactionEdges !== null) return;
-    if (filteredData.length < 5 || factors.length < 2) {
-      setInteractionEdges([]);
-      return;
-    }
-    const edges = computeInteractionEdges(filteredData, factors, outcome);
-    setInteractionEdges(edges);
-  }, [mode, interactionEdges, filteredData, factors, outcome]);
-
-  const drilledFactors = useMemo(() => {
-    const set = new Set<string>();
-    for (const action of localFilterStack) {
-      if (action.type === 'filter' && action.factor) {
-        set.add(action.factor);
-      }
-    }
-    return set;
-  }, [localFilterStack]);
-
-  const drillTrail = useMemo(() => drillPath.map(s => s.factor), [drillPath]);
-
-  const nodes: MindmapNode[] = useMemo(() => {
-    if (!outcome || filteredData.length < 2) {
-      return factors.map(f => ({
-        factor: f,
-        etaSquared: 0,
-        state: 'exhausted' as const,
-        isSuggested: false,
-      }));
-    }
-
-    const etaMap = new Map<string, number>();
-    for (const factor of factors) {
-      if (drilledFactors.has(factor)) {
-        const step = drillPath.find(s => s.factor === factor);
-        etaMap.set(factor, step?.etaSquared ?? 0);
-      } else {
-        etaMap.set(factor, getEtaSquared(filteredData, factor, outcome));
-      }
-    }
-
-    let maxEta = 0;
-    let suggested: string | null = null;
-    for (const factor of factors) {
-      if (!drilledFactors.has(factor)) {
-        const eta = etaMap.get(factor) ?? 0;
-        if (eta > maxEta && eta > 0.05) {
-          maxEta = eta;
-          suggested = factor;
-        }
-      }
-    }
-
-    return factors.map(factor => {
-      const isDrilled = drilledFactors.has(factor);
-      const eta = etaMap.get(factor) ?? 0;
-
-      let categoryData: CategoryData[] | undefined;
-      if (!isDrilled && filteredData.length >= 2) {
-        const stats = getCategoryStats(filteredData, factor, outcome);
-        if (stats) {
-          categoryData = stats.map(s => ({
-            value: s.value,
-            count: s.count,
-            meanValue: s.mean,
-            contributionPct: s.contributionPct,
-          }));
-        }
-      }
-
-      let filteredValue: string | undefined;
-      if (isDrilled) {
-        const action = localFilterStack.find(a => a.type === 'filter' && a.factor === factor);
-        if (action) {
-          filteredValue =
-            action.values.length <= 2
-              ? action.values.map(String).join(', ')
-              : `${action.values[0]} +${action.values.length - 1}`;
-        }
-      }
-
-      let state: MindmapNode['state'];
-      if (isDrilled) {
-        state = 'active';
-      } else if (filteredData.length < 3 || eta < 0.01) {
-        state = 'exhausted';
-      } else {
-        state = 'available';
-      }
-
-      return {
-        factor,
-        etaSquared: eta,
-        state,
-        filteredValue,
-        isSuggested: factor === suggested,
-        categoryData,
-      };
-    });
-  }, [factors, filteredData, outcome, drilledFactors, drillPath, localFilterStack]);
-
-  // Narrative steps mapped from drillPath (with annotations merged)
-  const narrativeSteps: NarrativeStep[] = useMemo(
-    () =>
-      drillPath.map((step, i) => ({
-        factor: step.factor,
-        values: step.values,
-        etaSquared: step.etaSquared,
-        cumulativeEtaSquared: step.cumulativeEtaSquared,
-        meanBefore: step.meanBefore,
-        meanAfter: step.meanAfter,
-        cpkBefore: step.cpkBefore,
-        cpkAfter: step.cpkAfter,
-        countBefore: step.countBefore,
-        countAfter: step.countAfter,
-        annotation: annotations.get(i),
-      })),
-    [drillPath, annotations]
-  );
 
   // PNG export for narrative mode
   const handleExportPng = useCallback(async () => {
@@ -392,7 +215,7 @@ const MindmapWindow: React.FC = () => {
           cumulativeVariationPct={cumulativeVariationPct}
           onCategorySelect={handleDrillCategory}
           mode={mode}
-          edges={interactionEdges ?? undefined}
+          edges={interactionEdges}
           narrativeSteps={narrativeSteps}
           onAnnotationChange={handleAnnotationChange}
           width={380}

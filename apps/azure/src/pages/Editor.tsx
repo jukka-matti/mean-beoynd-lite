@@ -2,8 +2,10 @@ import React, { useRef, useState, useCallback, useMemo } from 'react';
 import { useStorage } from '../services/storage';
 import { useData } from '../context/DataContext';
 import { useDataIngestion } from '../hooks/useDataIngestion';
+import { useFilterNavigation } from '../hooks';
 import Dashboard from '../components/Dashboard';
 import DataPanel from '../components/DataPanel';
+import MindmapPanel from '../components/MindmapPanel';
 import ManualEntry from '../components/ManualEntry';
 import { validateData, getNelsonRule2ViolationPoints, calculateStats } from '@variscout/core';
 import {
@@ -16,6 +18,7 @@ import {
   PenLine,
   Table2,
   Plus,
+  Network,
 } from 'lucide-react';
 
 interface ManualEntryConfig {
@@ -69,6 +72,15 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
   const [isDataPanelOpen, setIsDataPanelOpen] = useState(false);
   const [highlightRowIndex, setHighlightRowIndex] = useState<number | null>(null);
   const [highlightedChartPoint, setHighlightedChartPoint] = useState<number | null>(null);
+
+  // State for investigation mindmap
+  const [isMindmapOpen, setIsMindmapOpen] = useState(false);
+
+  // Filter navigation (lifted to Editor so mindmap and dashboard share filter state)
+  const filterNav = useFilterNavigation({
+    enableHistory: false,
+    enableUrlSync: false,
+  });
 
   // Handle drilling from Performance Mode to standard I-Chart for a specific measure
   const handleDrillToMeasure = useCallback(
@@ -362,6 +374,21 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
             </button>
           )}
 
+          {/* Investigation Toggle */}
+          {rawData.length > 0 && outcome && factors.length > 0 && (
+            <button
+              onClick={() => setIsMindmapOpen(prev => !prev)}
+              className={`p-2 rounded-lg transition-colors ${
+                isMindmapOpen
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+              }`}
+              title={isMindmapOpen ? 'Hide Investigation' : 'Show Investigation'}
+            >
+              <Network size={18} />
+            </button>
+          )}
+
           {/* Data Panel Toggle */}
           {rawData.length > 0 && outcome && (
             <button
@@ -433,7 +460,7 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
             </div>
           </div>
         ) : outcome ? (
-          // Dashboard with charts and optional data panel
+          // Dashboard with charts, optional data panel, and optional mindmap
           <div className="flex-1 flex overflow-hidden">
             <Dashboard
               drillFromPerformance={drillFromPerformance}
@@ -441,6 +468,24 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
               onDrillToMeasure={handleDrillToMeasure}
               onPointClick={handlePointClick}
               highlightedPointIndex={highlightedChartPoint}
+              filterNav={filterNav}
+            />
+            <MindmapPanel
+              isOpen={isMindmapOpen}
+              onClose={() => setIsMindmapOpen(false)}
+              data={rawData}
+              factors={factors}
+              outcome={outcome}
+              filterStack={filterNav.filterStack}
+              specs={specs}
+              onDrillCategory={(factor, value) => {
+                filterNav.applyFilter({
+                  type: 'filter',
+                  source: 'mindmap',
+                  factor,
+                  values: [value],
+                });
+              }}
             />
             <DataPanel
               isOpen={isDataPanelOpen}

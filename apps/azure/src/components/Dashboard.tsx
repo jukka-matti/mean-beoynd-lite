@@ -12,7 +12,9 @@ import FilterBreadcrumb from './FilterBreadcrumb';
 import FactorSelector from './FactorSelector';
 import { useData } from '../context/DataContext';
 import { useFilterNavigation, useVariationTracking } from '../hooks';
+import type { UseFilterNavigationReturn } from '../hooks';
 import { calculateAnova, type AnovaResult, getNextDrillFactor } from '@variscout/core';
+import type { FilterAction } from '@variscout/core';
 import { calculateBoxplotStats, BoxplotStatsTable, type BoxplotGroupData } from '@variscout/charts';
 import {
   Activity,
@@ -42,6 +44,8 @@ interface DashboardProps {
   onBackToPerformance?: () => void;
   /** Callback to drill to a specific measure */
   onDrillToMeasure?: (measureId: string) => void;
+  /** Filter navigation (lifted to Editor for mindmap integration) */
+  filterNav?: UseFilterNavigationReturn;
 }
 
 const Dashboard = ({
@@ -50,6 +54,7 @@ const Dashboard = ({
   drillFromPerformance,
   onBackToPerformance,
   onDrillToMeasure,
+  filterNav: externalFilterNav,
 }: DashboardProps) => {
   const {
     outcome,
@@ -186,12 +191,13 @@ const Dashboard = ({
       .sort((a, b) => a.key.localeCompare(b.key));
   }, [filteredData, outcome, boxplotFactor]);
 
-  // Use filter navigation hook
+  // Use filter navigation hook (from parent when lifted, or local fallback)
+  const localFilterNav = useFilterNavigation({
+    enableHistory: false,
+    enableUrlSync: false,
+  });
   const { filterStack, applyFilter, clearFilters, updateFilterValues, removeFilter } =
-    useFilterNavigation({
-      enableHistory: false,
-      enableUrlSync: false,
-    });
+    externalFilterNav ?? localFilterNav;
 
   // Use variation tracking hook
   const { cumulativeVariationPct, factorVariations, filterChipData } = useVariationTracking(

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { InvestigationMindmapBase } from '@variscout/charts';
-import { useMindmapState } from '@variscout/hooks';
+import { useMindmapState, type DrillStep } from '@variscout/hooks';
 import type { FilterAction } from '@variscout/core';
 import { toPng } from 'html-to-image';
-import { X, ExternalLink, Download } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 
 interface MindmapPanelProps {
   /** Whether the panel is open */
@@ -20,20 +20,16 @@ interface MindmapPanelProps {
   filterStack: FilterAction[];
   /** Specification limits for Cpk projection */
   specs?: { usl?: number; lsl?: number; target?: number };
-  /** Column aliases for display */
-  columnAliases?: Record<string, string>;
   /** Called when user selects a category to drill into */
   onDrillCategory: (factor: string, value: string | number) => void;
-  /** Called when user wants to open in popout window */
-  onOpenPopout?: () => void;
 }
 
 /**
- * Slide-in panel for the Investigation Mindmap
+ * Investigation Mindmap panel for Azure app
  *
- * Replaces FunnelPanel as the primary investigation tool.
- * Shows factor nodes sized by eta-squared, a drill trail connecting active nodes,
- * and a pulsing suggested-next indicator.
+ * Slide-in panel (from right) following the DataPanel pattern.
+ * Uses shared useMindmapState hook for all computation.
+ * Mindmap drills drive Dashboard chart filtering (integrated behavior).
  */
 const MindmapPanel: React.FC<MindmapPanelProps> = ({
   isOpen,
@@ -44,7 +40,6 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
   filterStack,
   specs,
   onDrillCategory,
-  onOpenPopout,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const mindmapRef = useRef<HTMLDivElement>(null);
@@ -74,26 +69,6 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Close on outside click
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as Node | null;
-      if (panelRef.current && target && !panelRef.current.contains(target)) {
-        onClose();
-      }
-    };
-    // Delay to prevent immediate close
-    const timeoutId = setTimeout(() => {
-      document.addEventListener('mousedown', handleClick);
-    }, 100);
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener('mousedown', handleClick);
-    };
-  }, [isOpen, onClose]);
-
   const handleCategorySelect = useCallback(
     (factor: string, value: string | number) => {
       onDrillCategory(factor, value);
@@ -120,26 +95,24 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
 
   return (
     <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 z-40 transition-opacity" onClick={onClose} />
-
-      {/* Panel */}
+      {/* Panel (inline, no backdrop — matches DataPanel pattern) */}
+      <div className="w-1 bg-slate-700 flex-shrink-0" />
       <div
         ref={panelRef}
-        className="fixed right-0 top-0 bottom-0 w-96 bg-surface-secondary border-l border-edge shadow-2xl z-50 flex flex-col animate-slide-in-right overflow-hidden"
+        className="flex-shrink-0 w-96 bg-slate-800 border-l border-slate-700 flex flex-col overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-edge">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
           <h2 className="text-sm font-semibold text-white">Investigation</h2>
 
           {/* Mode toggle */}
-          <div className="flex items-center gap-0.5 bg-surface rounded-lg p-0.5">
+          <div className="flex items-center gap-0.5 bg-slate-900 rounded-lg p-0.5">
             <button
               onClick={() => setMode('drilldown')}
               className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
                 mode === 'drilldown'
                   ? 'bg-blue-500/20 text-blue-400'
-                  : 'text-content-secondary hover:text-white'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Drilldown
@@ -149,7 +122,7 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
               className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
                 mode === 'interactions'
                   ? 'bg-amber-500/20 text-amber-400'
-                  : 'text-content-secondary hover:text-white'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Interactions
@@ -159,7 +132,7 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
               className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
                 mode === 'narrative'
                   ? 'bg-green-500/20 text-green-400'
-                  : 'text-content-secondary hover:text-white'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Narrative
@@ -170,26 +143,16 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
             {mode === 'narrative' && (
               <button
                 onClick={handleExportPng}
-                className="p-1.5 text-content-secondary hover:text-white hover:bg-surface-tertiary rounded-lg transition-colors"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                 title="Export as PNG"
                 aria-label="Export as PNG"
               >
                 <Download size={14} />
               </button>
             )}
-            {onOpenPopout && (
-              <button
-                onClick={onOpenPopout}
-                className="p-1.5 text-content-secondary hover:text-white hover:bg-surface-tertiary rounded-lg transition-colors"
-                title="Open in new window"
-                aria-label="Open in new window"
-              >
-                <ExternalLink size={14} />
-              </button>
-            )}
             <button
               onClick={onClose}
-              className="p-1.5 text-content-secondary hover:text-white hover:bg-surface-tertiary rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
               title="Close"
               aria-label="Close investigation panel"
             >
@@ -217,12 +180,12 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
 
         {/* Drill path summary */}
         {drillPath.length > 0 && (
-          <div className="px-4 py-3 border-t border-edge">
-            <div className="text-[10px] text-content-muted uppercase tracking-wider mb-1.5">
+          <div className="px-4 py-3 border-t border-slate-700">
+            <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5">
               Drill Path
             </div>
             <div className="flex flex-wrap gap-1">
-              {drillPath.map((step, i) => (
+              {drillPath.map((step: DrillStep, i: number) => (
                 <span
                   key={step.factor}
                   className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[11px] rounded-full"
@@ -230,7 +193,7 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
                   {step.factor}
                   <span className="text-blue-300/60">{(step.etaSquared * 100).toFixed(0)}%</span>
                   {i < drillPath.length - 1 && (
-                    <span className="text-content-muted ml-0.5">&rarr;</span>
+                    <span className="text-slate-500 ml-0.5">&rarr;</span>
                   )}
                 </span>
               ))}

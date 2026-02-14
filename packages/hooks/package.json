@@ -10,6 +10,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@variscout/charts": "workspace:*",
     "@variscout/core": "workspace:*"
   },
   "peerDependencies": {

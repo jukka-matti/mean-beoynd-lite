@@ -95,6 +95,9 @@ importers:
       dexie:
         specifier: ^3.2.4
         version: 3.2.7
+      html-to-image:
+        specifier: ^1.11.13
+        version: 1.11.13
       i18next:
         specifier: ^25.7.3
         version: 25.7.3(typescript@5.9.3)
@@ -537,6 +540,9 @@ importers:
 
   packages/hooks:
     dependencies:
+      '@variscout/charts':
+        specifier: workspace:*
+        version: link:../charts
       '@variscout/core':
         specifier: workspace:*
         version: link:../core
