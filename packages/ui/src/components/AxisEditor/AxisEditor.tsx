@@ -120,7 +120,9 @@ const AxisEditor = ({
       className={`absolute z-50 ${colorScheme.container} rounded-lg shadow-xl p-3 flex flex-col gap-3 w-64`}
       style={style}
     >
-      <div className={`flex justify-between items-center border-b ${colorScheme.headerBorder} pb-2`}>
+      <div
+        className={`flex justify-between items-center border-b ${colorScheme.headerBorder} pb-2`}
+      >
         <span className="text-xs font-bold text-white flex items-center gap-1">
           <Edit2 size={12} /> {title}
         </span>
@@ -166,10 +168,7 @@ const AxisEditor = ({
             <div className="space-y-1">
               {values.map(val => (
                 <div key={val} className="flex items-center gap-2">
-                  <span
-                    className={`text-[10px] ${colorScheme.muted} w-1/3 truncate`}
-                    title={val}
-                  >
+                  <span className={`text-[10px] ${colorScheme.muted} w-1/3 truncate`} title={val}>
                     {val}
                   </span>
                   <span className={colorScheme.arrow}>&rarr;</span>

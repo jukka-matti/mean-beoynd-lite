@@ -66,9 +66,7 @@ const FactorSelector: React.FC<FactorSelectorProps> = ({
   };
 
   return (
-    <div
-      className={`inline-flex ${colorScheme.container} rounded-lg p-0.5 border ${className}`}
-    >
+    <div className={`inline-flex ${colorScheme.container} rounded-lg p-0.5 border ${className}`}>
       {factors.map(factor => {
         const isSelected = selected === factor;
         const showIndicator = hasActiveFilter && isSelected;

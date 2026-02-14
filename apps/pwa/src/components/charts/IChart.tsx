@@ -87,7 +87,7 @@ const IChart = ({ parentWidth, parentHeight, onPointClick, onSpecClick }: IChart
   const effectiveSpecs = displayOptions.showSpecs !== false ? specs : {};
   const effectiveStats = displayOptions.showControlLimits !== false ? stats : null;
   const effectiveStagedStats =
-    displayOptions.showControlLimits !== false ? stagedStats ?? undefined : undefined;
+    displayOptions.showControlLimits !== false ? (stagedStats ?? undefined) : undefined;
 
   return (
     <div className="relative w-full h-full">

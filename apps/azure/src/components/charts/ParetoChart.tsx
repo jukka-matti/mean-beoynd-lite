@@ -206,9 +206,7 @@ const ParetoChart = ({
                 ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
                 : 'bg-slate-700/50 text-slate-500 hover:text-slate-300 hover:bg-slate-700'
             }`}
-            title={
-              showComparison ? 'Hide overall comparison' : 'Compare to overall distribution'
-            }
+            title={showComparison ? 'Hide overall comparison' : 'Compare to overall distribution'}
           >
             {showComparison ? <Eye size={14} /> : <EyeOff size={14} />}
           </button>
@@ -226,9 +224,7 @@ const ParetoChart = ({
         parentHeight={parentHeight}
         showBranding={showBranding}
         brandingText={showBranding ? getBrandingText() : undefined}
-        onYAxisClick={() =>
-          setEditingAxis(aggregation === 'value' ? outcome || 'Count' : 'Count')
-        }
+        onYAxisClick={() => setEditingAxis(aggregation === 'value' ? outcome || 'Count' : 'Count')}
         onXAxisClick={() => setEditingAxis(factor)}
         comparisonData={ghostBarData}
         tooltipContent={d => {
