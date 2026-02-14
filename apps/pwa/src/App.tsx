@@ -5,8 +5,6 @@ import { downloadCSV } from './lib/export';
 import SettingsPanel from './components/SettingsPanel';
 import DataTableModal from './components/DataTableModal';
 import DataPanel from './components/DataPanel';
-import FunnelPanel from './components/FunnelPanel';
-import FunnelWindow, { openFunnelPopout } from './components/FunnelWindow';
 import MindmapPanel from './components/MindmapPanel';
 import MindmapWindow, { openMindmapPopout } from './components/MindmapWindow';
 import { useFilterNavigation } from './hooks/useFilterNavigation';
@@ -16,6 +14,7 @@ import HomeScreen from './components/HomeScreen';
 import ManualEntry from './components/ManualEntry';
 import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
+import WhatIfPage from './components/WhatIfPage';
 import { useDataIngestion } from './hooks/useDataIngestion';
 import { useEmbedMessaging } from './hooks/useEmbedMessaging';
 import { SAMPLES } from '@variscout/data';
@@ -45,7 +44,6 @@ function App() {
     setRawData,
     setOutcome,
     setFactors,
-    setFilters,
     setSpecs,
     setDataFilename,
     setDataQualityReport,
@@ -100,12 +98,12 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
   const [isDataPanelOpen, setIsDataPanelOpen] = useState(false);
-  const [isFunnelPanelOpen, setIsFunnelPanelOpen] = useState(false);
   const [isMindmapPanelOpen, setIsMindmapPanelOpen] = useState(false);
   const [highlightRowIndex, setHighlightRowIndex] = useState<number | null>(null);
   const [showExcludedOnly, setShowExcludedOnly] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [isWhatIfPageOpen, setIsWhatIfPageOpen] = useState(false);
   const [activeView, setActiveView] = useState<AnalysisView>('dashboard');
   // Trigger for opening spec editor from MobileMenu
   const [openSpecEditorRequested, setOpenSpecEditorRequested] = useState(false);
@@ -118,8 +116,6 @@ function App() {
 
   // Embed mode - hides header/footer for iframe embedding
   const [isEmbedMode, setIsEmbedMode] = useState(false);
-  // Funnel popout mode - renders only the FunnelWindow component
-  const [isFunnelPopoutMode, setIsFunnelPopoutMode] = useState(false);
   // Mindmap popout mode - renders only the MindmapWindow component
   const [isMindmapPopoutMode, setIsMindmapPopoutMode] = useState(false);
   // Embed focus chart - when set, Dashboard shows only this chart
@@ -157,13 +153,12 @@ function App() {
     const viewParam = params.get('view');
 
     // Set popout modes if specified
-    if (viewParam === 'funnel') {
-      setIsFunnelPopoutMode(true);
-      return; // Don't process other params in popout mode
-    }
     if (viewParam === 'mindmap') {
       setIsMindmapPopoutMode(true);
       return; // Don't process other params in popout mode
+    }
+    if (viewParam === 'whatif') {
+      setIsWhatIfPageOpen(true);
     }
 
     // Set embed mode if specified
@@ -351,72 +346,6 @@ function App() {
     }
   }, [isDesktop]);
 
-  // Toggle funnel panel
-  const handleToggleFunnelPanel = useCallback(() => {
-    setIsFunnelPanelOpen(prev => !prev);
-  }, []);
-
-  // Close funnel panel
-  const handleCloseFunnelPanel = useCallback(() => {
-    setIsFunnelPanelOpen(false);
-  }, []);
-
-  // Navigate to Regression Panel from funnel (for interaction analysis)
-  const handleFunnelNavigateToRegression = useCallback(() => {
-    setIsFunnelPanelOpen(false);
-    setActiveView('regression');
-  }, []);
-
-  // Accumulator for funnel filters (applied one at a time, then batch-set on close)
-  const pendingFunnelFiltersRef = React.useRef<Record<string, (string | number)[]>>({});
-
-  // Apply a single filter from funnel panel
-  // TODO: Integrate with FilterNavigation context to show breadcrumbs
-  // Currently sets filters directly to DataContext which filters data but doesn't show breadcrumbs
-  const handleApplyFunnelFilter = useCallback(
-    (factor: string, value: string | number) => {
-      // Accumulate filters in ref (VariationFunnel calls this multiple times before closing)
-      pendingFunnelFiltersRef.current = {
-        ...pendingFunnelFiltersRef.current,
-        [factor]: [value],
-      };
-      // Apply immediately so user sees filtered data
-      setFilters({
-        ...pendingFunnelFiltersRef.current,
-      });
-    },
-    [setFilters]
-  );
-
-  // Reset pending filters when funnel panel opens
-  useEffect(() => {
-    if (isFunnelPanelOpen) {
-      pendingFunnelFiltersRef.current = {};
-    }
-  }, [isFunnelPanelOpen]);
-
-  // Open funnel in popout window
-  const handleOpenFunnelPopout = useCallback(() => {
-    if (outcome) {
-      openFunnelPopout(rawData, factors, outcome, columnAliases);
-      setIsFunnelPanelOpen(false);
-    }
-  }, [rawData, factors, outcome, columnAliases]);
-
-  // Listen for messages from funnel popout window
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data?.type === 'FUNNEL_APPLY_FILTERS') {
-        setFilters(event.data.filters);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [setFilters]);
-
   // Toggle mindmap panel
   const handleToggleMindmapPanel = useCallback(() => {
     setIsMindmapPanelOpen(prev => !prev);
@@ -425,12 +354,6 @@ function App() {
   // Close mindmap panel
   const handleCloseMindmapPanel = useCallback(() => {
     setIsMindmapPanelOpen(false);
-  }, []);
-
-  // Navigate from mindmap to WhatIf (funnel panel)
-  const handleNavigateToWhatIfFromMindmap = useCallback(() => {
-    setIsMindmapPanelOpen(false);
-    setIsFunnelPanelOpen(true);
   }, []);
 
   // Open mindmap in popout window
@@ -463,14 +386,11 @@ function App() {
         const { factor, value } = event.data;
         handleMindmapDrillCategory(factor, value);
       }
-      if (event.data?.type === 'MINDMAP_NAVIGATE_TO_WHATIF') {
-        handleNavigateToWhatIfFromMindmap();
-      }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [handleMindmapDrillCategory, handleNavigateToWhatIfFromMindmap]);
+  }, [handleMindmapDrillCategory]);
 
   // Close data table and clear highlight
   const handleCloseDataTable = useCallback(() => {
@@ -564,11 +484,13 @@ function App() {
   }, []);
 
   // Render only popout windows in popout mode
-  if (isFunnelPopoutMode) {
-    return <FunnelWindow />;
-  }
   if (isMindmapPopoutMode) {
     return <MindmapWindow />;
+  }
+
+  // Full-page What-If Simulator
+  if (isWhatIfPageOpen) {
+    return <WhatIfPage onBack={() => setIsWhatIfPageOpen(false)} />;
   }
 
   return (
@@ -705,6 +627,7 @@ function App() {
           setIsSettingsOpen(false);
           handleResetRequest();
         }}
+        onOpenWhatIf={() => setIsWhatIfPageOpen(true)}
       />
 
       {/* Investigation Mindmap Panel (slide-in from right) */}
@@ -720,23 +643,6 @@ function App() {
           columnAliases={columnAliases}
           onDrillCategory={handleMindmapDrillCategory}
           onOpenPopout={handleOpenMindmapPopout}
-          onNavigateToWhatIf={handleNavigateToWhatIfFromMindmap}
-        />
-      )}
-
-      {/* Funnel Panel (kept as fallback — will be removed after mindmap validation) */}
-      {outcome && (
-        <FunnelPanel
-          isOpen={isFunnelPanelOpen}
-          onClose={handleCloseFunnelPanel}
-          data={rawData}
-          factors={factors}
-          outcome={outcome}
-          columnAliases={columnAliases}
-          specs={specs}
-          onApplyFilter={handleApplyFunnelFilter}
-          onOpenPopout={handleOpenFunnelPopout}
-          onNavigateToRegression={handleFunnelNavigateToRegression}
         />
       )}
 

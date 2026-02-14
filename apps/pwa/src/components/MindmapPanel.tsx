@@ -40,8 +40,6 @@ interface MindmapPanelProps {
   onDrillCategory: (factor: string, value: string | number) => void;
   /** Called when user wants to open in popout window */
   onOpenPopout?: () => void;
-  /** Called when user clicks "Model improvements" to open the WhatIfSimulator */
-  onNavigateToWhatIf?: () => void;
 }
 
 /**
@@ -84,7 +82,6 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
   columnAliases,
   onDrillCategory,
   onOpenPopout,
-  onNavigateToWhatIf,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const mindmapRef = useRef<HTMLDivElement>(null);
@@ -399,7 +396,6 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
             edges={interactionEdges ?? undefined}
             narrativeSteps={narrativeSteps}
             onAnnotationChange={handleAnnotationChange}
-            onNavigateToWhatIf={onNavigateToWhatIf}
             width={368}
             height={500}
           />

@@ -6,6 +6,20 @@ import { useState, useEffect, useCallback } from 'react';
 export type RegressionMode = 'simple' | 'advanced';
 
 /**
+ * A single step in the model reduction history
+ */
+export interface ReductionStep {
+  /** Term that was removed */
+  term: string;
+  /** P-value of the removed term */
+  pValue: number;
+  /** Adjusted R² before removal */
+  adjR2Before: number;
+  /** Adjusted R² after removal */
+  adjR2After: number;
+}
+
+/**
  * Options for useRegressionState
  */
 export interface UseRegressionStateOptions {
@@ -34,6 +48,12 @@ export interface UseRegressionStateReturn {
   toggleCategorical: (col: string) => void;
   includeInteractions: boolean;
   setIncludeInteractions: (include: boolean) => void;
+
+  // Model reduction
+  reductionHistory: ReductionStep[];
+  addReductionStep: (step: ReductionStep) => void;
+  updateLastStepAdjR2After: (adjR2After: number) => void;
+  clearReductionHistory: () => void;
 
   // Modal state
   expandedChart: string | null;
@@ -71,6 +91,9 @@ export function useRegressionState(options: UseRegressionStateOptions): UseRegre
   const [advSelectedPredictors, setAdvSelectedPredictors] = useState<string[]>([]);
   const [categoricalColumns, setCategoricalColumns] = useState<Set<string>>(new Set());
   const [includeInteractions, setIncludeInteractions] = useState(false);
+
+  // Model reduction state
+  const [reductionHistory, setReductionHistory] = useState<ReductionStep[]>([]);
 
   // Modal state
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
@@ -125,6 +148,24 @@ export function useRegressionState(options: UseRegressionStateOptions): UseRegre
     });
   }, []);
 
+  // Model reduction actions
+  const addReductionStep = useCallback((step: ReductionStep) => {
+    setReductionHistory(prev => [...prev, step]);
+  }, []);
+
+  const updateLastStepAdjR2After = useCallback((adjR2After: number) => {
+    setReductionHistory(prev => {
+      if (prev.length === 0) return prev;
+      const updated = [...prev];
+      updated[updated.length - 1] = { ...updated[updated.length - 1], adjR2After };
+      return updated;
+    });
+  }, []);
+
+  const clearReductionHistory = useCallback(() => {
+    setReductionHistory([]);
+  }, []);
+
   return {
     // Mode
     mode,
@@ -141,6 +182,12 @@ export function useRegressionState(options: UseRegressionStateOptions): UseRegre
     toggleCategorical,
     includeInteractions,
     setIncludeInteractions,
+
+    // Model reduction
+    reductionHistory,
+    addReductionStep,
+    updateLastStepAdjR2After,
+    clearReductionHistory,
 
     // Modal
     expandedChart,

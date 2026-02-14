@@ -112,6 +112,7 @@ export {
 export {
   useRegressionState,
   type RegressionMode,
+  type ReductionStep,
   type UseRegressionStateOptions,
   type UseRegressionStateReturn,
 } from './useRegressionState';

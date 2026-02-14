@@ -1,13 +1,15 @@
-import React, { useMemo, ReactNode } from 'react';
+import React, { useMemo, useRef, useEffect, ReactNode } from 'react';
 import {
   calculateRegression,
   calculateMultipleRegression,
+  suggestTermRemoval,
   type RegressionResult,
   type DataRow,
   type SpecLimits,
   type MultiRegressionResult,
+  type TermRemovalSuggestion,
 } from '@variscout/core';
-import { useColumnClassification, useRegressionState } from '@variscout/hooks';
+import { useColumnClassification, useRegressionState, type ReductionStep } from '@variscout/hooks';
 import { HelpTooltip } from '../HelpTooltip';
 import { useGlossary } from '../../hooks/useGlossary';
 import { BarChart3, Layers } from 'lucide-react';
@@ -89,6 +91,11 @@ export interface AdvancedRegressionViewProps {
   includeInteractions: boolean;
   setIncludeInteractions: (value: boolean) => void;
   multiRegressionResult: MultiRegressionResult | null;
+  // Model reduction
+  suggestion: TermRemovalSuggestion | null;
+  reductionHistory: ReductionStep[];
+  onRemoveTerm: (term: string) => void;
+  onClearHistory: () => void;
 }
 
 /**
@@ -185,6 +192,16 @@ const RegressionPanelBase: React.FC<RegressionPanelBaseProps> = ({
     regression.mode,
   ]);
 
+  // Track pending reduction removal to update adjR2After on next render
+  const pendingRemovalRef = useRef(false);
+
+  useEffect(() => {
+    if (pendingRemovalRef.current && multiRegressionResult) {
+      regression.updateLastStepAdjR2After(multiRegressionResult.adjustedRSquared);
+      pendingRemovalRef.current = false;
+    }
+  }, [multiRegressionResult, regression]);
+
   // Sort by R² for ranking display (simple mode)
   const sortedByStrength = useMemo(() => {
     return [...regressionResults].sort((a, b) => {
@@ -278,6 +295,20 @@ const RegressionPanelBase: React.FC<RegressionPanelBaseProps> = ({
             includeInteractions: regression.includeInteractions,
             setIncludeInteractions: regression.setIncludeInteractions,
             multiRegressionResult,
+            suggestion: multiRegressionResult ? suggestTermRemoval(multiRegressionResult) : null,
+            reductionHistory: regression.reductionHistory,
+            onRemoveTerm: (term: string) => {
+              const adjR2Before = multiRegressionResult?.adjustedRSquared ?? 0;
+              regression.addReductionStep({
+                term,
+                pValue: multiRegressionResult?.coefficients.find(c => c.term === term)?.pValue ?? 1,
+                adjR2Before,
+                adjR2After: adjR2Before, // Placeholder — updated via effect on next render
+              });
+              pendingRemovalRef.current = true;
+              regression.toggleAdvPredictor(term);
+            },
+            onClearHistory: regression.clearReductionHistory,
           })}
     </div>
   );

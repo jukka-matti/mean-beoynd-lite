@@ -150,12 +150,6 @@ const MindmapWindow: React.FC = () => {
     });
   }, []);
 
-  const handleNavigateToWhatIf = useCallback(() => {
-    if (window.opener) {
-      window.opener.postMessage({ type: 'MINDMAP_NAVIGATE_TO_WHATIF' }, window.location.origin);
-    }
-  }, []);
-
   // Compute mindmap data
   const rawData = syncData?.rawData ?? [];
   const factors = syncData?.factors ?? [];
@@ -401,7 +395,6 @@ const MindmapWindow: React.FC = () => {
           edges={interactionEdges ?? undefined}
           narrativeSteps={narrativeSteps}
           onAnnotationChange={handleAnnotationChange}
-          onNavigateToWhatIf={handleNavigateToWhatIf}
           width={380}
           height={600}
         />

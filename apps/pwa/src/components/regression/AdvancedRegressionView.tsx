@@ -1,8 +1,13 @@
 import React from 'react';
-import { formatPValue, getStars, type MultiRegressionResult } from '@variscout/core';
+import {
+  formatPValue,
+  getStars,
+  type MultiRegressionResult,
+  type TermRemovalSuggestion,
+} from '@variscout/core';
 import { HelpTooltip, useGlossary } from '@variscout/ui';
-import { ChevronDown, X, AlertTriangle } from 'lucide-react';
-import type { ColumnClassification } from '@variscout/hooks';
+import { ChevronDown, X, AlertTriangle, Lightbulb, CheckCircle } from 'lucide-react';
+import type { ColumnClassification, ReductionStep } from '@variscout/hooks';
 
 interface AdvancedRegressionViewProps {
   outcome: string;
@@ -14,10 +19,14 @@ interface AdvancedRegressionViewProps {
   includeInteractions: boolean;
   setIncludeInteractions: (include: boolean) => void;
   multiRegressionResult: MultiRegressionResult | null;
+  suggestion: TermRemovalSuggestion | null;
+  reductionHistory: ReductionStep[];
+  onRemoveTerm: (term: string) => void;
+  onClearHistory: () => void;
 }
 
 /**
- * Advanced regression mode: GLM analysis with predictor selection
+ * Advanced regression mode: GLM analysis with predictor selection and guided model reduction
  */
 export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
   outcome,
@@ -29,6 +38,10 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
   includeInteractions,
   setIncludeInteractions,
   multiRegressionResult,
+  suggestion,
+  reductionHistory,
+  onRemoveTerm,
+  onClearHistory,
 }) => {
   const { getTerm } = useGlossary();
   const numericColumns = columns.numeric;
@@ -205,6 +218,80 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
               </div>
             </div>
 
+            {/* Model Reduction Banner */}
+            {suggestion ? (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <Lightbulb size={16} className="text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-amber-400 mb-1">
+                      Suggestion: Remove &ldquo;{suggestion.term}&rdquo; (p ={' '}
+                      {suggestion.pValue.toFixed(3)})
+                    </div>
+                    <p className="text-xs text-amber-300/80 mb-3">{suggestion.explanation}</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onRemoveTerm(suggestion.term)}
+                        className="px-3 py-1.5 text-xs font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 rounded-lg transition-colors"
+                      >
+                        Remove term
+                      </button>
+                      <button
+                        onClick={() => {}} // Keep all — no action needed, just dismiss visually
+                        className="px-3 py-1.5 text-xs font-medium text-content-secondary hover:text-content hover:bg-surface-tertiary rounded-lg transition-colors"
+                      >
+                        Keep all
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : multiRegressionResult.coefficients.length > 0 ? (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3">
+                <div className="flex items-center gap-2 text-sm text-green-400">
+                  <CheckCircle size={16} />
+                  All terms significant — model is well-specified
+                </div>
+              </div>
+            ) : null}
+
+            {/* Reduction History */}
+            {reductionHistory.length > 0 && (
+              <div className="bg-surface-secondary rounded-xl border border-edge p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-content">Reduction History</h3>
+                  <button
+                    onClick={onClearHistory}
+                    className="text-[10px] text-content-muted hover:text-content transition-colors"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="space-y-1.5 text-xs font-mono">
+                  {reductionHistory.map((step, i) => {
+                    const adjR2Change = step.adjR2After - step.adjR2Before;
+                    const improved = adjR2Change >= -0.001; // Within rounding tolerance
+                    return (
+                      <div key={i} className="flex items-center gap-2 text-content-secondary">
+                        <span className="text-content-muted w-12">Step {i + 1}:</span>
+                        <span>
+                          Removed {step.term} (p={step.pValue.toFixed(2)})
+                        </span>
+                        <span className="text-content-muted">—</span>
+                        <span>
+                          Adj. R²: {(step.adjR2Before * 100).toFixed(1)}% →{' '}
+                          {(step.adjR2After * 100).toFixed(1)}%
+                        </span>
+                        <span className={improved ? 'text-green-400' : 'text-amber-400'}>
+                          {improved ? '✓' : '↓'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* VIF Warnings */}
             {multiRegressionResult.vifWarnings.length > 0 && (
               <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
@@ -293,37 +380,52 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                       <td className="text-right px-4 py-2 text-content-muted">-</td>
                       <td className="text-right px-4 py-2 text-content-muted">-</td>
                     </tr>
-                    {multiRegressionResult.coefficients.map(coef => (
-                      <tr key={coef.term} className="border-b border-edge/30">
-                        <td className="px-4 py-2 text-content">{coef.term}</td>
-                        <td className="text-right px-4 py-2 text-content">
-                          {coef.coefficient.toFixed(4)}
-                        </td>
-                        <td className="text-right px-4 py-2 text-content-muted">
-                          {coef.stdError.toFixed(4)}
-                        </td>
-                        <td className="text-right px-4 py-2 text-content">
-                          {coef.tStatistic.toFixed(2)}
-                        </td>
-                        <td
-                          className={`text-right px-4 py-2 ${coef.isSignificant ? 'text-green-400' : 'text-content-muted'}`}
+                    {multiRegressionResult.coefficients.map(coef => {
+                      const isSuggested = suggestion?.term === coef.term;
+                      return (
+                        <tr
+                          key={coef.term}
+                          className={`border-b border-edge/30 ${isSuggested ? 'bg-amber-500/10' : ''}`}
                         >
-                          {formatPValue(coef.pValue)}
-                          {coef.isSignificant && ' *'}
-                        </td>
-                        <td
-                          className={`text-right px-4 py-2 ${
-                            (coef.vif ?? 0) > 10
-                              ? 'text-red-400'
-                              : (coef.vif ?? 0) > 5
-                                ? 'text-amber-400'
-                                : 'text-content-muted'
-                          }`}
-                        >
-                          {coef.vif?.toFixed(2) ?? '-'}
-                        </td>
-                      </tr>
-                    ))}
+                          <td className="px-4 py-2 text-content">
+                            <span className="flex items-center gap-1.5">
+                              {coef.term}
+                              {isSuggested && (
+                                <span className="text-[10px] px-1 py-0.5 bg-amber-500/20 text-amber-400 rounded">
+                                  weakest
+                                </span>
+                              )}
+                            </span>
+                          </td>
+                          <td className="text-right px-4 py-2 text-content">
+                            {coef.coefficient.toFixed(4)}
+                          </td>
+                          <td className="text-right px-4 py-2 text-content-muted">
+                            {coef.stdError.toFixed(4)}
+                          </td>
+                          <td className="text-right px-4 py-2 text-content">
+                            {coef.tStatistic.toFixed(2)}
+                          </td>
+                          <td
+                            className={`text-right px-4 py-2 ${coef.isSignificant ? 'text-green-400' : 'text-content-muted'}`}
+                          >
+                            {formatPValue(coef.pValue)}
+                            {coef.isSignificant && ' *'}
+                          </td>
+                          <td
+                            className={`text-right px-4 py-2 ${
+                              (coef.vif ?? 0) > 10
+                                ? 'text-red-400'
+                                : (coef.vif ?? 0) > 5
+                                  ? 'text-amber-400'
+                                  : 'text-content-muted'
+                            }`}
+                          >
+                            {coef.vif?.toFixed(2) ?? '-'}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

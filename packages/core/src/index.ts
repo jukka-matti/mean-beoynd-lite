@@ -45,6 +45,7 @@ export type {
   RegressionTerm,
   VIFWarning,
   InteractionEdge,
+  TermRemovalSuggestion,
 } from './types';
 
 // Statistics
@@ -72,6 +73,8 @@ export {
   calculateBoxplotStats,
   // Interaction strength (ΔR² between factor pairs)
   getInteractionStrength,
+  // Model reduction
+  suggestTermRemoval,
 } from './stats';
 
 // Matrix utilities (for advanced use)

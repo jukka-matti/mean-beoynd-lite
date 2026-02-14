@@ -58,6 +58,14 @@ Flowcharts for common analyst questions:
 - Defect concentration
 - Specification compliance
 
+### [Investigation to Action](investigation-to-action.md)
+
+The three-phase analyst workflow: **Investigate → Refine → Project**
+
+1. Mindmap drilldown to identify key factors
+2. Guided model reduction in Advanced Regression
+3. What-If scenario modeling for projected improvement
+
 ## Time-Boxed Scenarios
 
 ### [Quick Check (5 Minutes)](quick-check.md)
@@ -83,14 +91,15 @@ Systematic investigation for problem-solving:
 
 ## Workflow Selection Guide
 
-| Your Question                   | Start Here                                       |
-| ------------------------------- | ------------------------------------------------ |
-| "Is my process stable?"         | [Four Pillars](four-pillars-workflow.md)         |
-| "What's causing variation?"     | [Drill-Down](drill-down-workflow.md)             |
-| "Which channel is worst?"       | [Performance Mode](performance-mode-workflow.md) |
-| "Can I trust this measurement?" | [MSA Workflow](msa-workflow.md)                  |
-| "Quick shift check needed"      | [Quick Check](quick-check.md)                    |
-| "Need to solve this problem"    | [Deep Dive](deep-dive.md)                        |
+| Your Question                   | Start Here                                            |
+| ------------------------------- | ----------------------------------------------------- |
+| "Is my process stable?"         | [Four Pillars](four-pillars-workflow.md)              |
+| "What's causing variation?"     | [Drill-Down](drill-down-workflow.md)                  |
+| "Which channel is worst?"       | [Performance Mode](performance-mode-workflow.md)      |
+| "Can I trust this measurement?" | [MSA Workflow](msa-workflow.md)                       |
+| "Quick shift check needed"      | [Quick Check](quick-check.md)                         |
+| "Need to solve this problem"    | [Deep Dive](deep-dive.md)                             |
+| "Full root cause to action"     | [Investigation to Action](investigation-to-action.md) |
 
 ## Related Documentation
 

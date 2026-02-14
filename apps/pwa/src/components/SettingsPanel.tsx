@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, BarChart3, TrendingUp, Target } from 'lucide-react';
+import { X, Plus, BarChart3, TrendingUp, Target, Beaker } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useTheme, type ChartFontScale } from '../context/ThemeContext';
 import ThemeToggle from './ThemeToggle';
@@ -13,6 +13,7 @@ interface SettingsPanelProps {
   activeView: AnalysisView;
   onViewChange: (view: AnalysisView) => void;
   onNewAnalysis: () => void;
+  onOpenWhatIf?: () => void;
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -21,6 +22,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   activeView,
   onViewChange,
   onNewAnalysis,
+  onOpenWhatIf,
 }) => {
   const { displayOptions, setDisplayOptions } = useData();
   const { theme, setTheme } = useTheme();
@@ -170,6 +172,25 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 description="Measurement system analysis"
               />
             </div>
+
+            {/* What-If Simulator (separate page, not a view mode) */}
+            {onOpenWhatIf && (
+              <button
+                onClick={() => {
+                  onOpenWhatIf();
+                  onClose();
+                }}
+                className="w-full flex items-start gap-3 p-3 rounded-lg text-left transition-colors hover:bg-surface-tertiary/50 border border-transparent"
+              >
+                <div className="p-2 rounded-lg bg-surface-tertiary text-content-secondary">
+                  <Beaker size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-content">What-If Simulator</div>
+                  <div className="text-xs text-content-muted">Project process improvements</div>
+                </div>
+              </button>
+            )}
           </div>
 
           {/* Divider */}

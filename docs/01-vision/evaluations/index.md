@@ -19,28 +19,30 @@ Product strategy evaluations for the design tensions and alternative patterns id
 
 ### Patterns
 
-| Pattern                                                          | Verdict    | Tensions Addressed                                     | Philosophy Fit                   |
-| ---------------------------------------------------------------- | ---------- | ------------------------------------------------------ | -------------------------------- |
-| [Factor Suggestion](patterns/factor-suggestion.md)               | **Pursue** | Factor Ordering, Discoverability, When to Stop         | Good (if optional/subtle)        |
-| [Interaction Heatmap](patterns/interaction-heatmap.md)           | **Pursue** | Hierarchy Assumption, Factor Ordering                  | Strong                           |
-| [Parallel Path Comparison](patterns/parallel-path-comparison.md) | **Defer**  | Path Dependency, Hierarchy Assumption                  | Good                             |
-| [Auto-Combination Finder](patterns/auto-combination-finder.md)   | **Defer**  | Hierarchy Assumption, Factor Ordering, Path Dependency | Mixed (conflicts with pedagogy)  |
-| [Small Multiples](patterns/small-multiples.md)                   | **Defer**  | Factor Ordering, Path Dependency                       | Good (scaling limits)            |
-| [Factor Map](patterns/factor-map.md)                             | **Defer**  | All 5 non-mobile tensions                              | Strong (high complexity)         |
-| [Sidebar Filter Panel](patterns/sidebar-filter-panel.md)         | **Reject** | Discoverability                                        | Poor (undermines differentiator) |
+| Pattern                                                          | Verdict                             | Tensions Addressed                                                      | Philosophy Fit                   |
+| ---------------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------- | -------------------------------- |
+| [Factor Suggestion](patterns/factor-suggestion.md)               | **Pursue**                          | Factor Ordering, Discoverability, When to Stop                          | Good (if optional/subtle)        |
+| [Interaction Heatmap](patterns/interaction-heatmap.md)           | **Pursue**                          | Hierarchy Assumption, Factor Ordering                                   | Strong                           |
+| [Parallel Path Comparison](patterns/parallel-path-comparison.md) | **Defer**                           | Path Dependency, Hierarchy Assumption                                   | Good                             |
+| [Auto-Combination Finder](patterns/auto-combination-finder.md)   | **Defer**                           | Hierarchy Assumption, Factor Ordering, Path Dependency                  | Mixed (conflicts with pedagogy)  |
+| [Small Multiples](patterns/small-multiples.md)                   | **Defer**                           | Factor Ordering, Path Dependency                                        | Good (scaling limits)            |
+| [Factor Map](patterns/factor-map.md)                             | **Defer**                           | All 5 non-mobile tensions                                               | Strong (high complexity)         |
+| [Investigation Mindmap](patterns/investigation-mindmap.md)       | **Primary** (replaces Funnel)       | Hierarchy Assumption, Discoverability, Factor Ordering, Path Dependency | Strong (lighter Factor Map)      |
+| [Investigation Narrative](patterns/investigation-narrative.md)   | **Primary** (absorbed into Mindmap) | When to Stop, Path Dependency, Discoverability                          | Strong                           |
+| [Sidebar Filter Panel](patterns/sidebar-filter-panel.md)         | **Reject**                          | Discoverability                                                         | Poor (undermines differentiator) |
 
 ---
 
 ## Crosswalk: Which Patterns Address Which Tensions
 
-|                          | Factor Suggestion | Interaction Heatmap | Parallel Path | Auto-Combination | Small Multiples | Factor Map  | Sidebar Panel |
-| ------------------------ | ----------------- | ------------------- | ------------- | ---------------- | --------------- | ----------- | ------------- |
-| **Hierarchy Assumption** |                   | **primary**         | secondary     | **primary**      |                 | **primary** |               |
-| **Discoverability**      | secondary         |                     |               |                  |                 | secondary   | **primary**   |
-| **Factor Ordering**      | **primary**       | secondary           |               | **primary**      | partial         | **primary** |               |
-| **When to Stop**         | secondary         |                     |               |                  |                 |             |               |
-| **Mobile Screen Budget** |                   |                     |               |                  | worsens         | improves    | worsens       |
-| **Path Dependency**      |                   |                     | **primary**   | **primary**      | partial         | **primary** |               |
+|                          | Factor Suggestion | Interaction Heatmap | Parallel Path | Auto-Combination | Small Multiples | Factor Map  | Inv. Mindmap | Inv. Narrative | Sidebar Panel |
+| ------------------------ | ----------------- | ------------------- | ------------- | ---------------- | --------------- | ----------- | ------------ | -------------- | ------------- |
+| **Hierarchy Assumption** |                   | **primary**         | secondary     | **primary**      |                 | **primary** | **primary**  |                |               |
+| **Discoverability**      | secondary         |                     |               |                  |                 | secondary   | secondary    | secondary      | **primary**   |
+| **Factor Ordering**      | **primary**       | secondary           |               | **primary**      | partial         | **primary** | **primary**  |                |               |
+| **When to Stop**         | secondary         |                     |               |                  |                 |             |              | **primary**    |               |
+| **Mobile Screen Budget** |                   |                     |               |                  | worsens         | improves    | improves     |                | worsens       |
+| **Path Dependency**      |                   |                     | **primary**   | **primary**      | partial         | **primary** | secondary    | secondary      |               |
 
 **Legend**: **primary** = directly resolves the tension. secondary = partially addresses. partial = helps for some cases. worsens = makes the tension worse.
 
@@ -48,13 +50,16 @@ Product strategy evaluations for the design tensions and alternative patterns id
 
 ## Recommended Sequence
 
-Based on the evaluations, the suggested implementation sequence is:
+The Investigation Mindmap consolidates Factor Suggestion, Interaction Heatmap, and Investigation Narrative into one three-mode component that replaces the Funnel Panel. Implementation is phased by mode:
 
-1. **Phase 1: Factor Suggestion** --- Low complexity, addresses the most common pain point (factor ordering), improves discoverability as a side effect. Establishes the "guided drill-down" pattern.
-2. **Phase 2: Interaction Heatmap** --- Moderate complexity, addresses the highest-weight tension (hierarchy assumption). Builds on the regression engine already in `@variscout/core`.
-3. **Phase 3 (future): Factor Map / Small Multiples / Parallel Path Comparison** --- Higher complexity, addresses secondary tensions. Factor map is the most ambitious but addresses the most tensions simultaneously.
+1. **Phase A: Drilldown Mode** — Replaces the Funnel Panel with a spatial investigation view. Factor nodes sized by η², drill trail, suggested-next pulsing, click-to-filter popovers. Subsumes Factor Suggestion (the suggested-next node provides the same guidance). New infrastructure: `useDrillPath` hook, Mindmap SVG component.
+2. **Phase B: Interaction Mode** — Adds edges between factor nodes showing interaction strength (ΔR²) and significance. Subsumes Interaction Heatmap (visual edges replace the standalone heatmap). New infrastructure: `getInteractionStrength()` helper in `@variscout/core`.
+3. **Phase C: Narrative Mode + WhatIfSimulator separation** — Reorganizes nodes into a timeline for stakeholder communication. Step annotations, interaction cross-connections, conclusion panel, PNG export. WhatIfSimulator moves to standalone `/whatif` route.
+4. **Phase D: Polish + Azure enhancements** — Split-pane option (Azure, viewport > 1280px), annotations (Azure: OneDrive-synced; PWA: session-only), SVG export (Azure), "Model improvements" → WhatIfSimulator link.
 
-The sidebar filter panel is rejected as incompatible with VariScout's core differentiator. The auto-combination finder is deferred to the Azure App only, as it conflicts with the PWA's educational mission.
+Each phase builds on the previous: B needs A's nodes, C needs A's drill trail + B's edges, D needs all three modes complete. See [Design Spec §12](design-spec-investigation-mindmap.md#12-implementation-phasing) for full infrastructure prerequisites and reuse mapping.
+
+The sidebar filter panel is rejected as incompatible with VariScout's core differentiator. The auto-combination finder is deferred to the Azure App only, as it conflicts with the PWA's educational mission. Parallel Path Comparison, Small Multiples, and Factor Map are deferred — the Mindmap addresses the tensions they targeted through consolidation rather than additional surfaces.
 
 ---
 
@@ -66,6 +71,20 @@ Each evaluation uses a consistent template:
 - **Pattern files**: The concept described, tensions addressed, philosophy alignment (EDA, Sock Mystery, Four Lenses, Two Voices), persona impact, platform fit (PWA/Azure/Excel), competitive landscape, and strategic verdict.
 
 Content is seeded from [Progressive Stratification](../progressive-stratification.md) Part 2 and expanded with assessments drawn from [persona definitions](../../02-journeys/personas/) and [product philosophy](../philosophy.md).
+
+---
+
+## Design Preparation
+
+Pre-design deliverables that bridge the gap between competitive intelligence and actionable UI/UX design work.
+
+| Document                                                                   | Purpose                                                                                                                                                                                                                              |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Design Spec: Investigation Mindmap](design-spec-investigation-mindmap.md) | **Authoritative spec.** Three-layer architecture (Chart/Navigation/Investigation), three Mindmap modes (Drilldown/Interaction/Narrative), Funnel Panel replacement mapping, progressive disclosure design.                           |
+| [Design Brief](design-brief-guided-investigation.md)                       | Historical: competitive intelligence → statistical methodology → existing UI audit → design principles → design questions for the UI/UX phase.                                                                                       |
+| [Investigation Flow Map](investigation-flow-map.md)                        | Historical: step-by-step walkthrough of a complete investigation using the Pizza Delivery dataset. Documents existing guidance at each step and identifies gaps. The Design Spec Section 8 provides the updated "after" walkthrough. |
+
+The [Design Spec](design-spec-investigation-mindmap.md) is the authoritative design document for the Investigation Mindmap feature. It consolidates the Design Brief's statistical methodology, the Flow Map's step-by-step scenario, the Investigation Mindmap's two-mode concept (elevated to three modes), and the Investigation Narrative (absorbed as the Mindmap's third mode) into a single implementable specification. The Design Brief and Flow Map are retained as historical design thinking.
 
 ---
 

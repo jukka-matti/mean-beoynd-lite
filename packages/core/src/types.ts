@@ -703,6 +703,20 @@ export interface ChannelLimitResult {
 // Multiple Regression Types - General Linear Model (GLM) support
 // ============================================================================
 
+/**
+ * Suggestion for which term to remove during guided model reduction
+ */
+export interface TermRemovalSuggestion {
+  /** Term label to remove */
+  term: string;
+  /** P-value of the suggested term */
+  pValue: number;
+  /** Reason for the suggestion */
+  reason: 'not_significant' | 'high_vif' | 'redundant';
+  /** Plain-language explanation */
+  explanation: string;
+}
+
 export interface MultiRegressionResult {
   /** Response (Y) column name */
   yColumn: string;

@@ -94,8 +94,6 @@ export interface InvestigationMindmapProps {
   narrativeSteps?: NarrativeStep[];
   /** Called when user edits an annotation (narrative mode) */
   onAnnotationChange?: (stepIndex: number, text: string) => void;
-  /** Called when user clicks "Model improvements" (narrative mode) */
-  onNavigateToWhatIf?: () => void;
   /** Container width from withParentSize */
   parentWidth?: number;
   /** Container height from withParentSize */
@@ -439,48 +437,6 @@ const StepAnnotation: React.FC<StepAnnotationProps> = ({
         </div>
       </foreignObject>
     </>
-  );
-};
-
-interface ModelImprovementsButtonProps {
-  x: number;
-  y: number;
-  svgWidth: number;
-  onNavigateToWhatIf: () => void;
-}
-
-const ModelImprovementsButton: React.FC<ModelImprovementsButtonProps> = ({
-  x,
-  y,
-  svgWidth,
-  onNavigateToWhatIf,
-}) => {
-  const btnWidth = 160;
-  const left = Math.max(4, Math.min(x - btnWidth / 2, svgWidth - btnWidth - 4));
-
-  return (
-    <foreignObject x={left} y={y} width={btnWidth} height={36}>
-      <button
-        onClick={onNavigateToWhatIf}
-        style={{
-          width: '100%',
-          padding: '7px 12px',
-          background: 'rgba(79,70,229,0.15)',
-          border: '1px solid rgba(99,102,241,0.4)',
-          borderRadius: 8,
-          color: '#a5b4fc',
-          fontSize: 11,
-          fontWeight: 600,
-          cursor: 'pointer',
-          textAlign: 'center',
-          transition: 'background 0.15s',
-        }}
-        onMouseEnter={e => ((e.target as HTMLElement).style.background = 'rgba(79,70,229,0.25)')}
-        onMouseLeave={e => ((e.target as HTMLElement).style.background = 'rgba(79,70,229,0.15)')}
-      >
-        Model improvements &rarr;
-      </button>
-    </foreignObject>
   );
 };
 
@@ -840,7 +796,6 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
   onEdgeClick,
   narrativeSteps,
   onAnnotationChange,
-  onNavigateToWhatIf,
   parentWidth,
   parentHeight,
   width: explicitWidth,
@@ -1130,24 +1085,14 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
               const conclusionX = steps.length === 1 ? last.x : Math.min(last.x + 60, width - 90);
               const conclusionY = MARGIN.top + 4;
               return (
-                <>
-                  <ConclusionPanel
-                    steps={steps}
-                    x={conclusionX}
-                    y={conclusionY}
-                    svgWidth={width}
-                    targetPct={targetPct}
-                    chrome={chrome}
-                  />
-                  {onNavigateToWhatIf && (
-                    <ModelImprovementsButton
-                      x={conclusionX}
-                      y={conclusionY + 90}
-                      svgWidth={width}
-                      onNavigateToWhatIf={onNavigateToWhatIf}
-                    />
-                  )}
-                </>
+                <ConclusionPanel
+                  steps={steps}
+                  x={conclusionX}
+                  y={conclusionY}
+                  svgWidth={width}
+                  targetPct={targetPct}
+                  chrome={chrome}
+                />
               );
             })()}
 
