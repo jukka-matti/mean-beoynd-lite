@@ -67,6 +67,8 @@ export interface NarrativeStep {
   cpkAfter: number | undefined;
   countBefore: number;
   countAfter: number;
+  /** User-entered annotation for this step (session-only) */
+  annotation?: string;
 }
 
 export interface InvestigationMindmapProps {
@@ -90,6 +92,10 @@ export interface InvestigationMindmapProps {
   onEdgeClick?: (factorA: string, factorB: string) => void;
   /** Drill step data for narrative mode annotations */
   narrativeSteps?: NarrativeStep[];
+  /** Called when user edits an annotation (narrative mode) */
+  onAnnotationChange?: (stepIndex: number, text: string) => void;
+  /** Called when user clicks "Model improvements" (narrative mode) */
+  onNavigateToWhatIf?: () => void;
   /** Container width from withParentSize */
   parentWidth?: number;
   /** Container height from withParentSize */
@@ -276,6 +282,7 @@ interface StepAnnotationProps {
   nodeRadius: number;
   svgWidth: number;
   chrome: ReturnType<typeof useChartTheme>['chrome'];
+  onAnnotationChange?: (stepIndex: number, text: string) => void;
 }
 
 const StepAnnotation: React.FC<StepAnnotationProps> = ({
@@ -286,12 +293,17 @@ const StepAnnotation: React.FC<StepAnnotationProps> = ({
   nodeRadius,
   svgWidth,
   chrome,
+  onAnnotationChange,
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(step.annotation ?? '');
+
   const boxLeft = Math.max(
     4,
     Math.min(x - ANNOTATION_BOX_WIDTH / 2, svgWidth - ANNOTATION_BOX_WIDTH - 4)
   );
   const boxTop = y + nodeRadius + 20;
+  const boxHeight = isEditing ? 190 : 120;
 
   const meanImproved =
     step.meanAfter !== step.meanBefore
@@ -306,6 +318,21 @@ const StepAnnotation: React.FC<StepAnnotationProps> = ({
     step.values.length <= 2
       ? step.values.map(String).join(', ')
       : `${step.values[0]} +${step.values.length - 1}`;
+
+  const handleStartEdit = () => {
+    setEditText(step.annotation ?? '');
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    onAnnotationChange?.(stepIndex, editText.trim());
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditText(step.annotation ?? '');
+    setIsEditing(false);
+  };
 
   return (
     <>
@@ -323,7 +350,7 @@ const StepAnnotation: React.FC<StepAnnotationProps> = ({
       </text>
 
       {/* Annotation card below node */}
-      <foreignObject x={boxLeft} y={boxTop} width={ANNOTATION_BOX_WIDTH} height={120}>
+      <foreignObject x={boxLeft} y={boxTop} width={ANNOTATION_BOX_WIDTH} height={boxHeight}>
         <div
           style={{
             background: 'rgba(30,41,59,0.85)',
@@ -332,7 +359,9 @@ const StepAnnotation: React.FC<StepAnnotationProps> = ({
             padding: '6px 8px',
             fontSize: 10,
             lineHeight: 1.5,
+            cursor: onAnnotationChange && !isEditing ? 'pointer' : 'default',
           }}
+          onClick={onAnnotationChange && !isEditing ? handleStartEdit : undefined}
         >
           <div style={{ color: '#e2e8f0', fontWeight: 600, marginBottom: 2 }}>
             {step.factor} = {valuesLabel}
@@ -351,9 +380,107 @@ const StepAnnotation: React.FC<StepAnnotationProps> = ({
           <div style={{ color: '#94a3b8' }}>
             n: {step.countBefore} &rarr; {step.countAfter}
           </div>
+
+          {/* Annotation section */}
+          {isEditing ? (
+            <div style={{ marginTop: 4 }}>
+              <textarea
+                value={editText}
+                onChange={e => setEditText(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSave();
+                  }
+                  if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCancel();
+                  }
+                }}
+                autoFocus
+                rows={2}
+                style={{
+                  width: '100%',
+                  background: 'rgba(59,130,246,0.1)',
+                  border: '1px solid rgba(59,130,246,0.3)',
+                  borderRadius: 4,
+                  padding: '3px 5px',
+                  fontSize: 10,
+                  lineHeight: 1.4,
+                  color: '#e2e8f0',
+                  resize: 'none',
+                  outline: 'none',
+                }}
+                onClick={e => e.stopPropagation()}
+                placeholder="Add a note..."
+              />
+              <div style={{ fontSize: 8, color: '#64748b', marginTop: 2 }}>
+                Enter to save &middot; Esc to cancel
+              </div>
+            </div>
+          ) : step.annotation ? (
+            <div
+              style={{
+                marginTop: 4,
+                padding: '3px 5px',
+                background: 'rgba(59,130,246,0.1)',
+                borderRadius: 4,
+                color: '#93c5fd',
+                fontSize: 10,
+                lineHeight: 1.4,
+                wordBreak: 'break-word',
+              }}
+            >
+              {step.annotation}
+            </div>
+          ) : onAnnotationChange ? (
+            <div style={{ marginTop: 4, color: '#475569', fontSize: 9 }}>+ Add note</div>
+          ) : null}
         </div>
       </foreignObject>
     </>
+  );
+};
+
+interface ModelImprovementsButtonProps {
+  x: number;
+  y: number;
+  svgWidth: number;
+  onNavigateToWhatIf: () => void;
+}
+
+const ModelImprovementsButton: React.FC<ModelImprovementsButtonProps> = ({
+  x,
+  y,
+  svgWidth,
+  onNavigateToWhatIf,
+}) => {
+  const btnWidth = 160;
+  const left = Math.max(4, Math.min(x - btnWidth / 2, svgWidth - btnWidth - 4));
+
+  return (
+    <foreignObject x={left} y={y} width={btnWidth} height={36}>
+      <button
+        onClick={onNavigateToWhatIf}
+        style={{
+          width: '100%',
+          padding: '7px 12px',
+          background: 'rgba(79,70,229,0.15)',
+          border: '1px solid rgba(99,102,241,0.4)',
+          borderRadius: 8,
+          color: '#a5b4fc',
+          fontSize: 11,
+          fontWeight: 600,
+          cursor: 'pointer',
+          textAlign: 'center',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => ((e.target as HTMLElement).style.background = 'rgba(79,70,229,0.25)')}
+        onMouseLeave={e => ((e.target as HTMLElement).style.background = 'rgba(79,70,229,0.15)')}
+      >
+        Model improvements &rarr;
+      </button>
+    </foreignObject>
   );
 };
 
@@ -712,6 +839,8 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
   edges,
   onEdgeClick,
   narrativeSteps,
+  onAnnotationChange,
+  onNavigateToWhatIf,
   parentWidth,
   parentHeight,
   width: explicitWidth,
@@ -988,6 +1117,7 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
                 nodeRadius={getNodeRadius(step.etaSquared)}
                 svgWidth={width}
                 chrome={chrome}
+                onAnnotationChange={onAnnotationChange}
               />
             );
           })}
@@ -1000,14 +1130,24 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
               const conclusionX = steps.length === 1 ? last.x : Math.min(last.x + 60, width - 90);
               const conclusionY = MARGIN.top + 4;
               return (
-                <ConclusionPanel
-                  steps={steps}
-                  x={conclusionX}
-                  y={conclusionY}
-                  svgWidth={width}
-                  targetPct={targetPct}
-                  chrome={chrome}
-                />
+                <>
+                  <ConclusionPanel
+                    steps={steps}
+                    x={conclusionX}
+                    y={conclusionY}
+                    svgWidth={width}
+                    targetPct={targetPct}
+                    chrome={chrome}
+                  />
+                  {onNavigateToWhatIf && (
+                    <ModelImprovementsButton
+                      x={conclusionX}
+                      y={conclusionY + 90}
+                      svgWidth={width}
+                      onNavigateToWhatIf={onNavigateToWhatIf}
+                    />
+                  )}
+                </>
               );
             })()}
 

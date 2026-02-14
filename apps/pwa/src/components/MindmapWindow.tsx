@@ -76,6 +76,7 @@ const MindmapWindow: React.FC = () => {
   const [localFilterStack, setLocalFilterStack] = useState<FilterAction[]>([]);
   const [mode, setMode] = useState<MindmapMode>('drilldown');
   const [interactionEdges, setInteractionEdges] = useState<MindmapEdge[] | null>(null);
+  const [annotations, setAnnotations] = useState<Map<number, string>>(new Map());
 
   // Load initial data from localStorage
   useEffect(() => {
@@ -135,6 +136,24 @@ const MindmapWindow: React.FC = () => {
       values: [value],
     });
     setLocalFilterStack(prev => [...prev, action]);
+  }, []);
+
+  const handleAnnotationChange = useCallback((stepIndex: number, text: string) => {
+    setAnnotations(prev => {
+      const next = new Map(prev);
+      if (text) {
+        next.set(stepIndex, text);
+      } else {
+        next.delete(stepIndex);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleNavigateToWhatIf = useCallback(() => {
+    if (window.opener) {
+      window.opener.postMessage({ type: 'MINDMAP_NAVIGATE_TO_WHATIF' }, window.location.origin);
+    }
   }, []);
 
   // Compute mindmap data
@@ -265,10 +284,10 @@ const MindmapWindow: React.FC = () => {
     });
   }, [factors, filteredData, outcome, drilledFactors, drillPath, localFilterStack]);
 
-  // Narrative steps mapped from drillPath
+  // Narrative steps mapped from drillPath (with annotations merged)
   const narrativeSteps: NarrativeStep[] = useMemo(
     () =>
-      drillPath.map(step => ({
+      drillPath.map((step, i) => ({
         factor: step.factor,
         values: step.values,
         etaSquared: step.etaSquared,
@@ -279,8 +298,9 @@ const MindmapWindow: React.FC = () => {
         cpkAfter: step.cpkAfter,
         countBefore: step.countBefore,
         countAfter: step.countAfter,
+        annotation: annotations.get(i),
       })),
-    [drillPath]
+    [drillPath, annotations]
   );
 
   // PNG export for narrative mode
@@ -380,6 +400,8 @@ const MindmapWindow: React.FC = () => {
           mode={mode}
           edges={interactionEdges ?? undefined}
           narrativeSteps={narrativeSteps}
+          onAnnotationChange={handleAnnotationChange}
+          onNavigateToWhatIf={handleNavigateToWhatIf}
           width={380}
           height={600}
         />

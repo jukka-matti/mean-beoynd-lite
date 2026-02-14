@@ -427,6 +427,12 @@ function App() {
     setIsMindmapPanelOpen(false);
   }, []);
 
+  // Navigate from mindmap to WhatIf (funnel panel)
+  const handleNavigateToWhatIfFromMindmap = useCallback(() => {
+    setIsMindmapPanelOpen(false);
+    setIsFunnelPanelOpen(true);
+  }, []);
+
   // Open mindmap in popout window
   const handleOpenMindmapPopout = useCallback(() => {
     if (outcome) {
@@ -457,11 +463,14 @@ function App() {
         const { factor, value } = event.data;
         handleMindmapDrillCategory(factor, value);
       }
+      if (event.data?.type === 'MINDMAP_NAVIGATE_TO_WHATIF') {
+        handleNavigateToWhatIfFromMindmap();
+      }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [handleMindmapDrillCategory]);
+  }, [handleMindmapDrillCategory, handleNavigateToWhatIfFromMindmap]);
 
   // Close data table and clear highlight
   const handleCloseDataTable = useCallback(() => {
@@ -711,6 +720,7 @@ function App() {
           columnAliases={columnAliases}
           onDrillCategory={handleMindmapDrillCategory}
           onOpenPopout={handleOpenMindmapPopout}
+          onNavigateToWhatIf={handleNavigateToWhatIfFromMindmap}
         />
       )}
 
