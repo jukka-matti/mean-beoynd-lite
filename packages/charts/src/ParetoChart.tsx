@@ -28,6 +28,10 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
   showBranding = true,
   brandingText,
   onBarClick,
+  onYAxisClick,
+  onXAxisClick,
+  comparisonData,
+  tooltipContent,
 }) => {
   const { fonts, margin, width, height, sourceBarHeight } = useChartLayout({
     parentWidth,
@@ -72,6 +76,29 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
       >
         <Group left={margin.left} top={margin.top}>
           <GridRows scale={yScale} width={width} stroke={chromeColors.gridLine} />
+
+          {/* Ghost bars - comparison data (rendered behind regular bars) */}
+          {comparisonData &&
+            data.map((d, i) => {
+              const expectedValue = comparisonData.get(d.key);
+              if (expectedValue === undefined) return null;
+              return (
+                <Bar
+                  key={`ghost-${i}`}
+                  x={xScale(d.key)}
+                  y={yScale(expectedValue)}
+                  width={xScale.bandwidth()}
+                  height={height - yScale(expectedValue)}
+                  fill={chromeColors.axisSecondary}
+                  opacity={0.3}
+                  rx={4}
+                  stroke={chromeColors.axisPrimary}
+                  strokeWidth={1}
+                  strokeDasharray="4,2"
+                  pointerEvents="none"
+                />
+              );
+            })}
 
           {/* Bars */}
           {data.map((d, i) => (
@@ -159,6 +186,8 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
             fill={chromeColors.labelPrimary}
             fontSize={fonts.axisLabel}
             fontWeight={500}
+            onClick={onYAxisClick}
+            style={onYAxisClick ? { cursor: 'pointer' } : undefined}
           >
             {yAxisLabel}
           </text>
@@ -207,6 +236,8 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
             fill={chromeColors.labelPrimary}
             fontSize={fonts.axisLabel}
             fontWeight={500}
+            onClick={onXAxisClick}
+            style={onXAxisClick ? { cursor: 'pointer' } : undefined}
           >
             {xAxisLabel}
           </text>
@@ -239,11 +270,17 @@ const ParetoChartBase: React.FC<ParetoChartProps> = ({
             fontSize: fonts.tooltipText,
           }}
         >
-          <div>
-            <strong>{tooltipData.key}</strong>
-          </div>
-          <div>Count: {tooltipData.value}</div>
-          <div>Cumulative: {tooltipData.cumulativePercentage.toFixed(1)}%</div>
+          {tooltipContent ? (
+            tooltipContent(tooltipData)
+          ) : (
+            <>
+              <div>
+                <strong>{tooltipData.key}</strong>
+              </div>
+              <div>Count: {tooltipData.value}</div>
+              <div>Cumulative: {tooltipData.cumulativePercentage.toFixed(1)}%</div>
+            </>
+          )}
         </TooltipWithBounds>
       )}
     </>

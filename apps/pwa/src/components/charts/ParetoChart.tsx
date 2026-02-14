@@ -1,32 +1,32 @@
+/**
+ * PWA ParetoChart - Thin wrapper around shared @variscout/charts ParetoChartBase
+ *
+ * This wrapper:
+ * 1. Gets data from DataContext via useData()
+ * 2. Computes ParetoDataPoint[] with aggregation mode support
+ * 3. Handles comparison mode (ghost bars via comparisonData)
+ * 4. Handles separate Pareto file data
+ * 5. Shows empty state with action buttons when no data
+ * 6. Manages PWA-specific UI (toggle buttons, axis label editing)
+ * 7. Passes everything to shared ParetoChartBase
+ */
 import React, { useMemo, useState } from 'react';
-import { Group } from '@visx/group';
-import { Bar, LinePath, Circle } from '@visx/shape';
-import { scaleBand, scaleLinear } from '@visx/scale';
-import { AxisBottom, AxisLeft, AxisRight } from '@visx/axis';
-import { GridRows } from '@visx/grid';
 import { withParentSize } from '@visx/responsive';
 import * as d3 from 'd3';
 import { useData } from '../../context/DataContext';
-import {
-  useResponsiveChartMargins,
-  useResponsiveChartFonts,
-} from '../../hooks/useResponsiveChartMargins';
+import { ParetoChartBase, type ParetoDataPoint } from '@variscout/charts';
 import AxisEditor from '../AxisEditor';
-import ChartSourceBar, { getSourceBarHeight } from './ChartSourceBar';
-import ChartSignature from './ChartSignature';
+import { shouldShowBranding, getBrandingText } from '../../lib/edition';
 import {
-  Edit2,
-  Info,
   Eye,
   EyeOff,
+  Hash,
+  Sigma,
+  Info,
   BarChart3,
   Upload,
   EyeOff as HideIcon,
-  Hash,
-  Sigma,
 } from 'lucide-react';
-import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
-import { chartColors, useChartTheme } from '@variscout/charts';
 
 // Empty state component for when no Pareto data is available
 interface ParetoEmptyStateProps {
@@ -83,21 +83,13 @@ interface ParetoChartProps {
   parentWidth: number;
   parentHeight: number;
   onDrillDown?: (factor: string, value: string) => void;
-  /** Show ghost bars comparing filtered to full population */
   showComparison?: boolean;
-  /** Callback to toggle comparison view */
   onToggleComparison?: () => void;
-  /** Callback to hide the Pareto panel */
   onHide?: () => void;
-  /** Callback to open factor selector */
   onSelectFactor?: () => void;
-  /** Callback to open Pareto file upload dialog */
   onUploadPareto?: () => void;
-  /** Available factors for selection (to determine if "Select Factor" button shows) */
   availableFactors?: string[];
-  /** Aggregation mode: 'count' (occurrences) or 'value' (sum of outcome) */
   aggregation?: 'count' | 'value';
-  /** Callback to toggle aggregation mode */
   onToggleAggregation?: () => void;
 }
 
@@ -115,7 +107,6 @@ const ParetoChart = ({
   aggregation = 'count',
   onToggleAggregation,
 }: ParetoChartProps) => {
-  const { chrome } = useChartTheme();
   const {
     rawData,
     filteredData,
@@ -127,13 +118,8 @@ const ParetoChart = ({
     paretoMode,
     separateParetoData,
   } = useData();
-  const [editingAxis, setEditingAxis] = useState<string | null>(null);
-  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, showTooltip, hideTooltip } =
-    useTooltip<any>();
 
-  const sourceBarHeight = getSourceBarHeight();
-  const margin = useResponsiveChartMargins(parentWidth, 'pareto', sourceBarHeight);
-  const fonts = useResponsiveChartFonts(parentWidth);
+  const [editingAxis, setEditingAxis] = useState<string | null>(null);
 
   // Determine if using separate Pareto data
   const usingSeparateData =
@@ -145,10 +131,10 @@ const ParetoChart = ({
     return Object.values(filters).some(values => values && values.length > 0);
   }, [filters]);
 
-  // Calculate full population percentages for ghost bars comparison
-  const fullPopulationData = useMemo(() => {
+  // Calculate full population data for ghost bars comparison
+  const comparisonData = useMemo(() => {
     if (!showComparison || !hasActiveFilters || usingSeparateData || rawData.length === 0) {
-      return new Map<string, number>();
+      return undefined;
     }
 
     const fullCounts = d3.rollup(
@@ -158,7 +144,6 @@ const ParetoChart = ({
     );
     const fullTotal = rawData.length;
 
-    // Convert to percentage map
     const percentageMap = new Map<string, number>();
     for (const [key, count] of fullCounts) {
       percentageMap.set(key as string, ((count as number) / fullTotal) * 100);
@@ -166,46 +151,40 @@ const ParetoChart = ({
     return percentageMap;
   }, [showComparison, hasActiveFilters, usingSeparateData, rawData, factor]);
 
+  // Compute Pareto data from filtered data or separate file
   const { data, totalCount } = useMemo(() => {
     let sorted: { key: string; value: number }[];
 
     if (usingSeparateData && separateParetoData) {
-      // Use pre-aggregated separate Pareto data
-      // Prefer value column if available in value mode
       sorted = separateParetoData
         .map(row => ({
           key: row.category,
           value: aggregation === 'value' && row.value !== undefined ? row.value : row.count,
         }))
         .sort((a, b) => b.value - a.value);
+    } else if (aggregation === 'value' && outcome) {
+      const sums = d3.rollup(
+        filteredData,
+        (rows: any) => d3.sum(rows, (d: any) => Number(d[outcome]) || 0),
+        (d: any) => d[factor]
+      );
+      sorted = Array.from(sums, ([key, value]: any) => ({ key, value })).sort(
+        (a, b) => b.value - a.value
+      );
     } else {
-      // Derive from filtered data
-      if (aggregation === 'value' && outcome) {
-        // Sum outcome values per category
-        const sums = d3.rollup(
-          filteredData,
-          (rows: any) => d3.sum(rows, (d: any) => Number(d[outcome]) || 0),
-          (d: any) => d[factor]
-        );
-        sorted = Array.from(sums, ([key, value]: any) => ({ key, value })).sort(
-          (a, b) => b.value - a.value
-        );
-      } else {
-        // Count occurrences (existing behavior)
-        const counts = d3.rollup(
-          filteredData,
-          (v: any) => v.length,
-          (d: any) => d[factor]
-        );
-        sorted = Array.from(counts, ([key, value]: any) => ({ key, value })).sort(
-          (a: any, b: any) => b.value - a.value
-        );
-      }
+      const counts = d3.rollup(
+        filteredData,
+        (v: any) => v.length,
+        (d: any) => d[factor]
+      );
+      sorted = Array.from(counts, ([key, value]: any) => ({ key, value })).sort(
+        (a: any, b: any) => b.value - a.value
+      );
     }
 
     const total = d3.sum(sorted, d => d.value);
     let cumulative = 0;
-    const withCumulative = sorted.map(d => {
+    const withCumulative: ParetoDataPoint[] = sorted.map(d => {
       cumulative += d.value;
       return { ...d, cumulative, cumulativePercentage: (cumulative / total) * 100 };
     });
@@ -213,43 +192,20 @@ const ParetoChart = ({
     return { data: withCumulative, totalCount: total };
   }, [filteredData, factor, aggregation, outcome, usingSeparateData, separateParetoData]);
 
-  const width = Math.max(0, parentWidth - margin.left - margin.right);
-  const height = Math.max(0, parentHeight - margin.top - margin.bottom);
+  // Convert comparison percentages to expected values (same scale as bars)
+  const ghostBarData = useMemo(() => {
+    if (!comparisonData || totalCount === 0) return undefined;
+    const expectedValues = new Map<string, number>();
+    for (const [key, pct] of comparisonData) {
+      expectedValues.set(key, (totalCount * pct) / 100);
+    }
+    return expectedValues;
+  }, [comparisonData, totalCount]);
 
-  const xScale = useMemo(
-    () =>
-      scaleBand({
-        range: [0, width],
-        domain: data.map(d => d.key),
-        padding: 0.2,
-      }),
-    [data, width]
-  );
-
-  const yScale = useMemo(
-    () =>
-      scaleLinear({
-        range: [height, 0],
-        domain: [0, Math.max(0, ...data.map(d => d.value))],
-        nice: true,
-      }),
-    [data, height]
-  );
-
-  const yPercScale = useMemo(
-    () =>
-      scaleLinear({
-        range: [height, 0],
-        domain: [0, 100],
-      }),
-    [height]
-  );
-
-  const handleBarClick = (key: any) => {
+  const handleBarClick = (key: string) => {
     if (onDrillDown) {
       onDrillDown(factor, key);
     } else {
-      // Fallback to current behavior
       const currentFilters = filters[factor] || [];
       const newFilters = currentFilters.includes(key)
         ? currentFilters.filter(v => v !== key)
@@ -258,16 +214,9 @@ const ParetoChart = ({
     }
   };
 
-  const handleAxisClick = (axisName: string) => {
-    setEditingAxis(axisName);
-  };
-
   const handleSaveAlias = (newAlias: string) => {
     if (editingAxis) {
-      setColumnAliases({
-        ...columnAliases,
-        [editingAxis]: newAlias,
-      });
+      setColumnAliases({ ...columnAliases, [editingAxis]: newAlias });
       setEditingAxis(null);
     }
   };
@@ -284,377 +233,123 @@ const ParetoChart = ({
     );
   }
 
+  const showBranding = shouldShowBranding();
+  const yAxisLabel =
+    aggregation === 'value' && outcome ? columnAliases[outcome] || outcome : 'Count';
+  const xAxisLabel = columnAliases[factor] || factor;
+  const selectedBars = (filters[factor] || []).map(String);
+
   return (
-    <>
-      <svg width={parentWidth} height={parentHeight}>
-        <Group left={margin.left} top={margin.top}>
-          <GridRows scale={yScale} width={width} stroke={chrome.gridLine} />
-
-          {/* Separate data indicator */}
-          {usingSeparateData && (
-            <foreignObject x={0} y={-margin.top + 4} width={width} height={20}>
-              <div className="flex items-center justify-center gap-1 text-xs text-amber-500">
-                <Info size={12} />
-                <span>Using separate Pareto file (not linked to filters)</span>
-              </div>
-            </foreignObject>
-          )}
-
-          {/* Hide button (positioned in top right, before other toggles) */}
-          {onHide && (
-            <foreignObject
-              x={
-                width -
-                (() => {
-                  let offset = 30;
-                  // Add offset for aggregation toggle
-                  if (onToggleAggregation && outcome && !usingSeparateData) offset += 30;
-                  // Add offset for comparison toggle
-                  if (hasActiveFilters && !usingSeparateData && onToggleComparison) offset += 30;
-                  return offset;
-                })()
-              }
-              y={-margin.top + 4}
-              width={26}
-              height={26}
-            >
-              <button
-                onClick={onHide}
-                className="p-1 rounded bg-surface-tertiary/50 text-content-muted hover:text-content hover:bg-surface-tertiary transition-colors"
-                title="Hide Pareto panel"
-              >
-                <HideIcon size={14} />
-              </button>
-            </foreignObject>
-          )}
-
-          {/* Toggle button for aggregation mode (count/value) */}
-          {onToggleAggregation && outcome && !usingSeparateData && (
-            <foreignObject x={width - 30} y={-margin.top + 4} width={26} height={26}>
-              <button
-                onClick={onToggleAggregation}
-                className={`p-1 rounded transition-colors ${
-                  aggregation === 'value'
-                    ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
-                    : 'bg-surface-tertiary/50 text-content-muted hover:text-content hover:bg-surface-tertiary'
-                }`}
-                title={
-                  aggregation === 'value'
-                    ? `Showing sum of ${columnAliases[outcome] || outcome}`
-                    : 'Showing counts'
-                }
-              >
-                {aggregation === 'value' ? <Sigma size={14} /> : <Hash size={14} />}
-              </button>
-            </foreignObject>
-          )}
-
-          {/* Toggle button for comparison (positioned in top right, after aggregation) */}
-          {hasActiveFilters && !usingSeparateData && onToggleComparison && (
-            <foreignObject
-              x={width - (onToggleAggregation && outcome ? 60 : 30)}
-              y={-margin.top + 4}
-              width={26}
-              height={26}
-            >
-              <button
-                onClick={onToggleComparison}
-                className={`p-1 rounded transition-colors ${
-                  showComparison
-                    ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
-                    : 'bg-surface-tertiary/50 text-content-muted hover:text-content hover:bg-surface-tertiary'
-                }`}
-                title={
-                  showComparison ? 'Hide overall comparison' : 'Compare to overall distribution'
-                }
-              >
-                {showComparison ? <Eye size={14} /> : <EyeOff size={14} />}
-              </button>
-            </foreignObject>
-          )}
-
-          {/* Ghost bars - full population comparison (render first, behind solid bars) */}
-          {showComparison &&
-            hasActiveFilters &&
-            !usingSeparateData &&
-            data.map((d, i) => {
-              const fullPct = fullPopulationData.get(d.key);
-              if (fullPct === undefined) return null;
-
-              // Calculate "expected" count based on full population distribution
-              // This allows visual comparison on the same count scale
-              const expectedCount = (totalCount * fullPct) / 100;
-
-              return (
-                <Bar
-                  key={`ghost-${i}`}
-                  x={xScale(d.key)}
-                  y={yScale(expectedCount)}
-                  width={xScale.bandwidth()}
-                  height={height - yScale(expectedCount)}
-                  fill={chrome.axisSecondary}
-                  opacity={0.3}
-                  rx={4}
-                  stroke={chrome.axisPrimary}
-                  strokeWidth={1}
-                  strokeDasharray="4,2"
-                  pointerEvents="none"
-                />
-              );
-            })}
-
-          {/* Solid bars - filtered data */}
-          {data.map((d, i) => {
-            const isSelected = (filters[factor] || []).includes(d.key);
-            // Calculate percentages for tooltip comparison
-            const filteredPct = (d.value / totalCount) * 100;
-            const fullPct = fullPopulationData.get(d.key) || 0;
-            const pctDiff = filteredPct - fullPct;
-
-            return (
-              <Bar
-                key={i}
-                x={xScale(d.key)}
-                y={yScale(d.value)}
-                width={xScale.bandwidth()}
-                height={height - yScale(d.value)}
-                fill={isSelected ? chartColors.selected : chrome.boxDefault}
-                rx={4}
-                onClick={() => handleBarClick(d.key)}
-                onMouseOver={event => {
-                  showTooltip({
-                    tooltipLeft: (xScale(d.key) || 0) + xScale.bandwidth(),
-                    tooltipTop: yScale(d.value),
-                    tooltipData: {
-                      ...d,
-                      filteredPct,
-                      fullPct,
-                      pctDiff,
-                      showComparison: showComparison && hasActiveFilters,
-                    },
-                  });
-                }}
-                onMouseLeave={hideTooltip}
-                className="cursor-pointer hover:opacity-80 transition-opacity"
-              />
-            );
-          })}
-
-          {/* 80% Reference Line */}
-          <line
-            x1={0}
-            x2={width}
-            y1={yPercScale(80)}
-            y2={yPercScale(80)}
-            stroke="#f97316"
-            strokeWidth={1}
-            strokeDasharray="4,4"
-            opacity={0.8}
-          />
-          <text x={width - 5} y={yPercScale(80) - 5} fill="#f97316" fontSize={10} textAnchor="end">
-            80%
-          </text>
-
-          {/* Cumulative Line */}
-          <LinePath
-            data={data}
-            x={d => (xScale(d.key) || 0) + xScale.bandwidth() / 2}
-            y={d => yPercScale(d.cumulativePercentage)}
-            stroke="#f97316"
-            strokeWidth={2}
-          />
-          {data.map((d, i) => (
-            <Circle
-              key={i}
-              cx={(xScale(d.key) || 0) + xScale.bandwidth() / 2}
-              cy={yPercScale(d.cumulativePercentage)}
-              r={3}
-              fill={chartColors.cumulative}
-              stroke={chrome.pointStroke}
-              strokeWidth={1}
-            />
-          ))}
-
-          {/* Axes */}
-          <AxisLeft
-            scale={yScale}
-            stroke={chrome.axisPrimary}
-            tickStroke={chrome.axisPrimary}
-            label=""
-            tickLabelProps={() => ({
-              fill: chrome.labelPrimary,
-              fontSize: fonts.tickLabel,
-              textAnchor: 'end',
-              dx: -4,
-              dy: 3,
-              fontFamily: 'monospace',
-            })}
-          />
-
-          {/* Y-Axis Label (Affordance) */}
-          {(() => {
-            const yLabelOffset = parentWidth < 400 ? -25 : parentWidth < 768 ? -40 : -50;
-            // Dynamic Y-axis label based on aggregation mode
-            const yAxisLabel =
-              aggregation === 'value' && outcome ? columnAliases[outcome] || outcome : 'Count';
-            return (
-              <Group
-                onClick={() =>
-                  handleAxisClick(aggregation === 'value' ? outcome || 'Count' : 'Count')
-                }
-                className="cursor-pointer group/label"
-              >
-                <text
-                  x={yLabelOffset}
-                  y={height / 2}
-                  transform={`rotate(-90 ${yLabelOffset} ${height / 2})`}
-                  textAnchor="middle"
-                  fill={chrome.labelPrimary}
-                  fontSize={fonts.axisLabel}
-                  fontWeight={500}
-                  className="group-hover/label:fill-blue-400 transition-colors"
-                >
-                  {yAxisLabel}
-                </text>
-                <foreignObject
-                  x={yLabelOffset - 8}
-                  y={height / 2 + 10}
-                  width={16}
-                  height={16}
-                  transform={`rotate(-90 ${yLabelOffset} ${height / 2})`}
-                  className="opacity-0 group-hover/label:opacity-100 transition-opacity"
-                >
-                  <div className="flex items-center justify-center text-blue-400">
-                    <Edit2 size={14} />
-                  </div>
-                </foreignObject>
-              </Group>
-            );
-          })()}
-
-          <AxisRight
-            scale={yPercScale}
-            left={width}
-            stroke={chrome.axisPrimary}
-            tickStroke={chrome.axisPrimary}
-            label={parentWidth > 400 ? 'Cumulative %' : '%'}
-            labelProps={{
-              fill: chrome.labelPrimary,
-              fontSize: fonts.tickLabel,
-              textAnchor: 'middle',
-              dx: parentWidth < 400 ? 20 : 35,
-            }}
-            tickLabelProps={() => ({
-              fill: chrome.labelPrimary,
-              fontSize: fonts.tickLabel,
-              textAnchor: 'start',
-              dx: 4,
-              dy: 3,
-            })}
-          />
-          <AxisBottom
-            top={height}
-            scale={xScale}
-            stroke={chrome.axisPrimary}
-            tickStroke={chrome.axisPrimary}
-            label=""
-            tickLabelProps={() => ({
-              fill: chrome.labelPrimary,
-              fontSize: fonts.tickLabel,
-              textAnchor: 'middle',
-              dy: 2,
-            })}
-          />
-
-          {/* X-Axis Label (Affordance) */}
-          {(() => {
-            const xLabelOffset = parentWidth < 400 ? 30 : 40;
-            return (
-              <Group
-                onClick={() => handleAxisClick(factor)}
-                className="cursor-pointer group/label2"
-              >
-                <text
-                  x={width / 2}
-                  y={height + xLabelOffset}
-                  textAnchor="middle"
-                  fill={chrome.labelPrimary}
-                  fontSize={fonts.axisLabel}
-                  fontWeight={500}
-                  className="group-hover/label2:fill-blue-400 transition-colors"
-                >
-                  {columnAliases[factor] || factor}
-                </text>
-                <foreignObject
-                  x={width / 2 + 8}
-                  y={height + xLabelOffset - 12}
-                  width={16}
-                  height={16}
-                  className="opacity-0 group-hover/label2:opacity-100 transition-opacity"
-                >
-                  <div className="flex items-center justify-center text-blue-400">
-                    <Edit2 size={14} />
-                  </div>
-                </foreignObject>
-              </Group>
-            );
-          })()}
-
-          {/* Signature (painter-style branding) */}
-          <ChartSignature x={width - 10} y={height + margin.bottom - sourceBarHeight - 18} />
-
-          {/* Source Bar (branding) */}
-          <ChartSourceBar
-            width={width}
-            top={height + margin.bottom - sourceBarHeight}
-            n={totalCount}
-          />
-        </Group>
-      </svg>
-
-      {/* Tooltip */}
-      {tooltipOpen && tooltipData && (
-        <TooltipWithBounds
-          left={margin.left + (tooltipLeft ?? 0)}
-          top={margin.top + (tooltipTop ?? 0)}
-          style={{
-            ...defaultStyles,
-            backgroundColor: chrome.tooltipBg,
-            color: chrome.tooltipText,
-            border: `1px solid ${chrome.tooltipBorder}`,
-            borderRadius: 6,
-            padding: '8px 12px',
-            fontSize: 12,
-          }}
-        >
-          <div className="font-semibold">{tooltipData.key}</div>
-          <div>
-            {aggregation === 'value' && outcome ? columnAliases[outcome] || outcome : 'Count'}:{' '}
-            {aggregation === 'value' ? tooltipData.value.toFixed(1) : tooltipData.value}
+    <div className="relative w-full h-full">
+      {/* Toggle buttons overlay */}
+      <div className="absolute top-1 right-12 z-10 flex gap-1">
+        {/* Separate data indicator */}
+        {usingSeparateData && (
+          <div className="flex items-center gap-1 text-xs text-amber-500 mr-2">
+            <Info size={12} />
+            <span>Using separate Pareto file</span>
           </div>
-          <div>Cumulative: {tooltipData.cumulativePercentage?.toFixed(1)}%</div>
-          {tooltipData.showComparison && (
+        )}
+
+        {/* Hide button */}
+        {onHide && (
+          <button
+            onClick={onHide}
+            className="p-1 rounded bg-surface-tertiary/50 text-content-muted hover:text-content hover:bg-surface-tertiary transition-colors"
+            title="Hide Pareto panel"
+          >
+            <HideIcon size={14} />
+          </button>
+        )}
+
+        {/* Aggregation mode toggle */}
+        {onToggleAggregation && outcome && !usingSeparateData && (
+          <button
+            onClick={onToggleAggregation}
+            className={`p-1 rounded transition-colors ${
+              aggregation === 'value'
+                ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
+                : 'bg-surface-tertiary/50 text-content-muted hover:text-content hover:bg-surface-tertiary'
+            }`}
+            title={
+              aggregation === 'value'
+                ? `Showing sum of ${columnAliases[outcome] || outcome}`
+                : 'Showing counts'
+            }
+          >
+            {aggregation === 'value' ? <Sigma size={14} /> : <Hash size={14} />}
+          </button>
+        )}
+
+        {/* Comparison toggle */}
+        {hasActiveFilters && !usingSeparateData && onToggleComparison && (
+          <button
+            onClick={onToggleComparison}
+            className={`p-1 rounded transition-colors ${
+              showComparison
+                ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                : 'bg-surface-tertiary/50 text-content-muted hover:text-content hover:bg-surface-tertiary'
+            }`}
+            title={
+              showComparison ? 'Hide overall comparison' : 'Compare to overall distribution'
+            }
+          >
+            {showComparison ? <Eye size={14} /> : <EyeOff size={14} />}
+          </button>
+        )}
+      </div>
+
+      <ParetoChartBase
+        data={data}
+        totalCount={totalCount}
+        xAxisLabel={xAxisLabel}
+        yAxisLabel={yAxisLabel}
+        selectedBars={selectedBars}
+        onBarClick={handleBarClick}
+        parentWidth={parentWidth}
+        parentHeight={parentHeight}
+        showBranding={showBranding}
+        brandingText={showBranding ? getBrandingText() : undefined}
+        onYAxisClick={() =>
+          setEditingAxis(aggregation === 'value' ? outcome || 'Count' : 'Count')
+        }
+        onXAxisClick={() => setEditingAxis(factor)}
+        comparisonData={ghostBarData}
+        tooltipContent={d => {
+          const filteredPct = (d.value / totalCount) * 100;
+          const fullPct = comparisonData?.get(d.key) || 0;
+          const pctDiff = filteredPct - fullPct;
+          const showCompare = showComparison && hasActiveFilters && !usingSeparateData;
+
+          return (
             <>
-              <div className="mt-1 pt-1 border-t border-edge-secondary">
-                <div>Filtered: {tooltipData.filteredPct?.toFixed(1)}%</div>
-                <div>Overall: {tooltipData.fullPct?.toFixed(1)}%</div>
-                <div
-                  className={
-                    tooltipData.pctDiff > 0
-                      ? 'text-red-400'
-                      : tooltipData.pctDiff < 0
-                        ? 'text-green-400'
-                        : 'text-content-secondary'
-                  }
-                >
-                  {tooltipData.pctDiff > 0 ? '↑' : tooltipData.pctDiff < 0 ? '↓' : '→'}{' '}
-                  {Math.abs(tooltipData.pctDiff).toFixed(1)}% vs overall
-                </div>
+              <div className="font-semibold">{d.key}</div>
+              <div>
+                {yAxisLabel}: {aggregation === 'value' ? d.value.toFixed(1) : d.value}
               </div>
+              <div>Cumulative: {d.cumulativePercentage.toFixed(1)}%</div>
+              {showCompare && (
+                <div className="mt-1 pt-1 border-t border-edge-secondary">
+                  <div>Filtered: {filteredPct.toFixed(1)}%</div>
+                  <div>Overall: {fullPct.toFixed(1)}%</div>
+                  <div
+                    className={
+                      pctDiff > 0
+                        ? 'text-red-400'
+                        : pctDiff < 0
+                          ? 'text-green-400'
+                          : 'text-content-secondary'
+                    }
+                  >
+                    {pctDiff > 0 ? '\u2191' : pctDiff < 0 ? '\u2193' : '\u2192'}{' '}
+                    {Math.abs(pctDiff).toFixed(1)}% vs overall
+                  </div>
+                </div>
+              )}
             </>
-          )}
-        </TooltipWithBounds>
-      )}
+          );
+        }}
+      />
 
       {editingAxis && (
         <AxisEditor
@@ -664,13 +359,13 @@ const ParetoChart = ({
           onSave={handleSaveAlias}
           onClose={() => setEditingAxis(null)}
           style={{
-            top: height / 2,
-            left: width / 2,
+            top: parentHeight / 2,
+            left: parentWidth / 2,
             transform: 'translate(-50%, -50%)',
           }}
         />
       )}
-    </>
+    </div>
   );
 };
 

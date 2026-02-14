@@ -148,6 +148,12 @@ export interface BoxplotProps extends BaseChartProps {
   showContributionLabels?: boolean;
   /** Show contribution bars below boxes (default: true when categoryContributions provided) */
   showContributionBars?: boolean;
+  /** Callback when Y-axis label area is clicked (for editing) */
+  onYAxisClick?: () => void;
+  /** Callback when X-axis label area is clicked (for editing) */
+  onXAxisClick?: () => void;
+  /** Custom tick formatter for X-axis (e.g., value labels) */
+  xTickFormat?: (value: string) => string;
 }
 
 /**
@@ -176,6 +182,14 @@ export interface ParetoChartProps extends BaseChartProps {
   selectedBars?: string[];
   /** Callback when a bar is clicked */
   onBarClick?: (key: string) => void;
+  /** Callback when Y-axis label area is clicked (for editing) */
+  onYAxisClick?: () => void;
+  /** Callback when X-axis label area is clicked (for editing) */
+  onXAxisClick?: () => void;
+  /** Comparison data for ghost bars behind regular bars (key → expected value) */
+  comparisonData?: Map<string, number>;
+  /** Custom tooltip content renderer. Replaces default tooltip when provided. */
+  tooltipContent?: (data: ParetoDataPoint) => React.ReactNode;
 }
 
 /**

@@ -3,7 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import WhatIfPage from '../WhatIfPage';
 
 // Mock DataContext
-const defaultContextValue = {
+const defaultContextValue: {
+  filteredData: Record<string, unknown>[];
+  rawData: Record<string, unknown>[];
+  outcome: string;
+  specs: { usl?: number; lsl?: number; target?: number };
+  filters: Record<string, (string | number)[]>;
+} = {
   filteredData: [
     { Machine: 'A', Value: 10 },
     { Machine: 'A', Value: 11 },
@@ -77,7 +83,7 @@ describe('WhatIfPage', () => {
   it('shows specs warning when no USL/LSL set', () => {
     contextValue = {
       ...defaultContextValue,
-      specs: { usl: undefined, lsl: undefined },
+      specs: {},
     };
     render(<WhatIfPage onBack={() => {}} />);
     expect(

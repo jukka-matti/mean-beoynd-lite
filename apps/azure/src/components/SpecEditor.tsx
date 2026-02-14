@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Save, Plus, Trash2 } from 'lucide-react';
-
-const MOBILE_BREAKPOINT = 640;
+import { useIsMobile, gradeColors } from '@variscout/ui';
 
 interface SpecEditorProps {
   specs: { usl?: number; lsl?: number; target?: number };
@@ -21,15 +20,7 @@ const SpecEditor = ({ specs, grades, onSave, onClose, style }: SpecEditorProps) 
     target: specs.target?.toString() || '',
   });
   const [localGrades, setLocalGrades] = useState(grades || []);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile/desktop
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const isMobile = useIsMobile(640);
 
   const handleSave = () => {
     const parsedSpecs = {
@@ -45,7 +36,7 @@ const SpecEditor = ({ specs, grades, onSave, onClose, style }: SpecEditorProps) 
   };
 
   const addGrade = () => {
-    setLocalGrades([...localGrades, { max: 0, label: 'New Grade', color: '#cccccc' }]);
+    setLocalGrades([...localGrades, { max: 0, label: 'New Grade', color: gradeColors.default }]);
   };
 
   const updateGrade = (index: number, field: keyof (typeof localGrades)[0], value: any) => {

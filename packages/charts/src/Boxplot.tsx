@@ -36,6 +36,9 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
   categoryContributions,
   showContributionLabels = false,
   showContributionBars,
+  onYAxisClick,
+  onXAxisClick,
+  xTickFormat,
 }) => {
   // Show contribution bars by default when categoryContributions is provided
   const shouldShowBars = showContributionBars ?? categoryContributions !== undefined;
@@ -279,6 +282,8 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
             fill={chromeColors.labelPrimary}
             fontSize={fonts.axisLabel}
             fontWeight={500}
+            onClick={onYAxisClick}
+            style={onYAxisClick ? { cursor: 'pointer' } : undefined}
           >
             {yAxisLabel}
           </text>
@@ -289,6 +294,7 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
             scale={xScale}
             stroke={chromeColors.axisPrimary}
             tickStroke={chromeColors.axisPrimary}
+            tickFormat={xTickFormat}
             tickLabelProps={() => ({
               fill: chromeColors.labelSecondary,
               fontSize: fonts.tickLabel,
@@ -373,6 +379,8 @@ const BoxplotBase: React.FC<BoxplotProps> = ({
             fill={isHighVariation ? '#f87171' : chromeColors.labelSecondary}
             fontSize={fonts.axisLabel}
             fontWeight={isHighVariation ? 600 : 500}
+            onClick={onXAxisClick}
+            style={onXAxisClick ? { cursor: 'pointer' } : undefined}
           >
             {xAxisLabel}
             {variationPct !== undefined && ` (${Math.round(variationPct)}%)`}

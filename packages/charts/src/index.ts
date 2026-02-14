@@ -123,6 +123,9 @@ export {
   type LimitType,
 } from './components/SpecLimitLine';
 
+// Branding
+export { default as ChartSignature, type ChartSignatureProps } from './ChartSignature';
+
 // Chart components
 export { default as IChart, IChartBase } from './IChart';
 export { default as Boxplot, BoxplotBase } from './Boxplot';

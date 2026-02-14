@@ -72,6 +72,28 @@ export {
   type ColumnClassification,
 } from './components/RegressionPanel';
 
+export {
+  ErrorBoundary,
+  errorBoundaryDefaultColorScheme,
+  errorBoundaryAzureColorScheme,
+  type ErrorBoundaryProps,
+  type ErrorBoundaryColorScheme,
+} from './components/ErrorBoundary';
+export {
+  AxisEditor,
+  axisEditorDefaultColorScheme,
+  axisEditorAzureColorScheme,
+  type AxisEditorProps,
+  type AxisEditorColorScheme,
+} from './components/AxisEditor';
+export {
+  FactorSelector,
+  factorSelectorDefaultColorScheme,
+  factorSelectorAzureColorScheme,
+  type FactorSelectorProps,
+  type FactorSelectorColorScheme,
+} from './components/FactorSelector';
+
 // Services
 export {
   errorService,

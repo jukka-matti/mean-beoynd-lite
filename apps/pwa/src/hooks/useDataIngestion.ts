@@ -76,14 +76,6 @@ export const useDataIngestion = (options?: UseDataIngestionOptions) => {
       setParetoMode('derived');
       setSeparateParetoData(null);
       setSeparateParetoFilename(null);
-      // Handle performance mode samples
-      if (sample.config.performanceMode && sample.config.measureColumns) {
-        setMeasureColumns(sample.config.measureColumns);
-        setPerformanceMode(true);
-      } else {
-        setMeasureColumns([]);
-        setPerformanceMode(false);
-      }
     },
     [
       setRawData,
@@ -96,8 +88,6 @@ export const useDataIngestion = (options?: UseDataIngestionOptions) => {
       setParetoMode,
       setSeparateParetoData,
       setSeparateParetoFilename,
-      setMeasureColumns,
-      setPerformanceMode,
     ]
   );
 

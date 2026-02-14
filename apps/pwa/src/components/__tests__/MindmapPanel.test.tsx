@@ -1,15 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { MindmapMode, NarrativeStep } from '@variscout/charts';
+import type { DrillStep } from '@variscout/hooks';
 import MindmapPanel from '../MindmapPanel';
 
 // Mock InvestigationMindmapBase
-vi.mock('@variscout/charts', () => ({
-  InvestigationMindmapBase: (props: any) => (
-    <div data-testid="mindmap-chart" data-mode={props.mode}>
-      Mindmap
-    </div>
-  ),
-}));
+vi.mock('@variscout/charts', async () => {
+  const actual = await vi.importActual<typeof import('@variscout/charts')>('@variscout/charts');
+  return {
+    ...actual,
+    InvestigationMindmapBase: (props: any) => (
+      <div data-testid="mindmap-chart" data-mode={props.mode}>
+        Mindmap
+      </div>
+    ),
+  };
+});
 
 // Mock html-to-image
 vi.mock('html-to-image', () => ({
@@ -17,7 +23,18 @@ vi.mock('html-to-image', () => ({
 }));
 
 // Default mock state returned by useMindmapState
-const defaultMindmapState = {
+const defaultMindmapState: {
+  nodes: { factor: string; etaSquared: number; state: 'available'; isSuggested: boolean }[];
+  drillTrail: string[];
+  cumulativeVariationPct: number | null;
+  interactionEdges: undefined;
+  narrativeSteps: NarrativeStep[];
+  drillPath: DrillStep[];
+  mode: MindmapMode;
+  setMode: ReturnType<typeof vi.fn>;
+  annotations: Map<number, string>;
+  handleAnnotationChange: ReturnType<typeof vi.fn>;
+} = {
   nodes: [
     { factor: 'Machine', etaSquared: 0.8, state: 'available' as const, isSuggested: true },
     { factor: 'Shift', etaSquared: 0.02, state: 'available' as const, isSuggested: false },
@@ -27,7 +44,7 @@ const defaultMindmapState = {
   interactionEdges: undefined,
   narrativeSteps: [],
   drillPath: [],
-  mode: 'drilldown' as const,
+  mode: 'drilldown',
   setMode: vi.fn(),
   annotations: new Map(),
   handleAnnotationChange: vi.fn(),
