@@ -3,37 +3,24 @@ import { InvestigationMindmapBase } from '@variscout/charts';
 import { useMindmapState } from '@variscout/hooks';
 import type { FilterAction } from '@variscout/core';
 import { toPng } from 'html-to-image';
-import { X, ExternalLink, Download } from 'lucide-react';
+import { MindmapPanelContent } from '@variscout/ui';
 
 interface MindmapPanelProps {
-  /** Whether the panel is open */
   isOpen: boolean;
-  /** Called when the panel should close */
   onClose: () => void;
-  /** Raw (unfiltered) data */
   data: any[];
-  /** Available factor columns */
   factors: string[];
-  /** Outcome column name */
   outcome: string;
-  /** Current filter stack from useFilterNavigation */
   filterStack: FilterAction[];
-  /** Specification limits for Cpk projection */
   specs?: { usl?: number; lsl?: number; target?: number };
-  /** Column aliases for display */
   columnAliases?: Record<string, string>;
-  /** Called when user selects a category to drill into */
   onDrillCategory: (factor: string, value: string | number) => void;
-  /** Called when user wants to open in popout window */
   onOpenPopout?: () => void;
 }
 
 /**
- * Slide-in panel for the Investigation Mindmap
- *
- * Replaces FunnelPanel as the primary investigation tool.
- * Shows factor nodes sized by eta-squared, a drill trail connecting active nodes,
- * and a pulsing suggested-next indicator.
+ * PWA MindmapPanel — fixed overlay + backdrop + slide-in animation.
+ * Uses shared MindmapPanelContent for header, mode toggle, and drill path.
  */
 const MindmapPanel: React.FC<MindmapPanelProps> = ({
   isOpen,
@@ -64,11 +51,8 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
   // Close on escape
   useEffect(() => {
     if (!isOpen) return;
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -77,14 +61,12 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
   // Close on outside click
   useEffect(() => {
     if (!isOpen) return;
-
     const handleClick = (e: MouseEvent) => {
       const target = e.target as Node | null;
       if (panelRef.current && target && !panelRef.current.contains(target)) {
         onClose();
       }
     };
-    // Delay to prevent immediate close
     const timeoutId = setTimeout(() => {
       document.addEventListener('mousedown', handleClick);
     }, 100);
@@ -95,13 +77,10 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
   }, [isOpen, onClose]);
 
   const handleCategorySelect = useCallback(
-    (factor: string, value: string | number) => {
-      onDrillCategory(factor, value);
-    },
+    (factor: string, value: string | number) => onDrillCategory(factor, value),
     [onDrillCategory]
   );
 
-  // PNG export for narrative mode
   const handleExportPng = useCallback(async () => {
     const node = mindmapRef.current;
     if (!node) return;
@@ -128,115 +107,30 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
         ref={panelRef}
         className="fixed right-0 top-0 bottom-0 w-96 bg-surface-secondary border-l border-edge shadow-2xl z-50 flex flex-col animate-slide-in-right overflow-hidden"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-edge">
-          <h2 className="text-sm font-semibold text-white">Investigation</h2>
-
-          {/* Mode toggle */}
-          <div className="flex items-center gap-0.5 bg-surface rounded-lg p-0.5">
-            <button
-              onClick={() => setMode('drilldown')}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
-                mode === 'drilldown'
-                  ? 'bg-blue-500/20 text-blue-400'
-                  : 'text-content-secondary hover:text-white'
-              }`}
-            >
-              Drilldown
-            </button>
-            <button
-              onClick={() => setMode('interactions')}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
-                mode === 'interactions'
-                  ? 'bg-amber-500/20 text-amber-400'
-                  : 'text-content-secondary hover:text-white'
-              }`}
-            >
-              Interactions
-            </button>
-            <button
-              onClick={() => setMode('narrative')}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
-                mode === 'narrative'
-                  ? 'bg-green-500/20 text-green-400'
-                  : 'text-content-secondary hover:text-white'
-              }`}
-            >
-              Narrative
-            </button>
+        <MindmapPanelContent
+          mode={mode}
+          setMode={setMode}
+          drillPath={drillPath}
+          onClose={onClose}
+          onOpenPopout={onOpenPopout}
+          onExportPng={handleExportPng}
+        >
+          <div ref={mindmapRef} className="flex-1 overflow-hidden px-2 py-2">
+            <InvestigationMindmapBase
+              nodes={nodes}
+              drillTrail={drillTrail}
+              cumulativeVariationPct={cumulativeVariationPct}
+              onNodeClick={() => {}}
+              onCategorySelect={handleCategorySelect}
+              mode={mode}
+              edges={interactionEdges}
+              narrativeSteps={narrativeSteps}
+              onAnnotationChange={handleAnnotationChange}
+              width={368}
+              height={500}
+            />
           </div>
-
-          <div className="flex items-center gap-1">
-            {mode === 'narrative' && (
-              <button
-                onClick={handleExportPng}
-                className="p-1.5 text-content-secondary hover:text-white hover:bg-surface-tertiary rounded-lg transition-colors"
-                title="Export as PNG"
-                aria-label="Export as PNG"
-              >
-                <Download size={14} />
-              </button>
-            )}
-            {onOpenPopout && (
-              <button
-                onClick={onOpenPopout}
-                className="p-1.5 text-content-secondary hover:text-white hover:bg-surface-tertiary rounded-lg transition-colors"
-                title="Open in new window"
-                aria-label="Open in new window"
-              >
-                <ExternalLink size={14} />
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="p-1.5 text-content-secondary hover:text-white hover:bg-surface-tertiary rounded-lg transition-colors"
-              title="Close"
-              aria-label="Close investigation panel"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        </div>
-
-        {/* Mindmap chart */}
-        <div ref={mindmapRef} className="flex-1 overflow-hidden px-2 py-2">
-          <InvestigationMindmapBase
-            nodes={nodes}
-            drillTrail={drillTrail}
-            cumulativeVariationPct={cumulativeVariationPct}
-            onNodeClick={() => {}}
-            onCategorySelect={handleCategorySelect}
-            mode={mode}
-            edges={interactionEdges}
-            narrativeSteps={narrativeSteps}
-            onAnnotationChange={handleAnnotationChange}
-            width={368}
-            height={500}
-          />
-        </div>
-
-        {/* Drill path summary */}
-        {drillPath.length > 0 && (
-          <div className="px-4 py-3 border-t border-edge">
-            <div className="text-[10px] text-content-muted uppercase tracking-wider mb-1.5">
-              Drill Path
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {drillPath.map((step, i) => (
-                <span
-                  key={step.factor}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[11px] rounded-full"
-                >
-                  {step.factor}
-                  <span className="text-blue-300/60">{(step.etaSquared * 100).toFixed(0)}%</span>
-                  {i < drillPath.length - 1 && (
-                    <span className="text-content-muted ml-0.5">&rarr;</span>
-                  )}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        </MindmapPanelContent>
       </div>
     </>
   );

@@ -1,10 +1,16 @@
 /**
- * RegressionPanel - Wrapper for RegressionPanelBase with Azure context and components
+ * RegressionPanel - Wrapper for RegressionPanelBase with Azure context and color scheme
  */
 import React from 'react';
-import { RegressionPanelBase, regressionPanelAzureColorScheme } from '@variscout/ui';
+import {
+  RegressionPanelBase,
+  regressionPanelAzureColorScheme,
+  SimpleRegressionView,
+  AdvancedRegressionView,
+  ExpandedScatterModal,
+  regressionViewAzureColorScheme,
+} from '@variscout/ui';
 import { useData } from '../context/DataContext';
-import { ExpandedScatterModal, SimpleRegressionView, AdvancedRegressionView } from './regression';
 
 const RegressionPanel: React.FC = () => {
   const { filteredData, outcome, specs } = useData();
@@ -14,9 +20,15 @@ const RegressionPanel: React.FC = () => {
       filteredData={filteredData}
       outcome={outcome}
       specs={specs}
-      renderSimpleView={props => <SimpleRegressionView {...props} />}
-      renderAdvancedView={props => <AdvancedRegressionView {...props} />}
-      renderExpandedModal={props => <ExpandedScatterModal {...props} />}
+      renderSimpleView={props => (
+        <SimpleRegressionView {...props} colorScheme={regressionViewAzureColorScheme} />
+      )}
+      renderAdvancedView={props => (
+        <AdvancedRegressionView {...props} colorScheme={regressionViewAzureColorScheme} />
+      )}
+      renderExpandedModal={props => (
+        <ExpandedScatterModal {...props} colorScheme={regressionViewAzureColorScheme} />
+      )}
       colorScheme={regressionPanelAzureColorScheme}
     />
   );

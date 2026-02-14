@@ -556,6 +556,9 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.4
         version: 1.2.4(@types/react@18.3.27)(react@18.3.1)
+      '@variscout/charts':
+        specifier: workspace:*
+        version: link:../charts
       '@variscout/core':
         specifier: workspace:*
         version: link:../core
@@ -568,6 +571,9 @@ importers:
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
+      html-to-image:
+        specifier: ^1.11.11
+        version: 1.11.13
       lucide-react:
         specifier: ^0.330.0
         version: 0.330.0(react@18.3.1)

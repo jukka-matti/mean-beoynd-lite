@@ -70,7 +70,50 @@ export {
   type AdvancedRegressionViewProps,
   type ExpandedScatterModalProps,
   type ColumnClassification,
+  SimpleRegressionView,
+  AdvancedRegressionView,
+  ExpandedScatterModal,
+  regressionViewDefaultColorScheme,
+  regressionViewAzureColorScheme,
+  type RegressionViewColorScheme,
+  type SimpleRegressionViewComponentProps,
+  type AdvancedRegressionViewComponentProps,
+  type ExpandedScatterModalComponentProps,
 } from './components/RegressionPanel';
+
+export {
+  GageRRPanelBase,
+  gageRRPanelDefaultColorScheme,
+  gageRRPanelAzureColorScheme,
+  type GageRRPanelColorScheme,
+  type GageRRPanelBaseProps,
+} from './components/GageRRPanel';
+
+export {
+  Slider,
+  sliderDefaultColorScheme,
+  sliderAzureColorScheme,
+  type SliderColorScheme,
+  type SliderProps,
+} from './components/Slider';
+
+export {
+  WhatIfSimulator,
+  whatIfSimulatorDefaultColorScheme,
+  whatIfSimulatorAzureColorScheme,
+  type WhatIfSimulatorColorScheme,
+  type WhatIfSimulatorProps,
+  type SimulatorPreset,
+  type WhatIfSimulatorHandle,
+} from './components/WhatIfSimulator';
+
+export {
+  WhatIfPageBase,
+  whatIfPageDefaultColorScheme,
+  whatIfPageAzureColorScheme,
+  type WhatIfPageColorScheme,
+  type WhatIfPageBaseProps,
+} from './components/WhatIfPage';
 
 export {
   ErrorBoundary,
@@ -93,6 +136,24 @@ export {
   type FactorSelectorProps,
   type FactorSelectorColorScheme,
 } from './components/FactorSelector';
+
+export {
+  MindmapWindow,
+  openMindmapPopout,
+  updateMindmapPopout,
+  mindmapWindowDefaultColorScheme,
+  mindmapWindowAzureColorScheme,
+  type MindmapWindowColorScheme,
+  type MindmapWindowProps,
+} from './components/MindmapWindow';
+
+export {
+  MindmapPanelContent,
+  mindmapPanelDefaultColorScheme,
+  mindmapPanelAzureColorScheme,
+  type MindmapPanelColorScheme,
+  type MindmapPanelContentProps,
+} from './components/MindmapPanel';
 
 // Services
 export {

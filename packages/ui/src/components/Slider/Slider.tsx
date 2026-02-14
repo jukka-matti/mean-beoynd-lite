@@ -1,6 +1,38 @@
 import React from 'react';
 
-interface SliderProps {
+/**
+ * Color scheme for Slider component
+ */
+export interface SliderColorScheme {
+  /** Label text color */
+  labelText: string;
+  /** Value display text color */
+  valueText: string;
+  /** Track background class */
+  trackBg: string;
+  /** Focus ring offset class */
+  ringOffset: string;
+  /** Firefox track background class */
+  mozTrackBg: string;
+}
+
+export const sliderDefaultColorScheme: SliderColorScheme = {
+  labelText: 'text-content-secondary',
+  valueText: 'text-content',
+  trackBg: 'bg-surface-tertiary',
+  ringOffset: 'focus:ring-offset-surface',
+  mozTrackBg: '[&::-moz-range-track]:bg-surface-tertiary',
+};
+
+export const sliderAzureColorScheme: SliderColorScheme = {
+  labelText: 'text-slate-400',
+  valueText: 'text-white',
+  trackBg: 'bg-slate-700',
+  ringOffset: 'focus:ring-offset-slate-900',
+  mozTrackBg: '[&::-moz-range-track]:bg-slate-700',
+};
+
+export interface SliderProps {
   /** Label displayed above the slider */
   label: string;
   /** Current value */
@@ -19,15 +51,12 @@ interface SliderProps {
   className?: string;
   /** Whether the slider is disabled */
   disabled?: boolean;
+  /** Color scheme for styling */
+  colorScheme?: SliderColorScheme;
 }
 
 /**
  * Styled range slider component with label and value display
- *
- * Features:
- * - Tailwind styling for thumb/track (Azure slate palette)
- * - Keyboard accessibility (arrow keys, Home/End)
- * - Custom value formatting
  */
 const Slider: React.FC<SliderProps> = ({
   label,
@@ -39,7 +68,9 @@ const Slider: React.FC<SliderProps> = ({
   formatValue,
   className = '',
   disabled = false,
+  colorScheme = sliderDefaultColorScheme,
 }) => {
+  const c = colorScheme;
   const displayValue = formatValue ? formatValue(value) : value.toString();
 
   // Calculate percentage for track fill
@@ -49,8 +80,8 @@ const Slider: React.FC<SliderProps> = ({
     <div className={`${className}`}>
       {/* Label and value row */}
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-xs text-slate-400">{label}</label>
-        <span className="text-xs font-mono text-white">{displayValue}</span>
+        <label className={`text-xs ${c.labelText}`}>{label}</label>
+        <span className={`text-xs font-mono ${c.valueText}`}>{displayValue}</span>
       </div>
 
       {/* Slider */}
@@ -65,8 +96,8 @@ const Slider: React.FC<SliderProps> = ({
           disabled={disabled}
           className={`
             w-full h-2 rounded-full appearance-none cursor-pointer
-            bg-slate-700
-            focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-1 focus:ring-offset-slate-900
+            ${c.trackBg}
+            focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-1 ${c.ringOffset}
             disabled:opacity-50 disabled:cursor-not-allowed
 
             /* WebKit (Chrome, Safari) */
@@ -93,12 +124,11 @@ const Slider: React.FC<SliderProps> = ({
             [&::-moz-range-thumb]:border-blue-600
             [&::-moz-range-thumb]:shadow-md
 
-            [&::-moz-range-track]:bg-slate-700
+            ${c.mozTrackBg}
             [&::-moz-range-track]:rounded-full
             [&::-moz-range-track]:h-2
           `}
           style={{
-            // Custom gradient for filled portion (WebKit)
             background: `linear-gradient(to right,
               rgb(59, 130, 246) 0%,
               rgb(59, 130, 246) ${percentage}%,

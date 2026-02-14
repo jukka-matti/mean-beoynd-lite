@@ -3,10 +3,41 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import WhatIfPage from '../WhatIfPage';
 import * as DataContextModule from '../../context/DataContext';
 
-// Mock WhatIfSimulator
-vi.mock('../WhatIfSimulator', () => ({
-  default: () => <div data-testid="what-if-simulator">WhatIfSimulator Mock</div>,
-}));
+// Mock @variscout/ui — WhatIfPageBase is what the wrapper renders
+vi.mock('@variscout/ui', async () => {
+  const actual = await vi.importActual<typeof import('@variscout/ui')>('@variscout/ui');
+  return {
+    ...actual,
+    WhatIfPageBase: ({ filteredData, rawData, outcome, specs, filterCount, onBack }: any) => {
+      if (!outcome || rawData.length === 0) {
+        return (
+          <div>
+            <button onClick={onBack}>Back</button>
+            <p>Load data and set specification limits first.</p>
+          </div>
+        );
+      }
+      const hasSpecs = specs.usl !== undefined || specs.lsl !== undefined;
+      return (
+        <div>
+          <button onClick={onBack} title="Back to Dashboard">
+            Back
+          </button>
+          <h1>What-If Simulator</h1>
+          <span>{outcome}</span>
+          <span>n = {filteredData.length}</span>
+          {filterCount > 0 && (
+            <span>
+              {filterCount} filter{filterCount !== 1 ? 's' : ''}
+            </span>
+          )}
+          {!hasSpecs && <p>Set specification limits (USL/LSL) to see Cpk and yield projections.</p>}
+          <div data-testid="what-if-simulator">WhatIfSimulator</div>
+        </div>
+      );
+    },
+  };
+});
 
 describe('WhatIfPage', () => {
   const mockOnBack = vi.fn();

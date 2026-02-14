@@ -1,34 +1,17 @@
 import React from 'react';
-import {
-  formatPValue,
-  getStars,
-  type MultiRegressionResult,
-  type TermRemovalSuggestion,
-} from '@variscout/core';
-import { HelpTooltip, useGlossary } from '@variscout/ui';
+import { formatPValue, getStars } from '@variscout/core';
+import { HelpTooltip } from '../HelpTooltip';
+import { useGlossary } from '../../hooks';
 import { ChevronDown, X, AlertTriangle, Lightbulb, CheckCircle } from 'lucide-react';
-import type { ColumnClassification, ReductionStep } from '@variscout/hooks';
-
-interface AdvancedRegressionViewProps {
-  outcome: string;
-  columns: ColumnClassification;
-  advSelectedPredictors: string[];
-  toggleAdvPredictor: (col: string) => void;
-  categoricalColumns: Set<string>;
-  toggleCategorical: (col: string) => void;
-  includeInteractions: boolean;
-  setIncludeInteractions: (include: boolean) => void;
-  multiRegressionResult: MultiRegressionResult | null;
-  suggestion: TermRemovalSuggestion | null;
-  reductionHistory: ReductionStep[];
-  onRemoveTerm: (term: string) => void;
-  onClearHistory: () => void;
-}
+import {
+  regressionViewDefaultColorScheme,
+  type AdvancedRegressionViewComponentProps,
+} from './regressionViewColors';
 
 /**
  * Advanced regression mode: GLM analysis with predictor selection and guided model reduction
  */
-export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
+export const AdvancedRegressionView: React.FC<AdvancedRegressionViewComponentProps> = ({
   outcome,
   columns,
   advSelectedPredictors,
@@ -42,26 +25,26 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
   reductionHistory,
   onRemoveTerm,
   onClearHistory,
+  colorScheme = regressionViewDefaultColorScheme,
 }) => {
   const { getTerm } = useGlossary();
+  const c = colorScheme;
   const numericColumns = columns.numeric;
 
   return (
     <>
       {/* Predictor selection */}
-      <div className="flex-none px-4 py-3 border-b border-edge bg-surface-secondary/50">
+      <div className={`flex-none px-4 py-3 border-b ${c.border} ${c.sectionBg}`}>
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-xs text-content-secondary uppercase tracking-wider">
-              Response:
-            </span>
+            <span className={`text-xs ${c.secondaryText} uppercase tracking-wider`}>Response:</span>
             <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
               {outcome}
             </span>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-xs text-content-secondary uppercase tracking-wider">
+            <span className={`text-xs ${c.secondaryText} uppercase tracking-wider`}>
               Predictors:
             </span>
             <div className="relative">
@@ -73,12 +56,12 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                   }
                   e.target.value = '';
                 }}
-                className="bg-surface border border-edge-secondary text-xs text-white rounded px-2 py-1.5 pr-6 outline-none focus:border-blue-500"
+                className={`${c.inputBg} border ${c.inputBorder} text-xs text-white rounded px-2 py-1.5 pr-6 outline-none focus:border-blue-500`}
               >
                 <option value="">+ Add predictor</option>
                 <optgroup label="Numeric">
                   {numericColumns
-                    .filter(c => !advSelectedPredictors.includes(c))
+                    .filter(nc => !advSelectedPredictors.includes(nc))
                     .map(col => (
                       <option key={col} value={col}>
                         {col}
@@ -88,7 +71,7 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                 {columns.categorical.length > 0 && (
                   <optgroup label="Categorical">
                     {columns.categorical
-                      .filter(c => !advSelectedPredictors.includes(c))
+                      .filter(cc => !advSelectedPredictors.includes(cc))
                       .map(col => (
                         <option key={col} value={col}>
                           {col}
@@ -99,7 +82,7 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
               </select>
               <ChevronDown
                 size={12}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-content-secondary pointer-events-none"
+                className={`absolute right-2 top-1/2 -translate-y-1/2 ${c.secondaryText} pointer-events-none`}
               />
             </div>
 
@@ -116,7 +99,7 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                   {numericColumns.includes(col) && (
                     <button
                       onClick={() => toggleCategorical(col)}
-                      className="ml-1 text-[10px] px-1 rounded bg-surface-tertiary hover:bg-surface"
+                      className={`ml-1 text-[10px] px-1 rounded ${c.tertiaryBg} ${c.toggleBtnHover}`}
                       title={isCat ? 'Treat as continuous' : 'Treat as categorical'}
                     >
                       {isCat ? 'cat' : 'num'}
@@ -131,12 +114,12 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
           </div>
 
           {advSelectedPredictors.length >= 2 && (
-            <label className="flex items-center gap-2 text-xs text-content-secondary cursor-pointer">
+            <label className={`flex items-center gap-2 text-xs ${c.secondaryText} cursor-pointer`}>
               <input
                 type="checkbox"
                 checked={includeInteractions}
                 onChange={e => setIncludeInteractions(e.target.checked)}
-                className="rounded border-edge-secondary bg-surface text-blue-500 focus:ring-blue-500"
+                className={`rounded ${c.inputBorder} ${c.inputBg} text-blue-500 focus:ring-blue-500`}
               />
               Include interactions
               <HelpTooltip term={getTerm('interactionEffect')} iconSize={12} />
@@ -148,7 +131,7 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
       {/* Results */}
       <div className="flex-1 p-4 overflow-auto">
         {!multiRegressionResult ? (
-          <div className="flex items-center justify-center h-full text-content-muted">
+          <div className={`flex items-center justify-center h-full ${c.mutedText}`}>
             {advSelectedPredictors.length === 0
               ? 'Select predictors above to run multiple regression'
               : 'Insufficient data for multiple regression'}
@@ -156,11 +139,11 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
         ) : (
           <div className="space-y-4">
             {/* Model Summary Card */}
-            <div className="bg-surface-secondary rounded-xl border border-edge p-4">
+            <div className={`${c.cardBg} rounded-xl border ${c.border} p-4`}>
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-medium text-content mb-1">Model Summary</h3>
-                  <p className="text-xs text-content-muted">
+                  <h3 className={`text-sm font-medium ${c.contentText} mb-1`}>Model Summary</h3>
+                  <p className={`text-xs ${c.mutedText}`}>
                     n = {multiRegressionResult.n} observations
                   </p>
                 </div>
@@ -173,7 +156,7 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                       {getStars(multiRegressionResult.strengthRating)}
                     </span>
                   </div>
-                  <div className="text-xs text-content-secondary flex items-center gap-1 justify-end">
+                  <div className={`text-xs ${c.secondaryText} flex items-center gap-1 justify-end`}>
                     Adj. R²
                     <HelpTooltip term={getTerm('adjustedRSquared')} iconSize={10} />
                   </div>
@@ -182,31 +165,31 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                 <div>
-                  <span className="text-content-muted">R²</span>
-                  <div className="text-content font-medium">
+                  <span className={c.mutedText}>R²</span>
+                  <div className={`${c.contentText} font-medium`}>
                     {multiRegressionResult.rSquared.toFixed(4)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-content-muted">F-statistic</span>
-                  <div className="text-content font-medium">
+                  <span className={c.mutedText}>F-statistic</span>
+                  <div className={`${c.contentText} font-medium`}>
                     {multiRegressionResult.fStatistic.toFixed(2)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-content-muted flex items-center gap-1">
+                  <span className={`${c.mutedText} flex items-center gap-1`}>
                     p-value <HelpTooltip term={getTerm('pValue')} iconSize={10} />
                   </span>
                   <div
-                    className={`font-medium ${multiRegressionResult.isSignificant ? 'text-green-400' : 'text-content'}`}
+                    className={`font-medium ${multiRegressionResult.isSignificant ? 'text-green-400' : c.contentText}`}
                   >
                     {formatPValue(multiRegressionResult.pValue)}
-                    {multiRegressionResult.isSignificant && ' ✓'}
+                    {multiRegressionResult.isSignificant && ' \u2713'}
                   </div>
                 </div>
                 <div>
-                  <span className="text-content-muted">RMSE</span>
-                  <div className="text-content font-medium">
+                  <span className={c.mutedText}>RMSE</span>
+                  <div className={`${c.contentText} font-medium`}>
                     {multiRegressionResult.rmse.toFixed(3)}
                   </div>
                 </div>
@@ -237,8 +220,8 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                         Remove term
                       </button>
                       <button
-                        onClick={() => {}} // Keep all — no action needed, just dismiss visually
-                        className="px-3 py-1.5 text-xs font-medium text-content-secondary hover:text-content hover:bg-surface-tertiary rounded-lg transition-colors"
+                        onClick={() => {}}
+                        className={`px-3 py-1.5 text-xs font-medium ${c.secondaryText} ${c.hoverText} ${c.hoverBg} rounded-lg transition-colors`}
                       >
                         Keep all
                       </button>
@@ -257,12 +240,12 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
 
             {/* Reduction History */}
             {reductionHistory.length > 0 && (
-              <div className="bg-surface-secondary rounded-xl border border-edge p-4">
+              <div className={`${c.cardBg} rounded-xl border ${c.border} p-4`}>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-content">Reduction History</h3>
+                  <h3 className={`text-sm font-medium ${c.contentText}`}>Reduction History</h3>
                   <button
                     onClick={onClearHistory}
-                    className="text-[10px] text-content-muted hover:text-content transition-colors"
+                    className={`text-[10px] ${c.mutedText} ${c.hoverText} transition-colors`}
                   >
                     Clear
                   </button>
@@ -270,20 +253,20 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                 <div className="space-y-1.5 text-xs font-mono">
                   {reductionHistory.map((step, i) => {
                     const adjR2Change = step.adjR2After - step.adjR2Before;
-                    const improved = adjR2Change >= -0.001; // Within rounding tolerance
+                    const improved = adjR2Change >= -0.001;
                     return (
-                      <div key={i} className="flex items-center gap-2 text-content-secondary">
-                        <span className="text-content-muted w-12">Step {i + 1}:</span>
+                      <div key={i} className={`flex items-center gap-2 ${c.secondaryText}`}>
+                        <span className={`${c.mutedText} w-12`}>Step {i + 1}:</span>
                         <span>
                           Removed {step.term} (p={step.pValue.toFixed(2)})
                         </span>
-                        <span className="text-content-muted">—</span>
+                        <span className={c.mutedText}>&mdash;</span>
                         <span>
-                          Adj. R²: {(step.adjR2Before * 100).toFixed(1)}% →{' '}
+                          Adj. R²: {(step.adjR2Before * 100).toFixed(1)}% &rarr;{' '}
                           {(step.adjR2After * 100).toFixed(1)}%
                         </span>
                         <span className={improved ? 'text-green-400' : 'text-amber-400'}>
-                          {improved ? '✓' : '↓'}
+                          {improved ? '\u2713' : '\u2193'}
                         </span>
                       </div>
                     );
@@ -313,34 +296,36 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
 
             {/* Top Predictors */}
             {multiRegressionResult.topPredictors.length > 0 && (
-              <div className="bg-surface-secondary rounded-xl border border-edge p-4">
-                <h3 className="text-sm font-medium text-content mb-3">
+              <div className={`${c.cardBg} rounded-xl border ${c.border} p-4`}>
+                <h3 className={`text-sm font-medium ${c.contentText} mb-3`}>
                   Top Predictors (by importance)
                 </h3>
                 <div className="space-y-2">
                   {multiRegressionResult.coefficients
-                    .filter(c => c.isSignificant)
+                    .filter(coef => coef.isSignificant)
                     .sort((a, b) => Math.abs(b.standardized) - Math.abs(a.standardized))
                     .slice(0, 5)
                     .map((coef, i) => {
                       const maxStd = Math.max(
-                        ...multiRegressionResult.coefficients.map(c => Math.abs(c.standardized))
+                        ...multiRegressionResult.coefficients.map(cf => Math.abs(cf.standardized))
                       );
                       const barWidth =
                         maxStd > 0 ? (Math.abs(coef.standardized) / maxStd) * 100 : 0;
 
                       return (
                         <div key={coef.term} className="flex items-center gap-3">
-                          <span className="text-xs text-content-muted w-4">{i + 1}</span>
-                          <span className="text-xs text-content w-32 truncate">{coef.term}</span>
-                          <div className="flex-1 h-4 bg-surface rounded overflow-hidden">
+                          <span className={`text-xs ${c.mutedText} w-4`}>{i + 1}</span>
+                          <span className={`text-xs ${c.contentText} w-32 truncate`}>
+                            {coef.term}
+                          </span>
+                          <div className={`flex-1 h-4 ${c.inputBg} rounded overflow-hidden`}>
                             <div
                               className={`h-full ${coef.coefficient > 0 ? 'bg-green-500/50' : 'bg-red-500/50'}`}
                               style={{ width: `${barWidth}%` }}
                             />
                           </div>
-                          <span className="text-xs text-content-secondary w-16 text-right">
-                            β = {coef.standardized.toFixed(2)}
+                          <span className={`text-xs ${c.secondaryText} w-16 text-right`}>
+                            &beta; = {coef.standardized.toFixed(2)}
                           </span>
                         </div>
                       );
@@ -350,14 +335,14 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
             )}
 
             {/* Coefficients Table */}
-            <div className="bg-surface-secondary rounded-xl border border-edge overflow-hidden">
-              <div className="px-4 py-3 border-b border-edge/50">
-                <h3 className="text-sm font-medium text-content">Coefficients</h3>
+            <div className={`${c.cardBg} rounded-xl border ${c.border} overflow-hidden`}>
+              <div className={`px-4 py-3 border-b ${c.borderSubtle}`}>
+                <h3 className={`text-sm font-medium ${c.contentText}`}>Coefficients</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-edge/50 text-content-secondary">
+                    <tr className={`border-b ${c.borderSubtle} ${c.secondaryText}`}>
                       <th className="text-left px-4 py-2">Term</th>
                       <th className="text-right px-4 py-2">Coefficient</th>
                       <th className="text-right px-4 py-2">Std Error</th>
@@ -370,24 +355,24 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-edge/30">
-                      <td className="px-4 py-2 text-content-muted">(Intercept)</td>
-                      <td className="text-right px-4 py-2 text-content">
+                    <tr className={`border-b ${c.borderFaint}`}>
+                      <td className={`px-4 py-2 ${c.mutedText}`}>(Intercept)</td>
+                      <td className={`text-right px-4 py-2 ${c.contentText}`}>
                         {multiRegressionResult.intercept.toFixed(4)}
                       </td>
-                      <td className="text-right px-4 py-2 text-content-muted">-</td>
-                      <td className="text-right px-4 py-2 text-content-muted">-</td>
-                      <td className="text-right px-4 py-2 text-content-muted">-</td>
-                      <td className="text-right px-4 py-2 text-content-muted">-</td>
+                      <td className={`text-right px-4 py-2 ${c.mutedText}`}>-</td>
+                      <td className={`text-right px-4 py-2 ${c.mutedText}`}>-</td>
+                      <td className={`text-right px-4 py-2 ${c.mutedText}`}>-</td>
+                      <td className={`text-right px-4 py-2 ${c.mutedText}`}>-</td>
                     </tr>
                     {multiRegressionResult.coefficients.map(coef => {
                       const isSuggested = suggestion?.term === coef.term;
                       return (
                         <tr
                           key={coef.term}
-                          className={`border-b border-edge/30 ${isSuggested ? 'bg-amber-500/10' : ''}`}
+                          className={`border-b ${c.borderFaint} ${isSuggested ? 'bg-amber-500/10' : ''}`}
                         >
-                          <td className="px-4 py-2 text-content">
+                          <td className={`px-4 py-2 ${c.contentText}`}>
                             <span className="flex items-center gap-1.5">
                               {coef.term}
                               {isSuggested && (
@@ -397,17 +382,17 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                               )}
                             </span>
                           </td>
-                          <td className="text-right px-4 py-2 text-content">
+                          <td className={`text-right px-4 py-2 ${c.contentText}`}>
                             {coef.coefficient.toFixed(4)}
                           </td>
-                          <td className="text-right px-4 py-2 text-content-muted">
+                          <td className={`text-right px-4 py-2 ${c.mutedText}`}>
                             {coef.stdError.toFixed(4)}
                           </td>
-                          <td className="text-right px-4 py-2 text-content">
+                          <td className={`text-right px-4 py-2 ${c.contentText}`}>
                             {coef.tStatistic.toFixed(2)}
                           </td>
                           <td
-                            className={`text-right px-4 py-2 ${coef.isSignificant ? 'text-green-400' : 'text-content-muted'}`}
+                            className={`text-right px-4 py-2 ${coef.isSignificant ? 'text-green-400' : c.mutedText}`}
                           >
                             {formatPValue(coef.pValue)}
                             {coef.isSignificant && ' *'}
@@ -418,7 +403,7 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                                 ? 'text-red-400'
                                 : (coef.vif ?? 0) > 5
                                   ? 'text-amber-400'
-                                  : 'text-content-muted'
+                                  : c.mutedText
                             }`}
                           >
                             {coef.vif?.toFixed(2) ?? '-'}
@@ -429,20 +414,22 @@ export const AdvancedRegressionView: React.FC<AdvancedRegressionViewProps> = ({
                   </tbody>
                 </table>
               </div>
-              <div className="px-4 py-2 text-xs text-content-muted border-t border-edge/50">
+              <div className={`px-4 py-2 text-xs ${c.mutedText} border-t ${c.borderSubtle}`}>
                 * Significant at p {'<'} 0.05
               </div>
             </div>
 
             {/* Model Equation */}
-            <div className="bg-surface-secondary rounded-xl border border-edge p-4">
-              <h3 className="text-sm font-medium text-content mb-2">Model Equation</h3>
-              <div className="font-mono text-xs text-content-secondary bg-surface rounded p-3 overflow-x-auto">
+            <div className={`${c.cardBg} rounded-xl border ${c.border} p-4`}>
+              <h3 className={`text-sm font-medium ${c.contentText} mb-2`}>Model Equation</h3>
+              <div
+                className={`font-mono text-xs ${c.secondaryText} ${c.inputBg} rounded p-3 overflow-x-auto`}
+              >
                 {outcome} = {multiRegressionResult.intercept.toFixed(2)}
-                {multiRegressionResult.coefficients.map(c => {
-                  const sign = c.coefficient >= 0 ? ' + ' : ' - ';
-                  const coef = Math.abs(c.coefficient).toFixed(3);
-                  return `${sign}${coef} × ${c.term}`;
+                {multiRegressionResult.coefficients.map(coefItem => {
+                  const sign = coefItem.coefficient >= 0 ? ' + ' : ' - ';
+                  const coefVal = Math.abs(coefItem.coefficient).toFixed(3);
+                  return `${sign}${coefVal} \u00d7 ${coefItem.term}`;
                 })}
               </div>
             </div>

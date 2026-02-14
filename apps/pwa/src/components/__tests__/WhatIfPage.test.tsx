@@ -43,14 +43,50 @@ vi.mock('@variscout/core', () => ({
   })),
 }));
 
-// Mock WhatIfSimulator
-vi.mock('../WhatIfSimulator', () => ({
-  default: (props: any) => (
-    <div data-testid="simulator" data-expanded={props.defaultExpanded}>
-      WhatIfSimulator
-    </div>
-  ),
-}));
+// Mock WhatIfSimulator (now imported by WhatIfPageBase from @variscout/ui)
+vi.mock('@variscout/ui', async () => {
+  const actual = await vi.importActual<typeof import('@variscout/ui')>('@variscout/ui');
+  return {
+    ...actual,
+    WhatIfPageBase: ({
+      filteredData,
+      rawData,
+      outcome,
+      specs,
+      filterCount,
+      onBack,
+      colorScheme,
+    }: any) => {
+      // Simplified rendering that mirrors the real WhatIfPageBase behavior
+      if (!outcome || rawData.length === 0) {
+        return (
+          <div>
+            <button onClick={onBack}>Back</button>
+            <p>Load data and set specification limits first.</p>
+          </div>
+        );
+      }
+      const hasSpecs = specs.usl !== undefined || specs.lsl !== undefined;
+      return (
+        <div>
+          <button onClick={onBack} title="Back to Dashboard">
+            Back
+          </button>
+          <h1>What-If Simulator</h1>
+          <span>{outcome}</span>
+          <span>n = {filteredData.length}</span>
+          {filterCount > 0 && (
+            <span>
+              {filterCount} filter{filterCount !== 1 ? 's' : ''}
+            </span>
+          )}
+          {!hasSpecs && <p>Set specification limits (USL/LSL) to see Cpk and yield projections.</p>}
+          <div data-testid="simulator">WhatIfSimulator</div>
+        </div>
+      );
+    },
+  };
+});
 
 describe('WhatIfPage', () => {
   beforeEach(() => {
@@ -74,7 +110,6 @@ describe('WhatIfPage', () => {
     const onBack = vi.fn();
     render(<WhatIfPage onBack={onBack} />);
 
-    // Click the back button (ArrowLeft icon button)
     const backButton = screen.getByTitle('Back to Dashboard');
     fireEvent.click(backButton);
     expect(onBack).toHaveBeenCalledOnce();
@@ -138,9 +173,7 @@ describe('WhatIfPage', () => {
     const onBack = vi.fn();
     render(<WhatIfPage onBack={onBack} />);
 
-    // There should still be a back button
     const buttons = screen.getAllByRole('button');
-    // Click the first button (back arrow)
     fireEvent.click(buttons[0]);
     expect(onBack).toHaveBeenCalledOnce();
   });

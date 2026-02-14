@@ -9,3 +9,16 @@ export {
   type ExpandedScatterModalProps,
   type ColumnClassification,
 } from './RegressionPanelBase';
+
+export { SimpleRegressionView } from './SimpleRegressionView';
+export { AdvancedRegressionView } from './AdvancedRegressionView';
+export { ExpandedScatterModal } from './ExpandedScatterModal';
+
+export {
+  regressionViewDefaultColorScheme,
+  regressionViewAzureColorScheme,
+  type RegressionViewColorScheme,
+  type SimpleRegressionViewComponentProps,
+  type AdvancedRegressionViewComponentProps,
+  type ExpandedScatterModalComponentProps,
+} from './regressionViewColors';
