@@ -1,11 +1,18 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { InvestigationMindmapBase, type MindmapNode, type CategoryData } from '@variscout/charts';
-import { useDrillPath, type DrillStep } from '@variscout/hooks';
+import {
+  InvestigationMindmapBase,
+  type MindmapNode,
+  type MindmapEdge,
+  type MindmapMode,
+  type CategoryData,
+} from '@variscout/charts';
+import { useDrillPath } from '@variscout/hooks';
 import {
   type FilterAction,
   type FilterSource,
   getCategoryStats,
   getEtaSquared,
+  getInteractionStrength,
   applyFilters,
   filterStackToFilters,
   createFilterAction,
@@ -27,6 +34,28 @@ interface MindmapSyncData {
 }
 
 /**
+ * Compute pairwise interaction edges for all factor pairs
+ */
+function computeInteractionEdges(data: any[], factors: string[], outcome: string): MindmapEdge[] {
+  const edges: MindmapEdge[] = [];
+  for (let i = 0; i < factors.length; i++) {
+    for (let j = i + 1; j < factors.length; j++) {
+      const result = getInteractionStrength(data, factors[i], factors[j], outcome);
+      if (result) {
+        edges.push({
+          factorA: result.factorA,
+          factorB: result.factorB,
+          deltaRSquared: result.deltaRSquared,
+          pValue: result.pValue,
+          standardizedBeta: result.standardizedBeta,
+        });
+      }
+    }
+  }
+  return edges;
+}
+
+/**
  * Standalone mindmap window for dual-screen setups
  *
  * This component is rendered when the URL contains ?view=mindmap
@@ -41,6 +70,8 @@ const MindmapWindow: React.FC = () => {
   const [syncData, setSyncData] = useState<MindmapSyncData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [localFilterStack, setLocalFilterStack] = useState<FilterAction[]>([]);
+  const [mode, setMode] = useState<MindmapMode>('drilldown');
+  const [interactionEdges, setInteractionEdges] = useState<MindmapEdge[] | null>(null);
 
   // Load initial data from localStorage
   useEffect(() => {
@@ -120,6 +151,22 @@ const MindmapWindow: React.FC = () => {
     () => applyFilters(rawData, currentFilters),
     [rawData, currentFilters]
   );
+
+  // Reset interaction edges when data/factors change
+  useEffect(() => {
+    setInteractionEdges(null);
+  }, [filteredData, factors, outcome]);
+
+  // Compute interaction edges on demand when switching to interactions mode
+  useEffect(() => {
+    if (mode !== 'interactions' || interactionEdges !== null) return;
+    if (filteredData.length < 5 || factors.length < 2) {
+      setInteractionEdges([]);
+      return;
+    }
+    const edges = computeInteractionEdges(filteredData, factors, outcome);
+    setInteractionEdges(edges);
+  }, [mode, interactionEdges, filteredData, factors, outcome]);
 
   const drilledFactors = useMemo(() => {
     const set = new Set<string>();
@@ -237,12 +284,41 @@ const MindmapWindow: React.FC = () => {
 
   return (
     <div className="h-screen w-screen bg-surface p-4">
-      <h1 className="text-sm font-semibold text-white mb-2">Investigation</h1>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-sm font-semibold text-white">Investigation</h1>
+
+        {/* Mode toggle */}
+        <div className="flex items-center gap-0.5 bg-surface-secondary rounded-lg p-0.5">
+          <button
+            onClick={() => setMode('drilldown')}
+            className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+              mode === 'drilldown'
+                ? 'bg-blue-500/20 text-blue-400'
+                : 'text-content-secondary hover:text-white'
+            }`}
+          >
+            Drilldown
+          </button>
+          <button
+            onClick={() => setMode('interactions')}
+            className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+              mode === 'interactions'
+                ? 'bg-amber-500/20 text-amber-400'
+                : 'text-content-secondary hover:text-white'
+            }`}
+          >
+            Interactions
+          </button>
+        </div>
+      </div>
+
       <InvestigationMindmapBase
         nodes={nodes}
         drillTrail={drillTrail}
         cumulativeVariationPct={cumulativeVariationPct}
         onCategorySelect={handleDrillCategory}
+        mode={mode}
+        edges={interactionEdges ?? undefined}
         width={380}
         height={600}
       />

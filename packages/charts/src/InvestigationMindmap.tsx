@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { Group } from '@visx/group';
 import { Line } from '@visx/shape';
 import { withParentSize } from '@visx/responsive';
-import { chartColors, chromeColors } from './colors';
+import { chartColors } from './colors';
 import { useChartTheme } from './useChartTheme';
 
 // ============================================================================
@@ -37,6 +37,22 @@ export interface MindmapNode {
   categoryData?: CategoryData[];
 }
 
+/**
+ * An interaction edge between two factor nodes
+ */
+export interface MindmapEdge {
+  factorA: string;
+  factorB: string;
+  deltaRSquared: number;
+  pValue: number;
+  standardizedBeta: number;
+}
+
+/**
+ * Mindmap display mode
+ */
+export type MindmapMode = 'drilldown' | 'interactions';
+
 export interface InvestigationMindmapProps {
   /** Factor nodes to display */
   nodes: MindmapNode[];
@@ -50,6 +66,12 @@ export interface InvestigationMindmapProps {
   onNodeClick?: (factor: string) => void;
   /** Called when a category value is selected from the popover */
   onCategorySelect?: (factor: string, value: string | number) => void;
+  /** Display mode: 'drilldown' shows trail, 'interactions' shows edges */
+  mode?: MindmapMode;
+  /** Interaction edges (rendered in 'interactions' mode) */
+  edges?: MindmapEdge[];
+  /** Called when an interaction edge is clicked */
+  onEdgeClick?: (factorA: string, factorB: string) => void;
   /** Container width from withParentSize */
   parentWidth?: number;
   /** Container height from withParentSize */
@@ -69,6 +91,9 @@ const MAX_NODE_RADIUS = 40;
 const CENTER_NODE_RADIUS = 16;
 const PROGRESS_BAR_HEIGHT = 32;
 const MARGIN = { top: 20, right: 20, bottom: 20, left: 20 };
+
+const EDGE_MIN_WIDTH = 1.5;
+const EDGE_MAX_WIDTH = 6;
 
 // ============================================================================
 // Helpers
@@ -107,6 +132,31 @@ function getNodeStroke(node: MindmapNode, isDark: boolean): string {
   if (node.isSuggested) return chartColors.pass; // green pulse
   if (node.state === 'active') return chartColors.mean;
   return isDark ? '#475569' : '#94a3b8'; // slate-600 / slate-400
+}
+
+/**
+ * Map ΔR² to edge stroke width (linear interpolation)
+ */
+function getEdgeWidth(deltaRSquared: number, maxDelta: number): number {
+  if (maxDelta <= 0) return EDGE_MIN_WIDTH;
+  const t = Math.min(1, deltaRSquared / maxDelta);
+  return EDGE_MIN_WIDTH + t * (EDGE_MAX_WIDTH - EDGE_MIN_WIDTH);
+}
+
+/**
+ * Get edge opacity based on p-value significance
+ */
+function getEdgeOpacity(pValue: number): number {
+  if (pValue < 0.05) return 1.0;
+  if (pValue < 0.1) return 0.4;
+  return 0; // not rendered
+}
+
+/**
+ * Filter edges to only those significant enough to render (p < 0.10)
+ */
+function getVisibleEdges(edges: MindmapEdge[]): MindmapEdge[] {
+  return edges.filter(e => e.pValue < 0.1);
 }
 
 /**
@@ -282,6 +332,97 @@ const CategoryPopover: React.FC<CategoryPopoverProps> = ({
 };
 
 // ============================================================================
+// Edge Tooltip
+// ============================================================================
+
+interface EdgeTooltipProps {
+  edge: MindmapEdge;
+  x: number;
+  y: number;
+  svgWidth: number;
+  svgHeight: number;
+  onClose: () => void;
+}
+
+const EdgeTooltip: React.FC<EdgeTooltipProps> = ({ edge, x, y, svgWidth, svgHeight, onClose }) => {
+  const tooltipWidth = 170;
+  const tooltipHeight = 80;
+
+  // Position near midpoint, flip if too close to edge
+  const flipX = x + tooltipWidth / 2 > svgWidth;
+  const flipY = y + tooltipHeight > svgHeight;
+
+  const left = flipX ? Math.max(4, x - tooltipWidth) : Math.max(4, x - tooltipWidth / 2);
+  const top = flipY ? Math.max(4, y - tooltipHeight - 8) : y + 8;
+
+  return (
+    <foreignObject x={0} y={0} width={svgWidth} height={svgHeight}>
+      {/* Click-away backdrop */}
+      <div
+        style={{ position: 'absolute', inset: 0 }}
+        onClick={e => {
+          e.stopPropagation();
+          onClose();
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          left,
+          top,
+          width: tooltipWidth,
+          background: '#1e293b',
+          border: '1px solid #334155',
+          borderRadius: 8,
+          padding: '8px 10px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          zIndex: 10,
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#cbd5e1',
+            marginBottom: 6,
+            paddingBottom: 4,
+            borderBottom: '1px solid #334155',
+          }}
+        >
+          {edge.factorA} &times; {edge.factorB}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#94a3b8' }}>&Delta;R&sup2;</span>
+            <span style={{ color: '#e2e8f0', fontWeight: 500 }}>
+              {(edge.deltaRSquared * 100).toFixed(1)}%
+            </span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#94a3b8' }}>p</span>
+            <span
+              style={{
+                color: edge.pValue < 0.05 ? chartColors.warning : '#e2e8f0',
+                fontWeight: 500,
+              }}
+            >
+              {edge.pValue < 0.001 ? '< 0.001' : edge.pValue.toFixed(3)}
+            </span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#94a3b8' }}>&beta;</span>
+            <span style={{ color: '#e2e8f0', fontWeight: 500 }}>
+              {edge.standardizedBeta.toFixed(2)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </foreignObject>
+  );
+};
+
+// ============================================================================
 // Progress Bar
 // ============================================================================
 
@@ -369,6 +510,9 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
   targetPct = 70,
   onNodeClick,
   onCategorySelect,
+  mode = 'drilldown',
+  edges,
+  onEdgeClick,
   parentWidth,
   parentHeight,
   width: explicitWidth,
@@ -379,6 +523,7 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
   const { isDark, chrome } = useChartTheme();
 
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [hoveredEdge, setHoveredEdge] = useState<string | null>(null); // "factorA|factorB"
 
   // Handle node click — show popover for available nodes, no-op for exhausted
   const handleNodeClick = useCallback(
@@ -433,8 +578,9 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
     return map;
   }, [nodes]);
 
-  // Drill trail line segments
+  // Drill trail line segments (only used in drilldown mode)
   const trailSegments = useMemo(() => {
+    if (mode !== 'drilldown') return [];
     const segments: { x1: number; y1: number; x2: number; y2: number }[] = [];
     if (drillTrail.length === 0) return segments;
 
@@ -451,24 +597,89 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
     }
 
     return segments;
-  }, [drillTrail, posMap, centerX, centerY]);
+  }, [mode, drillTrail, posMap, centerX, centerY]);
+
+  // Visible interaction edges (only used in interactions mode)
+  const visibleEdges = useMemo(() => {
+    if (mode !== 'interactions' || !edges) return [];
+    return getVisibleEdges(edges);
+  }, [mode, edges]);
+
+  const maxDeltaR2 = useMemo(() => {
+    if (visibleEdges.length === 0) return 0;
+    return Math.max(...visibleEdges.map(e => e.deltaRSquared));
+  }, [visibleEdges]);
+
+  // Edge lookup for tooltip
+  const edgeLookup = useMemo(() => {
+    const map = new Map<string, MindmapEdge>();
+    visibleEdges.forEach(e => {
+      map.set(`${e.factorA}|${e.factorB}`, e);
+    });
+    return map;
+  }, [visibleEdges]);
 
   if (width < 100 || height < 100) return null;
 
   return (
     <svg width={width} height={height} style={{ overflow: 'visible' }}>
       <Group>
-        {/* Drill trail lines */}
-        {trailSegments.map((seg, i) => (
-          <Line
-            key={`trail-${i}`}
-            from={{ x: seg.x1, y: seg.y1 }}
-            to={{ x: seg.x2, y: seg.y2 }}
-            stroke={chartColors.mean}
-            strokeWidth={2}
-            strokeOpacity={0.6}
-          />
-        ))}
+        {/* === INTERACTION EDGES (rendered before nodes for z-order) === */}
+        {mode === 'interactions' &&
+          visibleEdges.map(edge => {
+            const posA = posMap.get(edge.factorA);
+            const posB = posMap.get(edge.factorB);
+            if (!posA || !posB) return null;
+
+            const edgeKey = `${edge.factorA}|${edge.factorB}`;
+            const opacity = getEdgeOpacity(edge.pValue);
+            const strokeWidth = getEdgeWidth(edge.deltaRSquared, maxDeltaR2);
+
+            return (
+              <line
+                key={`edge-${edgeKey}`}
+                x1={posA.x}
+                y1={posA.y}
+                x2={posB.x}
+                y2={posB.y}
+                stroke={chartColors.warning}
+                strokeWidth={strokeWidth}
+                strokeOpacity={opacity}
+                strokeLinecap="round"
+                style={{ cursor: 'pointer', transition: 'stroke-opacity 0.2s' }}
+                onClick={() => onEdgeClick?.(edge.factorA, edge.factorB)}
+                onMouseEnter={() => setHoveredEdge(edgeKey)}
+                onMouseLeave={() => setHoveredEdge(null)}
+              />
+            );
+          })}
+
+        {/* === "No interactions" message === */}
+        {mode === 'interactions' && edges && visibleEdges.length === 0 && (
+          <text
+            x={centerX}
+            y={centerY}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={12}
+            fill={chrome.labelSecondary}
+          >
+            No significant interactions found
+          </text>
+        )}
+
+        {/* === DRILL TRAIL LINES (drilldown mode only) === */}
+        {mode === 'drilldown' &&
+          trailSegments.map((seg, i) => (
+            <Line
+              key={`trail-${i}`}
+              from={{ x: seg.x1, y: seg.y1 }}
+              to={{ x: seg.x2, y: seg.y2 }}
+              stroke={chartColors.mean}
+              strokeWidth={2}
+              strokeOpacity={0.6}
+            />
+          ))}
 
         {/* Center "Start" node */}
         <circle
@@ -500,7 +711,8 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
           const fill = getNodeFill(node.state, isDark);
           const stroke = getNodeStroke(node, isDark);
           const isClickable = node.state !== 'exhausted';
-          const isSuggested = node.isSuggested;
+          // Only show pulse in drilldown mode
+          const showPulse = mode === 'drilldown' && node.isSuggested;
 
           return (
             <Group key={pos.factor}>
@@ -516,7 +728,7 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
                   cursor: isClickable ? 'pointer' : 'default',
                   transition: 'fill 0.2s, stroke 0.2s',
                 }}
-                className={isSuggested ? 'mindmap-pulse' : undefined}
+                className={showPulse ? 'mindmap-pulse' : undefined}
                 onClick={() => handleNodeClick(node)}
               />
 
@@ -580,6 +792,30 @@ export const InvestigationMindmapBase: React.FC<InvestigationMindmapProps> = ({
                 svgHeight={height}
                 onSelect={handleCategorySelect}
                 onClose={() => setSelectedNode(null)}
+              />
+            );
+          })()}
+
+        {/* Edge tooltip on hover */}
+        {hoveredEdge &&
+          (() => {
+            const edge = edgeLookup.get(hoveredEdge);
+            if (!edge) return null;
+            const posA = posMap.get(edge.factorA);
+            const posB = posMap.get(edge.factorB);
+            if (!posA || !posB) return null;
+            // Position tooltip at midpoint of edge
+            const midX = (posA.x + posB.x) / 2;
+            const midY = (posA.y + posB.y) / 2;
+
+            return (
+              <EdgeTooltip
+                edge={edge}
+                x={midX}
+                y={midY}
+                svgWidth={width}
+                svgHeight={height}
+                onClose={() => setHoveredEdge(null)}
               />
             );
           })()}

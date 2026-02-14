@@ -10,6 +10,7 @@ import {
   getStageBoundaries,
   calculateProbabilityPlotData,
   normalQuantile,
+  getInteractionStrength,
 } from '../stats';
 
 describe('Stats Engine', () => {
@@ -973,6 +974,81 @@ describe('Probability Plot', () => {
       // Tails should have wider CI than middle
       expect(firstCI).toBeGreaterThan(middleCI);
       expect(lastCI).toBeGreaterThan(middleCI);
+    });
+  });
+
+  describe('getInteractionStrength', () => {
+    // Dataset where Temperature × Pressure interact to affect Yield
+    const interactionData = (() => {
+      const rows: { Temperature: number; Pressure: number; Yield: number; Machine: string }[] = [];
+      const temps = [100, 200];
+      const pressures = [10, 20];
+      const machines = ['A', 'B'];
+      // Create interaction: at high temp, high pressure boosts yield much more
+      for (let i = 0; i < 40; i++) {
+        const temp = temps[i % 2];
+        const press = pressures[Math.floor(i / 2) % 2];
+        const machine = machines[Math.floor(i / 4) % 2];
+        const interaction = temp === 200 && press === 20 ? 15 : 0;
+        const noise = Math.sin(i * 137.5) * 2; // deterministic pseudo-random
+        const yield_ = 50 + (temp - 100) * 0.1 + press * 0.5 + interaction + noise;
+        rows.push({ Temperature: temp, Pressure: press, Yield: yield_, Machine: machine });
+      }
+      return rows;
+    })();
+
+    it('should return non-null for two factors with known interaction', () => {
+      const result = getInteractionStrength(interactionData, 'Temperature', 'Pressure', 'Yield');
+      expect(result).not.toBeNull();
+      expect(result!.factorA).toBe('Temperature');
+      expect(result!.factorB).toBe('Pressure');
+    });
+
+    it('should have deltaRSquared >= 0', () => {
+      const result = getInteractionStrength(interactionData, 'Temperature', 'Pressure', 'Yield');
+      expect(result).not.toBeNull();
+      expect(result!.deltaRSquared).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should have pValue in [0, 1]', () => {
+      const result = getInteractionStrength(interactionData, 'Temperature', 'Pressure', 'Yield');
+      expect(result).not.toBeNull();
+      expect(result!.pValue).toBeGreaterThanOrEqual(0);
+      expect(result!.pValue).toBeLessThanOrEqual(1);
+    });
+
+    it('should have a numeric standardizedBeta', () => {
+      const result = getInteractionStrength(interactionData, 'Temperature', 'Pressure', 'Yield');
+      expect(result).not.toBeNull();
+      expect(typeof result!.standardizedBeta).toBe('number');
+      expect(Number.isFinite(result!.standardizedBeta)).toBe(true);
+    });
+
+    it('should return null for empty data', () => {
+      const result = getInteractionStrength([], 'Temperature', 'Pressure', 'Yield');
+      expect(result).toBeNull();
+    });
+
+    it('should return null for single-level factors', () => {
+      const singleLevel = [
+        { A: 'x', B: 1, Y: 10 },
+        { A: 'x', B: 2, Y: 12 },
+        { A: 'x', B: 3, Y: 11 },
+        { A: 'x', B: 4, Y: 13 },
+        { A: 'x', B: 5, Y: 14 },
+      ];
+      const result = getInteractionStrength(singleLevel, 'A', 'B', 'Y', ['A']);
+      expect(result).toBeNull();
+    });
+
+    it('should work with categorical columns', () => {
+      const result = getInteractionStrength(interactionData, 'Machine', 'Temperature', 'Yield', [
+        'Machine',
+      ]);
+      expect(result).not.toBeNull();
+      expect(result!.deltaRSquared).toBeGreaterThanOrEqual(0);
+      expect(result!.pValue).toBeGreaterThanOrEqual(0);
+      expect(result!.pValue).toBeLessThanOrEqual(1);
     });
   });
 });

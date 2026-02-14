@@ -136,12 +136,14 @@ export { default as InteractionPlot, InteractionPlotBase } from './InteractionPl
 export { default as ChartSourceBar, getSourceBarHeight } from './ChartSourceBar';
 export { default as ChartLegend, type ChartLegendProps } from './ChartLegend';
 
-// Investigation Mindmap (drilldown spatial view)
+// Investigation Mindmap (drilldown + interaction spatial view)
 export {
   default as InvestigationMindmap,
   InvestigationMindmapBase,
   type InvestigationMindmapProps,
   type MindmapNode,
+  type MindmapEdge,
+  type MindmapMode,
   type CategoryData,
 } from './InvestigationMindmap';
 

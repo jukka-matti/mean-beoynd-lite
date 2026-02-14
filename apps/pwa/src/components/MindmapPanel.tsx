@@ -1,10 +1,17 @@
-import React, { useEffect, useRef, useMemo, useCallback } from 'react';
-import { InvestigationMindmapBase, type MindmapNode, type CategoryData } from '@variscout/charts';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import {
+  InvestigationMindmapBase,
+  type MindmapNode,
+  type MindmapEdge,
+  type MindmapMode,
+  type CategoryData,
+} from '@variscout/charts';
 import { useDrillPath } from '@variscout/hooks';
 import {
   type FilterAction,
   getCategoryStats,
   getEtaSquared,
+  getInteractionStrength,
   applyFilters,
   filterStackToFilters,
 } from '@variscout/core';
@@ -34,6 +41,28 @@ interface MindmapPanelProps {
 }
 
 /**
+ * Compute pairwise interaction edges for all factor pairs
+ */
+function computeInteractionEdges(data: any[], factors: string[], outcome: string): MindmapEdge[] {
+  const edges: MindmapEdge[] = [];
+  for (let i = 0; i < factors.length; i++) {
+    for (let j = i + 1; j < factors.length; j++) {
+      const result = getInteractionStrength(data, factors[i], factors[j], outcome);
+      if (result) {
+        edges.push({
+          factorA: result.factorA,
+          factorB: result.factorB,
+          deltaRSquared: result.deltaRSquared,
+          pValue: result.pValue,
+          standardizedBeta: result.standardizedBeta,
+        });
+      }
+    }
+  }
+  return edges;
+}
+
+/**
  * Slide-in panel for the Investigation Mindmap
  *
  * Replaces FunnelPanel as the primary investigation tool.
@@ -53,6 +82,8 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
   onOpenPopout,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState<MindmapMode>('drilldown');
+  const [interactionEdges, setInteractionEdges] = useState<MindmapEdge[] | null>(null);
 
   // Close on escape
   useEffect(() => {
@@ -93,6 +124,22 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
   // Get current filtered data based on filter stack
   const currentFilters = useMemo(() => filterStackToFilters(filterStack), [filterStack]);
   const filteredData = useMemo(() => applyFilters(data, currentFilters), [data, currentFilters]);
+
+  // Reset interaction edges when data/factors change
+  useEffect(() => {
+    setInteractionEdges(null);
+  }, [filteredData, factors, outcome]);
+
+  // Compute interaction edges on demand when switching to interactions mode
+  useEffect(() => {
+    if (mode !== 'interactions' || interactionEdges !== null) return;
+    if (filteredData.length < 5 || factors.length < 2) {
+      setInteractionEdges([]);
+      return;
+    }
+    const edges = computeInteractionEdges(filteredData, factors, outcome);
+    setInteractionEdges(edges);
+  }, [mode, interactionEdges, filteredData, factors, outcome]);
 
   // Factors already drilled (in the filter stack)
   const drilledFactors = useMemo(() => {
@@ -219,6 +266,31 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-edge">
           <h2 className="text-sm font-semibold text-white">Investigation</h2>
+
+          {/* Mode toggle */}
+          <div className="flex items-center gap-0.5 bg-surface rounded-lg p-0.5">
+            <button
+              onClick={() => setMode('drilldown')}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                mode === 'drilldown'
+                  ? 'bg-blue-500/20 text-blue-400'
+                  : 'text-content-secondary hover:text-white'
+              }`}
+            >
+              Drilldown
+            </button>
+            <button
+              onClick={() => setMode('interactions')}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                mode === 'interactions'
+                  ? 'bg-amber-500/20 text-amber-400'
+                  : 'text-content-secondary hover:text-white'
+              }`}
+            >
+              Interactions
+            </button>
+          </div>
+
           <div className="flex items-center gap-1">
             {onOpenPopout && (
               <button
@@ -249,6 +321,8 @@ const MindmapPanel: React.FC<MindmapPanelProps> = ({
             cumulativeVariationPct={cumulativeVariationPct}
             onNodeClick={() => {}}
             onCategorySelect={handleCategorySelect}
+            mode={mode}
+            edges={interactionEdges ?? undefined}
             width={368}
             height={500}
           />

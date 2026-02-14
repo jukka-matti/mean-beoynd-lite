@@ -5,7 +5,6 @@ import {
   getEtaSquared,
   calculateStats,
   applyFilters,
-  filterStackToFilters,
   toNumericValue,
 } from '@variscout/core';
 

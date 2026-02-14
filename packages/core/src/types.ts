@@ -618,6 +618,23 @@ export interface VIFWarning {
 }
 
 /**
+ * Result for a pairwise interaction strength analysis
+ * Measures how much two factors interact (ΔR² from adding the interaction term)
+ */
+export interface InteractionEdge {
+  /** First factor name */
+  factorA: string;
+  /** Second factor name */
+  factorB: string;
+  /** R²_full − R²_main: incremental R² from the interaction term */
+  deltaRSquared: number;
+  /** P-value of the interaction coefficient */
+  pValue: number;
+  /** Standardized β of the interaction term */
+  standardizedBeta: number;
+}
+
+/**
  * Result of multiple regression analysis
  */
 // ============================================================================

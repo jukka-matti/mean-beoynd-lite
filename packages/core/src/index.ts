@@ -44,6 +44,7 @@ export type {
   CoefficientResult,
   RegressionTerm,
   VIFWarning,
+  InteractionEdge,
 } from './types';
 
 // Statistics
@@ -69,6 +70,8 @@ export {
   getNelsonRule2Sequences,
   // Boxplot statistics
   calculateBoxplotStats,
+  // Interaction strength (ΔR² between factor pairs)
+  getInteractionStrength,
 } from './stats';
 
 // Matrix utilities (for advanced use)
