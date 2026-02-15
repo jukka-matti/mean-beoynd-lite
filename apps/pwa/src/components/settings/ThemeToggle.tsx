@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sun, Moon, Monitor, Lock } from 'lucide-react';
-import { useTheme, type ThemeMode } from '../context/ThemeContext';
+import { useTheme, type ThemeMode } from '../../context/ThemeContext';
 
 interface ThemeToggleProps {
   /** Show upgrade prompt for community users (default: true) */

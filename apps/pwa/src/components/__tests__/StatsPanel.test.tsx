@@ -188,6 +188,65 @@ describe('StatsPanel', () => {
     expect(screen.getByText('Edit Specifications')).toBeInTheDocument();
   });
 
+  describe('compact mode', () => {
+    it('hides Edit Specifications button in compact mode', () => {
+      vi.spyOn(DataContextModule, 'useData').mockReturnValue({
+        displayOptions: { showCp: true, showCpk: true },
+      } as any);
+
+      render(
+        <StatsPanel
+          stats={mockStats}
+          specs={mockSpecs}
+          filteredData={mockFilteredData}
+          outcome="value"
+          compact
+        />
+      );
+
+      expect(screen.queryByText('Edit Specifications')).not.toBeInTheDocument();
+    });
+
+    it('shows metrics in compact mode', () => {
+      vi.spyOn(DataContextModule, 'useData').mockReturnValue({
+        displayOptions: { showCp: true, showCpk: true },
+      } as any);
+
+      render(
+        <StatsPanel
+          stats={mockStats}
+          specs={mockSpecs}
+          filteredData={mockFilteredData}
+          outcome="value"
+          compact
+        />
+      );
+
+      expect(screen.getAllByText('Mean').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('10.50')).toBeInTheDocument();
+      expect(screen.getByText('n=3')).toBeInTheDocument();
+    });
+
+    it('switches tabs in compact mode', () => {
+      vi.spyOn(DataContextModule, 'useData').mockReturnValue({
+        displayOptions: { showCp: true, showCpk: true },
+      } as any);
+
+      render(
+        <StatsPanel
+          stats={mockStats}
+          specs={mockSpecs}
+          filteredData={mockFilteredData}
+          outcome="value"
+          compact
+        />
+      );
+
+      fireEvent.click(screen.getByText('Histogram'));
+      expect(screen.getByTestId('capability-histogram')).toBeInTheDocument();
+    });
+  });
+
   it('shows grade counts when provided', () => {
     const statsWithGrades = {
       ...mockStats,

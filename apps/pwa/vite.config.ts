@@ -73,15 +73,7 @@ export default defineConfig({
         manualChunks: {
           // Split large dependencies into separate chunks
           d3: ['d3'],
-          visx: [
-            '@visx/group',
-            '@visx/scale',
-            '@visx/axis',
-            '@visx/shape',
-            '@visx/grid',
-            '@visx/tooltip',
-            '@visx/responsive',
-          ],
+          visx: ['@visx/responsive'],
           vendor: ['react', 'react-dom', 'lucide-react'],
         },
       },

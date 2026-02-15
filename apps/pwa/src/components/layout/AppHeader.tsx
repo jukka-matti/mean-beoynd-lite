@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Activity, Settings, MoreVertical, Maximize, Table2, Share2, Filter } from 'lucide-react';
 import MobileMenu from './MobileMenu';
-import SharePopover from './SharePopover';
+import SharePopover from '../SharePopover';
 
 interface AppHeaderProps {
   hasData: boolean;

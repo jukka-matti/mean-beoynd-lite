@@ -13,7 +13,7 @@ import React from 'react';
 import { Activity, Layers } from 'lucide-react';
 import IChart from '../charts/IChart';
 import ErrorBoundary from '../ErrorBoundary';
-import SpecsPopover from '../SpecsPopover';
+import SpecsPopover from '../settings/SpecsPopover';
 import { ChartCard, type ChartId } from '@variscout/ui';
 import { EditableChartTitle } from '@variscout/charts';
 import { useData } from '../../context/DataContext';

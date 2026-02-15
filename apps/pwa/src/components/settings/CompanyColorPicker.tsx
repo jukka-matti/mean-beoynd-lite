@@ -1,6 +1,6 @@
 import React from 'react';
 import { Palette, Lock } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 // Preset accent colors
 const ACCENT_PRESETS = [

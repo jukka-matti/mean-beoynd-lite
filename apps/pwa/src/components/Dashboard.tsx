@@ -10,8 +10,8 @@ import GageRRPanel from './GageRRPanel';
 import ErrorBoundary from './ErrorBoundary';
 import FilterBreadcrumb from './FilterBreadcrumb';
 import FactorSelector from './FactorSelector';
-import SpecEditor from './SpecEditor';
-import SpecsPopover from './SpecsPopover';
+import SpecEditor from './settings/SpecEditor';
+import SpecsPopover from './settings/SpecsPopover';
 import { PresentationView, EmbedFocusView, FocusedChartView } from './views';
 import { EditableChartTitle } from '@variscout/charts';
 import { SelectionPanel, CreateFactorModal, useIsMobile } from '@variscout/ui';
@@ -441,6 +441,7 @@ const Dashboard = ({
                     <select
                       value={outcome}
                       onChange={e => setOutcome(e.target.value)}
+                      aria-label="Select outcome variable"
                       className="bg-surface border border-edge text-sm font-medium text-white rounded px-2 py-1 outline-none focus:border-blue-500 cursor-pointer hover:bg-surface-secondary transition-colors"
                     >
                       {availableOutcomes.map(o => (

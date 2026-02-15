@@ -5,12 +5,15 @@ import './index.css';
 import './i18n';
 import { DataProvider } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ErrorBoundary } from '@variscout/ui';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
       <DataProvider>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </DataProvider>
     </ThemeProvider>
   </React.StrictMode>

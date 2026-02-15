@@ -79,6 +79,7 @@ const FocusedChartView: React.FC<FocusedChartViewProps> = ({
       {/* Navigation Buttons (Overlay) */}
       <button
         onClick={onPrevChart}
+        aria-label="Previous chart"
         className="absolute left-6 top-1/2 -translate-y-1/2 z-50 p-3 bg-surface-secondary/80 hover:bg-surface-tertiary text-content-secondary hover:text-white rounded-full shadow-lg border border-edge opacity-0 group-hover/focus:opacity-100 transition-opacity"
         title="Previous Chart (Left Arrow)"
       >
@@ -86,6 +87,7 @@ const FocusedChartView: React.FC<FocusedChartViewProps> = ({
       </button>
       <button
         onClick={onNextChart}
+        aria-label="Next chart"
         className="absolute right-6 top-1/2 -translate-y-1/2 z-50 p-3 bg-surface-secondary/80 hover:bg-surface-tertiary text-content-secondary hover:text-white rounded-full shadow-lg border border-edge opacity-0 group-hover/focus:opacity-100 transition-opacity"
         title="Next Chart (Right Arrow)"
       >

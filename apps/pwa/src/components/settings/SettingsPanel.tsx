@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, BarChart3, TrendingUp, Target, Beaker } from 'lucide-react';
-import { useData } from '../context/DataContext';
-import { useTheme, type ChartFontScale } from '../context/ThemeContext';
+import { useData } from '../../context/DataContext';
+import { useTheme, type ChartFontScale } from '../../context/ThemeContext';
 import ThemeToggle from './ThemeToggle';
 import CompanyColorPicker from './CompanyColorPicker';
 
@@ -95,6 +95,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         onViewChange(view);
         onClose();
       }}
+      aria-label={`Switch to ${label} view`}
+      aria-pressed={activeView === view}
       className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-colors ${
         activeView === view
           ? 'bg-blue-600/20 border border-blue-500/50'
@@ -139,6 +141,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <h2 className="text-lg font-bold text-white">Settings</h2>
           <button
             onClick={onClose}
+            aria-label="Close settings"
             className="p-2 text-content-secondary hover:text-white hover:bg-surface-tertiary rounded-lg transition-colors"
           >
             <X size={20} />

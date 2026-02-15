@@ -4,7 +4,7 @@ import Dashboard from '../Dashboard';
 import * as DataContextModule from '../../context/DataContext';
 import * as CoreModule from '@variscout/core';
 import * as UseFilterNavigationModule from '../../hooks/useFilterNavigation';
-import * as UseVariationTrackingModule from '../../hooks/useVariationTracking';
+import * as UseVariationTrackingModule from '@variscout/hooks';
 
 // Mock components
 vi.mock('../charts/IChart', () => ({ default: () => <div data-testid="i-chart">I-Chart</div> }));
@@ -45,11 +45,14 @@ vi.mock('../../hooks/useFilterNavigation', () => ({
   useFilterNavigation: vi.fn(),
 }));
 
-// Mock useVariationTracking hook
-vi.mock('../../hooks/useVariationTracking', () => ({
-  default: vi.fn(),
-  useVariationTracking: vi.fn(),
-}));
+// Mock useVariationTracking hook (from @variscout/hooks)
+vi.mock('@variscout/hooks', async () => {
+  const actual = await vi.importActual('@variscout/hooks');
+  return {
+    ...actual,
+    useVariationTracking: vi.fn(),
+  };
+});
 
 describe('Dashboard', () => {
   const mockApplyFilter = vi.fn();
@@ -86,9 +89,6 @@ describe('Dashboard', () => {
       mockFilterNavigationReturn as any
     );
     vi.spyOn(UseVariationTrackingModule, 'useVariationTracking').mockReturnValue(
-      mockVariationTrackingReturn as any
-    );
-    vi.spyOn(UseVariationTrackingModule, 'default').mockReturnValue(
       mockVariationTrackingReturn as any
     );
   });

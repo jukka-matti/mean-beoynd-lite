@@ -12,7 +12,7 @@ import {
 import IChart from './charts/IChart';
 import Boxplot from './charts/Boxplot';
 import ParetoChart from './charts/ParetoChart';
-import MobileStatsPanel from './MobileStatsPanel';
+import StatsPanel from './StatsPanel';
 import AnovaResults from './AnovaResults';
 import RegressionPanel from './RegressionPanel';
 import GageRRPanel from './GageRRPanel';
@@ -142,6 +142,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
       <div className="flex items-center justify-between px-2 py-2 bg-surface-secondary/50 border-b border-edge">
         <button
           onClick={() => goToView('prev')}
+          aria-label="Previous chart"
           className="p-2 touch-feedback rounded-lg text-content-secondary hover:text-white"
           style={{ minWidth: 44, minHeight: 44 }}
         >
@@ -169,6 +170,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
 
         <button
           onClick={() => goToView('next')}
+          aria-label="Next chart"
           className="p-2 touch-feedback rounded-lg text-content-secondary hover:text-white"
           style={{ minWidth: 44, minHeight: 44 }}
         >
@@ -233,11 +235,12 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
               />
             )}
             {activeView === 'stats' && (
-              <MobileStatsPanel
+              <StatsPanel
                 stats={stats}
                 specs={specs}
                 filteredData={filteredData}
                 outcome={outcome}
+                compact
               />
             )}
             {activeView === 'regression' && <RegressionPanel />}

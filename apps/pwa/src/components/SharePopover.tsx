@@ -80,6 +80,7 @@ const SharePopover: React.FC<SharePopoverProps> = ({
         onClick();
         onClose();
       }}
+      aria-label={label}
       className="w-full flex items-start gap-3 px-3 py-2.5 text-left hover:bg-surface-tertiary/50 rounded-lg transition-colors group"
     >
       <div className="p-1.5 bg-surface-tertiary rounded-lg text-content-secondary group-hover:text-white group-hover:bg-surface-elevated transition-colors">

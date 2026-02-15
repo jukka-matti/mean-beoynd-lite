@@ -10,8 +10,8 @@ import {
   AlertTriangle,
   Filter,
 } from 'lucide-react';
-import { useData } from '../context/DataContext';
-import { getSpecStatus } from '../lib/export';
+import { useData } from '../../context/DataContext';
+import { getSpecStatus } from '../../lib/export';
 import type { ExclusionReason } from '@variscout/core';
 
 // Pagination threshold - show pagination for datasets larger than this

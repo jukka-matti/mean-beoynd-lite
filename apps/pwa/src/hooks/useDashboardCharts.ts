@@ -18,7 +18,7 @@ import { useData } from '../context/DataContext';
 import { calculateAnova, type AnovaResult, getNextDrillFactor } from '@variscout/core';
 import { calculateBoxplotStats, type BoxplotGroupData } from '@variscout/charts';
 import { useFilterNavigation } from './useFilterNavigation';
-import { useVariationTracking } from './useVariationTracking';
+import { useVariationTracking } from '@variscout/hooks';
 import type { ChartId } from '@variscout/ui';
 
 const CHART_ORDER = ['ichart', 'boxplot', 'pareto'] as const;

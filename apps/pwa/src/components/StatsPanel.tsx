@@ -6,7 +6,7 @@ import { HelpTooltip, useGlossary } from '@variscout/ui';
 import { useData } from '../context/DataContext';
 import CapabilityHistogram from './charts/CapabilityHistogram';
 import ProbabilityPlot from './charts/ProbabilityPlot';
-import SpecEditor from './SpecEditor';
+import SpecEditor from './settings/SpecEditor';
 
 // MetricCard component for the summary grid
 interface MetricCardProps {
@@ -36,6 +36,8 @@ interface StatsPanelProps {
   outcome?: string | null;
   defaultTab?: 'summary' | 'histogram' | 'normality';
   className?: string;
+  /** Compact mode for mobile — hides spec editing, uses touch-friendly layout */
+  compact?: boolean;
 }
 
 const StatsPanel: React.FC<StatsPanelProps> = ({
@@ -45,6 +47,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({
   outcome,
   defaultTab,
   className,
+  compact = false,
 }) => {
   const { displayOptions, setDisplayOptions, setSpecs, setGrades, grades } = useData();
   const { getTerm } = useGlossary();
@@ -72,6 +75,167 @@ const StatsPanel: React.FC<StatsPanelProps> = ({
     }
   };
 
+  const emptyState = (message: string) => (
+    <div className="flex items-center justify-center h-full text-content-muted italic text-sm">
+      {message}
+    </div>
+  );
+
+  // Grade summary rows — compact uses card style, desktop uses table style
+  const renderGrades = () => {
+    if (!stats?.gradeCounts || stats.gradeCounts.length === 0) return null;
+
+    if (compact) {
+      return (
+        <div className="space-y-2">
+          {stats.gradeCounts.map((grade, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between p-3 rounded-xl bg-surface-secondary/50 border border-edge/50"
+              style={{ minHeight: 56 }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: grade.color }}
+                />
+                <span className="text-content text-sm font-medium">{grade.label}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-white font-bold">{grade.percentage.toFixed(1)}%</span>
+                <span className="text-content-muted text-xs ml-2">({grade.count})</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {/* Header Row */}
+        <div className="grid grid-cols-[1fr_auto_auto] gap-4 px-2 text-[10px] text-content-muted uppercase tracking-wider font-semibold">
+          <span>Grade</span>
+          <span>Count</span>
+          <span>%</span>
+        </div>
+        {stats.gradeCounts.map((grade, i) => (
+          <div
+            key={i}
+            className="grid grid-cols-[1fr_40px_45px] gap-4 items-center p-2 rounded hover:bg-surface-tertiary/30 transition-colors"
+          >
+            <div className="flex items-center gap-2 overflow-hidden">
+              <div
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: grade.color }}
+              ></div>
+              <span className="text-content text-sm font-medium truncate" title={grade.label}>
+                {grade.label}
+              </span>
+            </div>
+            <div className="text-right text-content-muted text-xs font-mono">{grade.count}</div>
+            <div className="text-right text-white font-bold font-mono">
+              {grade.percentage.toFixed(1)}%
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderMetricGrid = () => {
+    const hasSpecs = specs.usl !== undefined || specs.lsl !== undefined;
+    return (
+      <div className={compact ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-2 sm:grid-cols-3 gap-2'}>
+        {hasSpecs && (
+          <>
+            <MetricCard
+              label="Pass Rate"
+              value={(100 - (stats?.outOfSpecPercentage || 0)).toFixed(1)}
+              unit="%"
+              helpTerm={getTerm('passRate')}
+            />
+            <MetricCard
+              label="Cp"
+              value={stats?.cp?.toFixed(2) ?? 'N/A'}
+              helpTerm={getTerm('cp')}
+            />
+            <MetricCard
+              label="Cpk"
+              value={stats?.cpk?.toFixed(2) ?? 'N/A'}
+              helpTerm={getTerm('cpk')}
+            />
+          </>
+        )}
+        <MetricCard
+          label="Mean"
+          value={stats?.mean?.toFixed(2) ?? 'N/A'}
+          helpTerm={getTerm('mean')}
+        />
+        <MetricCard
+          label="Std Dev"
+          value={stats?.stdDev?.toFixed(2) ?? 'N/A'}
+          helpTerm={getTerm('stdDev')}
+        />
+        <MetricCard label="Samples" value={`n=${filteredData?.length ?? 0}`} />
+      </div>
+    );
+  };
+
+  // Compact layout (mobile)
+  if (compact) {
+    return (
+      <div className="flex flex-col h-full p-3 overflow-auto scroll-touch">
+        {/* Tab Buttons */}
+        <div className="flex bg-surface/50 p-1 rounded-lg border border-edge/50 mb-4">
+          {(['summary', 'histogram', 'normality'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all touch-feedback
+                ${
+                  activeTab === tab
+                    ? 'bg-surface-tertiary text-white shadow-sm'
+                    : 'text-content-secondary'
+                }`}
+              style={{ minHeight: 44 }}
+            >
+              {tab === 'summary' ? 'Summary' : tab === 'histogram' ? 'Histogram' : 'Prob Plot'}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-h-0">
+          {activeTab === 'summary' && (
+            <div className="space-y-3">{renderGrades() || renderMetricGrid()}</div>
+          )}
+
+          {activeTab === 'histogram' && (
+            <div className="h-full min-h-[200px]">
+              {histogramData.length > 0 && stats ? (
+                <CapabilityHistogram data={histogramData} specs={specs} mean={stats.mean} />
+              ) : (
+                emptyState('No data for histogram')
+              )}
+            </div>
+          )}
+
+          {activeTab === 'normality' && (
+            <div className="h-full min-h-[200px]">
+              {histogramData.length > 0 && stats ? (
+                <ProbabilityPlot data={histogramData} mean={stats.mean} stdDev={stats.stdDev} />
+              ) : (
+                emptyState('No data for probability plot')
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout
   return (
     <div
       className={twMerge(
@@ -129,84 +293,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({
       {activeTab === 'summary' ? (
         /* Summary Tab Content */
         <>
-          <div className="flex-1">
-            {/* Grade Summary Mode (Coffee/Textiles) */}
-            {stats?.gradeCounts && stats.gradeCounts.length > 0 ? (
-              <div className="space-y-2">
-                {/* Header Row */}
-                <div className="grid grid-cols-[1fr_auto_auto] gap-4 px-2 text-[10px] text-content-muted uppercase tracking-wider font-semibold">
-                  <span>Grade</span>
-                  <span>Count</span>
-                  <span>%</span>
-                </div>
-                {stats.gradeCounts.map((grade, i) => (
-                  <div
-                    key={i}
-                    className="grid grid-cols-[1fr_40px_45px] gap-4 items-center p-2 rounded hover:bg-surface-tertiary/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <div
-                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: grade.color }}
-                      ></div>
-                      <span
-                        className="text-content text-sm font-medium truncate"
-                        title={grade.label}
-                      >
-                        {grade.label}
-                      </span>
-                    </div>
-                    <div className="text-right text-content-muted text-xs font-mono">
-                      {grade.count}
-                    </div>
-                    <div className="text-right text-white font-bold font-mono">
-                      {grade.percentage.toFixed(1)}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* Process Health Card Grid */
-              (() => {
-                const hasSpecs = specs.usl !== undefined || specs.lsl !== undefined;
-                return (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {hasSpecs && (
-                      <>
-                        <MetricCard
-                          label="Pass Rate"
-                          value={(100 - (stats?.outOfSpecPercentage || 0)).toFixed(1)}
-                          unit="%"
-                          helpTerm={getTerm('passRate')}
-                        />
-                        <MetricCard
-                          label="Cp"
-                          value={stats?.cp?.toFixed(2) ?? 'N/A'}
-                          helpTerm={getTerm('cp')}
-                        />
-                        <MetricCard
-                          label="Cpk"
-                          value={stats?.cpk?.toFixed(2) ?? 'N/A'}
-                          helpTerm={getTerm('cpk')}
-                        />
-                      </>
-                    )}
-                    <MetricCard
-                      label="Mean"
-                      value={stats?.mean?.toFixed(2) ?? 'N/A'}
-                      helpTerm={getTerm('mean')}
-                    />
-                    <MetricCard
-                      label="Std Dev"
-                      value={stats?.stdDev?.toFixed(2) ?? 'N/A'}
-                      helpTerm={getTerm('stdDev')}
-                    />
-                    <MetricCard label="Samples" value={`n=${filteredData?.length ?? 0}`} />
-                  </div>
-                );
-              })()
-            )}
-          </div>
+          <div className="flex-1">{renderGrades() || renderMetricGrid()}</div>
 
           <div
             className="mt-auto p-3 text-center bg-surface/80 rounded-lg text-xs text-content-muted border border-dashed border-edge cursor-pointer hover:border-edge-secondary hover:text-content hover:bg-surface-tertiary/50 transition-all flex items-center justify-center gap-2"
@@ -222,9 +309,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({
           {histogramData.length > 0 && stats ? (
             <CapabilityHistogram data={histogramData} specs={specs} mean={stats.mean} />
           ) : (
-            <div className="flex items-center justify-center h-full text-content-muted italic text-sm">
-              No data available for histogram
-            </div>
+            emptyState('No data available for histogram')
           )}
         </div>
       ) : (
@@ -233,9 +318,7 @@ const StatsPanel: React.FC<StatsPanelProps> = ({
           {histogramData.length > 0 && stats ? (
             <ProbabilityPlot data={histogramData} mean={stats.mean} stdDev={stats.stdDev} />
           ) : (
-            <div className="flex items-center justify-center h-full text-content-muted italic text-sm">
-              No data available for probability plot
-            </div>
+            emptyState('No data available for probability plot')
           )}
         </div>
       )}

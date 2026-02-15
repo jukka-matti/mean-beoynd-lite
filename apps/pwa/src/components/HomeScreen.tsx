@@ -1,7 +1,7 @@
 import React from 'react';
 import { BarChart2, PenLine } from 'lucide-react';
 import type { SampleDataset } from '@variscout/data';
-import SampleSection from './SampleSection';
+import SampleSection from './data/SampleSection';
 import InstallPrompt from './InstallPrompt';
 
 interface HomeScreenProps {
