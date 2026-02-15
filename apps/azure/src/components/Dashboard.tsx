@@ -10,7 +10,7 @@ import PerformanceDashboard from './PerformanceDashboard';
 import ErrorBoundary from './ErrorBoundary';
 import FilterBreadcrumb from './FilterBreadcrumb';
 import FactorSelector from './FactorSelector';
-import SpecsPopover from './SpecsPopover';
+import SpecsPopover from './settings/SpecsPopover';
 import { useData } from '../context/DataContext';
 import { useFilterNavigation, useVariationTracking } from '../hooks';
 import type { UseFilterNavigationReturn } from '../hooks';
@@ -270,8 +270,14 @@ const Dashboard = ({
         />
 
         {/* Tab Navigation */}
-        <div className="flex-none flex items-center gap-2 px-4 pt-4 pb-2">
+        <div
+          className="flex-none flex items-center gap-2 px-4 pt-4 pb-2"
+          role="tablist"
+          aria-label="Dashboard tabs"
+        >
           <button
+            role="tab"
+            aria-selected={activeTab === 'analysis'}
             onClick={() => setActiveTab('analysis')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === 'analysis'
@@ -283,6 +289,8 @@ const Dashboard = ({
             Analysis
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'regression'}
             onClick={() => setActiveTab('regression')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === 'regression'
@@ -294,6 +302,8 @@ const Dashboard = ({
             Regression
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'gagerr'}
             onClick={() => setActiveTab('gagerr')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === 'gagerr'
@@ -306,6 +316,8 @@ const Dashboard = ({
           </button>
           {isPerformanceMode && (
             <button
+              role="tab"
+              aria-selected={activeTab === 'performance'}
               onClick={() => setActiveTab('performance')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'performance'
@@ -382,6 +394,7 @@ const Dashboard = ({
                     <select
                       value={outcome}
                       onChange={e => setOutcome(e.target.value)}
+                      aria-label="Select outcome variable"
                       className="bg-slate-900 border border-slate-700 text-lg font-bold text-white rounded px-3 py-1 outline-none focus:border-blue-500 cursor-pointer hover:bg-slate-800 transition-colors"
                     >
                       {availableOutcomes.map(o => (
@@ -443,6 +456,7 @@ const Dashboard = ({
                     <button
                       onClick={() => setFocusedChart('ichart')}
                       className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
+                      aria-label="Maximize chart"
                       title="Maximize Chart"
                     >
                       <Maximize2 size={16} />
@@ -510,6 +524,7 @@ const Dashboard = ({
                         <button
                           onClick={() => setFocusedChart('boxplot')}
                           className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
+                          aria-label="Maximize chart"
                           title="Maximize Chart"
                         >
                           <Maximize2 size={14} />
@@ -544,6 +559,7 @@ const Dashboard = ({
                         <button
                           onClick={() => setFocusedChart('pareto')}
                           className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
+                          aria-label="Maximize chart"
                           title="Maximize Chart"
                         >
                           <Maximize2 size={14} />
@@ -587,6 +603,7 @@ const Dashboard = ({
               <button
                 onClick={handlePrevChart}
                 className="absolute left-6 top-1/2 -translate-y-1/2 z-50 p-3 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full shadow-lg border border-slate-700 opacity-0 group-hover/focus:opacity-100 transition-opacity"
+                aria-label="Previous chart"
                 title="Previous Chart (Left Arrow)"
               >
                 <ChevronLeft size={24} />
@@ -594,6 +611,7 @@ const Dashboard = ({
               <button
                 onClick={handleNextChart}
                 className="absolute right-6 top-1/2 -translate-y-1/2 z-50 p-3 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full shadow-lg border border-slate-700 opacity-0 group-hover/focus:opacity-100 transition-opacity"
+                aria-label="Next chart"
                 title="Next Chart (Right Arrow)"
               >
                 <ChevronRight size={24} />
@@ -610,6 +628,7 @@ const Dashboard = ({
                       <select
                         value={outcome}
                         onChange={e => setOutcome(e.target.value)}
+                        aria-label="Select outcome variable"
                         className="bg-slate-900 border border-slate-700 text-xl font-bold text-white rounded px-3 py-1.5 outline-none focus:border-blue-500"
                       >
                         {availableOutcomes.map(o => (
@@ -622,6 +641,7 @@ const Dashboard = ({
                       <button
                         onClick={() => setFocusedChart(null)}
                         className="p-2 rounded text-slate-400 hover:text-white hover:bg-slate-700 transition-colors ml-4 bg-slate-700/50"
+                        aria-label="Exit focus mode"
                         title="Exit Focus Mode"
                       >
                         <Minimize2 size={20} />
@@ -690,6 +710,7 @@ const Dashboard = ({
                       <button
                         onClick={() => setFocusedChart(null)}
                         className="p-2 rounded text-slate-400 hover:text-white hover:bg-slate-700 transition-colors bg-slate-700/50"
+                        aria-label="Exit focus mode"
                         title="Exit Focus Mode"
                       >
                         <Minimize2 size={20} />
@@ -734,6 +755,7 @@ const Dashboard = ({
                       <button
                         onClick={() => setFocusedChart(null)}
                         className="p-2 rounded text-slate-400 hover:text-white hover:bg-slate-700 transition-colors bg-slate-700/50"
+                        aria-label="Exit focus mode"
                         title="Exit Focus Mode"
                       >
                         <Minimize2 size={20} />

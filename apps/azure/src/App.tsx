@@ -5,6 +5,7 @@ import { DataProvider } from './context/DataContext';
 import { Dashboard as ProjectDashboard } from './pages/Dashboard';
 import { Editor } from './pages/Editor';
 import MindmapWindow from './components/MindmapWindow';
+import { ErrorBoundary } from '@variscout/ui';
 import { Cloud, LogOut } from 'lucide-react';
 
 type View = 'dashboard' | 'editor';
@@ -62,6 +63,7 @@ function App() {
           </p>
           <button
             onClick={handleLogin}
+            aria-label="Sign in with Microsoft"
             className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-500/20"
           >
             <svg className="w-5 h-5" viewBox="0 0 21 21" fill="currentColor">
@@ -74,48 +76,60 @@ function App() {
       </UnauthenticatedTemplate>
 
       <AuthenticatedTemplate>
-        <DataProvider>
-          {/* Header */}
-          <header className="bg-slate-800 border-b border-slate-700 px-6 py-3 flex justify-between items-center sticky top-0 z-50">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 cursor-pointer" onClick={navigateToDashboard}>
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                  <Cloud size={16} className="text-white" />
+        <ErrorBoundary>
+          <DataProvider>
+            {/* Header */}
+            <header className="bg-slate-800 border-b border-slate-700 px-6 py-3 flex justify-between items-center sticky top-0 z-50">
+              <div className="flex items-center gap-4">
+                <div
+                  className="flex items-center gap-2 cursor-pointer"
+                  role="button"
+                  aria-label="Go to dashboard"
+                  tabIndex={0}
+                  onClick={navigateToDashboard}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') navigateToDashboard();
+                  }}
+                >
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                    <Cloud size={16} className="text-white" />
+                  </div>
+                  <h1 className="text-lg font-bold text-white">VariScout Team</h1>
                 </div>
-                <h1 className="text-lg font-bold text-white">VariScout Team</h1>
+
+                {currentView === 'editor' && (
+                  <>
+                    <span className="text-slate-600">/</span>
+                    <span className="text-slate-400">
+                      {currentProject ? `Project ${currentProject}` : 'New Analysis'}
+                    </span>
+                  </>
+                )}
               </div>
 
-              {currentView === 'editor' && (
-                <>
-                  <span className="text-slate-600">/</span>
-                  <span className="text-slate-400">
-                    {currentProject ? `Project ${currentProject}` : 'New Analysis'}
-                  </span>
-                </>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-slate-400">{userName}</span>
+                <button
+                  onClick={handleLogout}
+                  aria-label="Sign out"
+                  className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </div>
+            </header>
+
+            {/* Main Content */}
+            <main className="p-6">
+              {currentView === 'dashboard' ? (
+                <ProjectDashboard onOpenProject={id => navigateToEditor(id)} />
+              ) : (
+                <Editor projectId={currentProject} onBack={navigateToDashboard} />
               )}
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-slate-400">{userName}</span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
-              >
-                <LogOut size={16} />
-                Sign Out
-              </button>
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <main className="p-6">
-            {currentView === 'dashboard' ? (
-              <ProjectDashboard onOpenProject={id => navigateToEditor(id)} />
-            ) : (
-              <Editor projectId={currentProject} onBack={navigateToDashboard} />
-            )}
-          </main>
-        </DataProvider>
+            </main>
+          </DataProvider>
+        </ErrorBoundary>
       </AuthenticatedTemplate>
     </div>
   );

@@ -183,6 +183,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
           <button
             onClick={handlePrevChart}
             className="absolute left-6 top-1/2 -translate-y-1/2 z-50 p-3 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full shadow-lg border border-slate-600 opacity-0 group-hover/focus:opacity-100 transition-opacity"
+            aria-label="Previous chart"
             title="Previous Chart (Left Arrow)"
           >
             <ChevronLeft size={24} />
@@ -190,6 +191,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
           <button
             onClick={handleNextChart}
             className="absolute right-6 top-1/2 -translate-y-1/2 z-50 p-3 bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full shadow-lg border border-slate-600 opacity-0 group-hover/focus:opacity-100 transition-opacity"
+            aria-label="Next chart"
             title="Next Chart (Right Arrow)"
           >
             <ChevronRight size={24} />
@@ -214,6 +216,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                   <div className="flex rounded overflow-hidden border border-slate-600">
                     <button
                       onClick={() => setCapabilityMetric('cpk')}
+                      aria-pressed={capabilityMetric === 'cpk'}
                       className={`px-2 py-0.5 text-xs font-medium transition-colors ${
                         capabilityMetric === 'cpk'
                           ? 'bg-blue-600 text-white'
@@ -224,6 +227,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                     </button>
                     <button
                       onClick={() => setCapabilityMetric('cp')}
+                      aria-pressed={capabilityMetric === 'cp'}
                       className={`px-2 py-0.5 text-xs font-medium transition-colors ${
                         capabilityMetric === 'cp'
                           ? 'bg-purple-600 text-white'
@@ -234,6 +238,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                     </button>
                     <button
                       onClick={() => setCapabilityMetric('both')}
+                      aria-pressed={capabilityMetric === 'both'}
                       className={`px-2 py-0.5 text-xs font-medium transition-colors ${
                         capabilityMetric === 'both'
                           ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
@@ -322,6 +327,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                   <button
                     onClick={() => setFocusedChart(null)}
                     className="p-2 rounded text-slate-400 hover:text-white hover:bg-slate-700 transition-colors bg-slate-700/50"
+                    aria-label="Exit focus mode"
                     title="Exit Focus Mode (Escape)"
                   >
                     <Minimize2 size={20} />
@@ -393,6 +399,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                   <div className="flex rounded overflow-hidden border border-slate-600">
                     <button
                       onClick={() => setCapabilityMetric('cpk')}
+                      aria-pressed={capabilityMetric === 'cpk'}
                       className={`px-2 py-0.5 text-xs font-medium transition-colors ${
                         capabilityMetric === 'cpk'
                           ? 'bg-blue-600 text-white'
@@ -403,6 +410,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                     </button>
                     <button
                       onClick={() => setCapabilityMetric('cp')}
+                      aria-pressed={capabilityMetric === 'cp'}
                       className={`px-2 py-0.5 text-xs font-medium transition-colors ${
                         capabilityMetric === 'cp'
                           ? 'bg-purple-600 text-white'
@@ -413,6 +421,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                     </button>
                     <button
                       onClick={() => setCapabilityMetric('both')}
+                      aria-pressed={capabilityMetric === 'both'}
                       className={`px-2 py-0.5 text-xs font-medium transition-colors ${
                         capabilityMetric === 'both'
                           ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
@@ -502,6 +511,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                   <button
                     onClick={() => setFocusedChart('ichart')}
                     className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
+                    aria-label="Maximize chart"
                     title="Maximize Chart"
                   >
                     <Maximize2 size={14} />

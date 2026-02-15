@@ -1,10 +1,7 @@
 import React from 'react';
 import { withParentSize } from '@visx/responsive';
 import { ProbabilityPlotBase } from '@variscout/charts';
-import {
-  useResponsiveChartMargins,
-  useResponsiveChartFonts,
-} from '../../hooks/useResponsiveChartMargins';
+import { useResponsiveChartMargins, useResponsiveChartFonts } from '../../hooks';
 import { getSourceBarHeight } from './ChartSourceBar';
 import ChartSignature from './ChartSignature';
 import { shouldShowBranding, getBrandingText } from '../../lib/edition';

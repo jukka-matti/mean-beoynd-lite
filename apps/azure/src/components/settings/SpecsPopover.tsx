@@ -173,6 +173,7 @@ const SpecsPopover: React.FC<SpecsPopoverProps> = ({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Edit specifications"
         className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
           hasAnySpec
             ? 'text-blue-400 hover:text-blue-300 hover:bg-slate-700/50'

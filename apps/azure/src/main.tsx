@@ -4,7 +4,6 @@ import { MsalProvider } from '@azure/msal-react';
 import { msalInstance } from './auth/msalConfig';
 import App from './App';
 import './index.css';
-import './i18n';
 
 // Initialize the msal instance
 msalInstance.initialize().then(() => {

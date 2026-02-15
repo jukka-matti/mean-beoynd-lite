@@ -146,6 +146,7 @@ const SpecEditor = ({ specs, grades, onSave, onClose, style }: SpecEditorProps) 
                   />
                   <button
                     onClick={() => removeGrade(idx)}
+                    aria-label="Remove grade"
                     className="p-2 sm:p-0 text-slate-500 hover:text-red-400 transition-colors touch-feedback"
                     style={{
                       minWidth: isMobile ? 44 : undefined,

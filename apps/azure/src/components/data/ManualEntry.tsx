@@ -416,7 +416,8 @@ const ManualEntry = ({
                 disabled={!runningStats}
                 className="bg-green-600 hover:bg-green-500 disabled:bg-surface-tertiary disabled:text-content-muted text-white font-bold rounded-lg px-6 py-3 flex items-center gap-2 shadow-lg shadow-green-900/20"
               >
-                <Play size={18} fill="currentColor" /> {appendMode ? 'Merge & Analyze' : 'Analyze'}
+                <Play size={18} fill="currentColor" aria-hidden="true" />{' '}
+                {appendMode ? 'Merge & Analyze' : 'Analyze'}
               </button>
             </div>
           </div>
@@ -526,6 +527,7 @@ const ManualEntry = ({
                       <td className="p-0 text-center min-h-[56px]">
                         <button
                           onClick={() => deleteRow(idx)}
+                          aria-label="Delete row"
                           className="p-3 text-content-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <Trash2 size={18} />
@@ -541,7 +543,7 @@ const ManualEntry = ({
               onClick={addRow}
               className="w-full p-4 min-h-[56px] text-center text-content-secondary hover:text-white hover:bg-surface-tertiary/50 transition-colors border-t border-edge text-base font-semibold flex items-center justify-center gap-2"
             >
-              <Plus size={20} /> Add Row
+              <Plus size={20} aria-hidden="true" /> Add Row
             </button>
           </div>
 

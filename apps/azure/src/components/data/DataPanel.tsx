@@ -7,7 +7,7 @@ import {
   AlertCircle,
   GripVertical,
 } from 'lucide-react';
-import { useData } from '../context/DataContext';
+import { useData } from '../../context/DataContext';
 import { getSpecStatus, type ExclusionReason } from '@variscout/core';
 
 // Pagination threshold
@@ -245,6 +245,7 @@ const DataPanel: React.FC<DataPanelProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close data panel"
             className="p-1 text-slate-400 hover:text-white rounded transition-colors"
           >
             <X size={16} />
@@ -345,6 +346,7 @@ const DataPanel: React.FC<DataPanelProps> = ({
             <button
               onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
               disabled={currentPage === 0}
+              aria-label="Previous page"
               className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronLeft size={16} />
@@ -355,6 +357,7 @@ const DataPanel: React.FC<DataPanelProps> = ({
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage >= totalPages - 1}
+              aria-label="Next page"
               className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronRight size={16} />

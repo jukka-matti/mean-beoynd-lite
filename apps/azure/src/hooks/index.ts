@@ -11,12 +11,12 @@ export {
 
 export { useChartScale } from './useChartScale';
 export { useDataIngestion } from './useDataIngestion';
+
+// Re-exported directly from @variscout/hooks (no Azure wrapper needed)
 export {
   useVariationTracking,
   type VariationTrackingResult,
   type FilterChipData,
-} from './useVariationTracking';
-export {
   useResponsiveChartMargins,
   useResponsiveChartFonts,
   useResponsiveTickCount,
@@ -24,4 +24,4 @@ export {
   type ChartMargins,
   type ChartFonts,
   type ChartType,
-} from './useResponsiveChartMargins';
+} from '@variscout/hooks';

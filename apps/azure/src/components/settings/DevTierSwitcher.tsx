@@ -13,7 +13,7 @@ import {
   setDevTierOverride,
   getDevTierOverrideValue,
   isDevelopmentMode,
-} from '../lib/edition';
+} from '../../lib/edition';
 
 interface TierOption {
   tier: LicenseTier;

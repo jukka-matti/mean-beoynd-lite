@@ -68,27 +68,9 @@ importers:
       '@variscout/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@visx/axis':
-        specifier: ^3.12.0
-        version: 3.12.0(react@18.3.1)
-      '@visx/grid':
-        specifier: ^3.12.0
-        version: 3.12.0(react@18.3.1)
-      '@visx/group':
-        specifier: ^3.12.0
-        version: 3.12.0(react@18.3.1)
       '@visx/responsive':
         specifier: ^3.12.0
         version: 3.12.0(react@18.3.1)
-      '@visx/scale':
-        specifier: ^3.12.0
-        version: 3.12.0
-      '@visx/shape':
-        specifier: ^3.12.0
-        version: 3.12.0(react@18.3.1)
-      '@visx/tooltip':
-        specifier: ^3.12.0
-        version: 3.12.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       d3:
         specifier: ^7.9.0
         version: 7.9.0
@@ -98,12 +80,6 @@ importers:
       html-to-image:
         specifier: ^1.11.13
         version: 1.11.13
-      i18next:
-        specifier: ^25.7.3
-        version: 25.7.3(typescript@5.9.3)
-      i18next-browser-languagedetector:
-        specifier: ^8.2.0
-        version: 8.2.0
       lucide-react:
         specifier: ^0.400.0
         version: 0.400.0(react@18.3.1)
@@ -113,9 +89,6 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
-      react-i18next:
-        specifier: ^16.5.1
-        version: 16.5.1(i18next@25.7.3(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
     devDependencies:
       '@testing-library/dom':
         specifier: ^10.4.1
@@ -158,7 +131,7 @@ importers:
         version: 5.4.21(@types/node@25.0.3)(lightningcss@1.30.2)(terser@5.44.1)
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
+        version: 4.0.16(@types/node@25.0.3)(jiti@1.21.7)(jsdom@27.4.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
 
   apps/excel-addin:
     dependencies:
@@ -322,7 +295,7 @@ importers:
         version: 0.20.5(@vite-pwa/assets-generator@0.2.6)(vite@5.4.21(@types/node@25.0.3)(lightningcss@1.30.2)(terser@5.44.1))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@types/node@25.0.3)(jiti@1.21.7)(jsdom@27.4.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
+        version: 4.0.16(@types/node@25.0.3)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
 
   apps/website:
     dependencies:
@@ -11959,18 +11932,6 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@visx/axis@3.12.0(react@18.3.1)':
-    dependencies:
-      '@types/react': 18.3.27
-      '@visx/group': 3.12.0(react@18.3.1)
-      '@visx/point': 3.12.0
-      '@visx/scale': 3.12.0
-      '@visx/shape': 3.12.0(react@18.3.1)
-      '@visx/text': 3.12.0(react@18.3.1)
-      classnames: 2.5.1
-      prop-types: 15.8.1
-      react: 18.3.1
-
   '@visx/axis@3.12.0(react@19.2.3)':
     dependencies:
       '@types/react': 18.3.27
@@ -11982,14 +11943,6 @@ snapshots:
       classnames: 2.5.1
       prop-types: 15.8.1
       react: 19.2.3
-
-  '@visx/bounds@3.12.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@types/react': 19.2.7
-      '@types/react-dom': 18.3.7(@types/react@19.2.7)
-      prop-types: 15.8.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
 
   '@visx/bounds@3.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
@@ -12028,18 +11981,6 @@ snapshots:
       '@types/react': 19.2.7
       '@visx/point': 3.12.0
 
-  '@visx/grid@3.12.0(react@18.3.1)':
-    dependencies:
-      '@types/react': 18.3.27
-      '@visx/curve': 3.12.0
-      '@visx/group': 3.12.0(react@18.3.1)
-      '@visx/point': 3.12.0
-      '@visx/scale': 3.12.0
-      '@visx/shape': 3.12.0(react@18.3.1)
-      classnames: 2.5.1
-      prop-types: 15.8.1
-      react: 18.3.1
-
   '@visx/grid@3.12.0(react@19.2.3)':
     dependencies:
       '@types/react': 18.3.27
@@ -12051,13 +11992,6 @@ snapshots:
       classnames: 2.5.1
       prop-types: 15.8.1
       react: 19.2.3
-
-  '@visx/group@3.12.0(react@18.3.1)':
-    dependencies:
-      '@types/react': 18.3.27
-      classnames: 2.5.1
-      prop-types: 15.8.1
-      react: 18.3.1
 
   '@visx/group@3.12.0(react@19.2.3)':
     dependencies:
@@ -12097,22 +12031,6 @@ snapshots:
     dependencies:
       '@visx/vendor': 3.12.0
 
-  '@visx/shape@3.12.0(react@18.3.1)':
-    dependencies:
-      '@types/d3-path': 1.0.11
-      '@types/d3-shape': 1.3.12
-      '@types/lodash': 4.17.21
-      '@types/react': 18.3.27
-      '@visx/curve': 3.12.0
-      '@visx/group': 3.12.0(react@18.3.1)
-      '@visx/scale': 3.12.0
-      classnames: 2.5.1
-      d3-path: 1.0.9
-      d3-shape: 1.3.7
-      lodash: 4.17.23
-      prop-types: 15.8.1
-      react: 18.3.1
-
   '@visx/shape@3.12.0(react@19.2.3)':
     dependencies:
       '@types/d3-path': 1.0.11
@@ -12140,16 +12058,6 @@ snapshots:
       prop-types: 15.8.1
       react: 19.2.3
 
-  '@visx/text@3.12.0(react@18.3.1)':
-    dependencies:
-      '@types/lodash': 4.17.21
-      '@types/react': 19.2.7
-      classnames: 2.5.1
-      lodash: 4.17.23
-      prop-types: 15.8.1
-      react: 18.3.1
-      reduce-css-calc: 1.3.0
-
   '@visx/text@3.12.0(react@19.2.3)':
     dependencies:
       '@types/lodash': 4.17.21
@@ -12159,16 +12067,6 @@ snapshots:
       prop-types: 15.8.1
       react: 19.2.3
       reduce-css-calc: 1.3.0
-
-  '@visx/tooltip@3.12.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@types/react': 18.3.27
-      '@visx/bounds': 3.12.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      classnames: 2.5.1
-      prop-types: 15.8.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      react-use-measure: 2.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@visx/tooltip@3.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
@@ -16012,12 +15910,6 @@ snapshots:
   react-is@17.0.2: {}
 
   react-refresh@0.17.0: {}
-
-  react-use-measure@2.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-    optionalDependencies:
-      react-dom: 18.3.1(react@18.3.1)
 
   react-use-measure@2.1.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:

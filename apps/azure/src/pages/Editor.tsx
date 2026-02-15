@@ -4,10 +4,10 @@ import { useData } from '../context/DataContext';
 import { useDataIngestion } from '../hooks/useDataIngestion';
 import { useFilterNavigation } from '../hooks';
 import Dashboard from '../components/Dashboard';
-import DataPanel from '../components/DataPanel';
+import DataPanel from '../components/data/DataPanel';
 import MindmapPanel from '../components/MindmapPanel';
 import { openMindmapPopout } from '../components/MindmapWindow';
-import ManualEntry from '../components/ManualEntry';
+import ManualEntry from '../components/data/ManualEntry';
 import WhatIfPage from '../components/WhatIfPage';
 import { validateData, getNelsonRule2ViolationPoints, calculateStats } from '@variscout/core';
 import {
@@ -65,6 +65,7 @@ const OutcomeSelector: React.FC<OutcomeSelectorProps> = ({ rawData, onStart }) =
         <select
           value={selectedOutcome}
           onChange={e => setSelectedOutcome(e.target.value)}
+          aria-label="Select outcome variable"
           className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-3 py-2 outline-none focus:border-blue-500 cursor-pointer"
         >
           <option value="">Select a column...</option>
@@ -478,6 +479,7 @@ export const Editor: React.FC<EditorProps> = ({ projectId, onBack }) => {
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
+            aria-label="Back to dashboard"
             className="flex items-center gap-1 text-slate-500 hover:text-white transition-colors"
           >
             <ArrowLeft size={18} />
